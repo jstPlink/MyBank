@@ -57,6 +57,7 @@ public class MyBankWidget extends AppWidgetProvider {
     static void refreshAll(final Context context) {
         final Context c = context.getApplicationContext();
         MyBankWidgetBarre.refreshAll(c); // anche la seconda versione del widget
+        MyBankWidget4x2.refreshAll(c); // e quella 4×2
         final AppWidgetManager m = AppWidgetManager.getInstance(c);
         final int[] ids = m.getAppWidgetIds(new ComponentName(c, MyBankWidget.class));
         if (ids.length == 0) return;
@@ -73,10 +74,10 @@ public class MyBankWidget extends AppWidgetProvider {
         return NumberFormat.getCurrencyInstance(Locale.ITALY).format(v);
     }
 
-    private static String perDay(double v) { return String.format(Locale.ITALY, "%.1f", v); }
+    static String perDay(double v) { return String.format(Locale.ITALY, "%.1f", v); }
 
     /** «stima» o «reale» in grigio e, dopo, il valore in grassetto (di un altro colore se serve). */
-    private static CharSequence chip(String word, String value, int valueColor) {
+    static CharSequence chip(String word, String value, int valueColor) {
         SpannableString s = new SpannableString(word + " " + value);
         s.setSpan(new ForegroundColorSpan(MUTE), 0, word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new ForegroundColorSpan(valueColor), word.length() + 1, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -98,7 +99,7 @@ public class MyBankWidget extends AppWidgetProvider {
     private static final int CELL_W = 204, CELL_H = 225, CELL_RADIUS = 12;
     private static final int WEEKS_W = 210, WEEKS_H = 72;
 
-    private static Paint fill(int color) {
+    static Paint fill(int color) {
         Paint p = new Paint();
         p.setColor(color);
         return p;
@@ -116,8 +117,10 @@ public class MyBankWidget extends AppWidgetProvider {
     }
 
     /** Fondo della cella del mese (e di una categoria senza dati). */
-    static Bitmap plainCell() {
-        Bitmap b = Bitmap.createBitmap(CELL_W, CELL_H, Bitmap.Config.ARGB_8888);
+    static Bitmap plainCell() { return plainCell(CELL_W, CELL_H); }
+
+    static Bitmap plainCell(int w, int h) {
+        Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         new Canvas(b).drawColor(CELL);
         return rounded(b);
     }
@@ -126,8 +129,9 @@ public class MyBankWidget extends AppWidgetProvider {
      * La cella di una categoria: il residuo riempie la cella dal basso (`ratio` da 0 a 1), con la linea del livello sul bordo e tre tacche
      * (25%, 50%, 75%). Rosso solo sotto il 25% (`low`).
      */
-    static Bitmap levelCell(double ratio, boolean low) {
-        final int w = CELL_W, h = CELL_H;
+    static Bitmap levelCell(double ratio, boolean low) { return levelCell(ratio, low, CELL_W, CELL_H); }
+
+    static Bitmap levelCell(double ratio, boolean low, int w, int h) {
         Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas g = new Canvas(b);
         g.drawColor(CELL);
@@ -172,7 +176,7 @@ public class MyBankWidget extends AppWidgetProvider {
 
     // ------------------------------------------------------------------ disegno
 
-    private static PendingIntent tap(Context c, int code, String open) {
+    static PendingIntent tap(Context c, int code, String open) {
         Intent i = new Intent(c, MainActivity.class).putExtra("open", open);
         return PendingIntent.getActivity(c, code, i, PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
     }

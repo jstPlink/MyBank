@@ -17,7 +17,7 @@ src/       server.js (API) · start.js (avvio del server) · local.js e proxy.js
            eb.js (client Enable Banking) · banks.js (collegamento, letture, limiti) · tags.js (tag e movimenti non contabili)
            notifications.js (notifiche) · recurring.js (pagamenti ricorrenti) · documents.js (cartelle dei documenti) · import.js, estratto.js e unicredit.js (importazione da estratto conto) · stats.js (storico, budget, widget) · auth.js (password e gettone) · schedule.js (orari) · store.js (dati)
 public/    index.html, style.css, app.js, icon.svg
-android/   MainActivity, MyBankWidget, MyBankWidgetBarre, WidgetData, Server, Notifier, NotifyReceiver; layout e risorse del widget; manifest
+android/   MainActivity, MyBankWidget, MyBankWidgetBarre, MyBankWidget4x2, WidgetData, Server, Notifier, NotifyReceiver; layout e risorse del widget; manifest
 scripts/   banca-finta.mjs, demo.mjs, build-apk.mjs, estratto-revolut.mjs
 design/    logo scelto e tutte le proposte (SVG, con le pagine di confronto), mockup delle schede (HTML, solo tema scuro)
 test/      schedule, tags, flow (giro completo con la banca finta), proxy, android (layout del widget e dell'app)
@@ -107,6 +107,10 @@ Una seconda versione del widget, **accanto a quella a livello**: nella lista dei
 - **Barra a due blocchi** a sinistra (12 dp), **senza tacche**: in alto la parte vuota (grigio scuro), poi uno spazio di 3 dp, in basso il **livello del residuo** (chiaro; **rosso solo sotto il 25%**), con gli angoli appena arrotondati.
 - A destra il **nome**, il **residuo** (15 sp come nell'altro widget; la cifra si rimpicciolisce da sola se è lunga) e, in basso, «**stima**» e «**reale**» (la reale rossa se supera la stima).
 - Il **mese** è come nell'altra versione: «giorni rimanenti» e le settimane del calendario con i weekend in rosso.
+
+### Widget Android 4×2 («MyBank 4×2»)
+
+Una terza voce nella lista dei widget, nello stile di quello a livello ma più grande (griglia 4×2): in alto una **striscia bassa del mese** (**giorni rimanenti** e, su una sola riga, **i giorni del mese**: passati chiari, weekend in rosso; targhette di 7 dp); sotto **tre celle uguali**, **Spesa**, **Svago** e **Auto** (niente Altro), con il **livello del residuo** che riempie la cella dal basso (rosso solo sotto il 25%), nome e residuo su una targhetta scura e, in basso, «stima» e «reale». Stessi dati e stessi tocchi degli altri widget (il mese apre il Budget, una categoria i Movimenti filtrati). Mockup in `design/mockup-widget-4x2.html` (variante C).
 
 **Limiti delle banche.** Le banche concedono 4 accessi al giorno senza l'utente presente (PSD2): sono esattamente i 4 automatici, per questo gli orari sono al massimo 4. Le letture a mano (fino a 10 al giorno per banca) dichiarano alla banca che c'è una persona presente (intestazioni «PSU») e contano a parte. Il consenso dura al massimo 180 giorni: alla scadenza si ricollega con un tocco.
 

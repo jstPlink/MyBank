@@ -2,4 +2,5 @@
 <resources>
     <string name="widget_description">Barra del mese, ultimo aggiornamento delle banche e, per Spesa, Svago e Auto, il residuo del budget con la spesa giornaliera stimata e reale. Per una griglia 5×1.</string>
     <string name="widget_description_barre">Come MyBank, ma ogni categoria ha una barra a due blocchi (parte vuota e livello del residuo) con nome, residuo, stima e reale; il mese mostra i giorni rimanenti e le settimane. Per una griglia 5×1.</string>
+    <string name="widget_description_4x2">Come MyBank ma più grande: una striscia con i giorni rimanenti e i giorni del mese, sotto Spesa, Svago e Auto con il livello del residuo, stima e reale. Per una griglia 4×2.</string>
 </resources>

@@ -7,7 +7,7 @@ import fs from 'node:fs';
 const ALLOWED = new Set(['FrameLayout', 'LinearLayout', 'RelativeLayout', 'GridLayout', 'AnalogClock', 'Button', 'Chronometer', 'ImageButton', 'ImageView', 'ProgressBar', 'TextClock', 'TextView', 'ViewFlipper', 'AdapterViewFlipper', 'GridView', 'ListView', 'StackView']);
 const tags = (file) => [...fs.readFileSync(file, 'utf8').replace(/<!--[\s\S]*?-->/g, '').matchAll(/<([A-Za-z][\w.]*)[\s>/]/g)].map((m) => m[1]).filter((t) => t !== 'layer-list');
 
-for (const file of ['android/res/layout/widget_mybank.xml', 'android/res/layout/widget_mybank_preview.xml', 'android/res/layout/widget_mybank_barre.xml', 'android/res/layout/widget_mybank_barre_preview.xml']) {
+for (const file of ['android/res/layout/widget_mybank.xml', 'android/res/layout/widget_mybank_preview.xml', 'android/res/layout/widget_mybank_barre.xml', 'android/res/layout/widget_mybank_barre_preview.xml', 'android/res/layout/widget_mybank_4x2.xml', 'android/res/layout/widget_mybank_4x2_preview.xml']) {
   test(`${file}: solo view ammesse nei widget`, () => {
     const bad = tags(file).filter((t) => !ALLOWED.has(t));
     assert.deepEqual(bad, []);
@@ -119,4 +119,34 @@ test('widget a barre: nomi nel layout e cinque celle di uguale larghezza', () =>
     const cells = [...xml.matchAll(/android:layout_width="0dp"\s+android:layout_height="match_parent"\s+android:layout_weight="1"/g)];
     assert.equal(cells.length, 5, file);
   }
+});
+
+test('widget 4×2: registrato nel manifest, solo Spesa, Svago e Auto, striscia del mese e celle di uguale larghezza', () => {
+  const manifest = fs.readFileSync('android/AndroidManifest.xml', 'utf8');
+  assert.match(manifest, /android:name="\.MyBankWidget4x2"/);
+  const info = fs.readFileSync('android/res/xml/widget_info_4x2.xml', 'utf8');
+  assert.match(info, /@layout\/widget_mybank_4x2"/);
+  assert.match(info, /targetCellWidth="4"/);
+  assert.match(info, /targetCellHeight="2"/);
+  const java = fs.readFileSync('android/src/app/mybank/mobile/MyBankWidget4x2.java', 'utf8');
+  assert.match(java, /R\.layout\.widget_mybank_4x2\b/);
+  assert.match(java, /static Bitmap daysStrip\(\)/);
+  assert.match(java, /"movimenti:" \+ KEYS\[i\]/);
+  assert.match(java, /widget_month_cell, MyBankWidget\.tap\(c, 4, "budget"\)/);
+  assert.doesNotMatch(java, /widget_altro/); // niente Altro
+  const layout = fs.readFileSync('android/res/layout/widget_mybank_4x2.xml', 'utf8');
+  const defined = new Set([...layout.matchAll(/@\+id\/(\w+)/g)].map((m) => m[1]));
+  const used = new Set([...java.matchAll(/R\.id\.(\w+)/g)].map((m) => m[1]));
+  assert.deepEqual([...used].filter((id) => !defined.has(id)), []);
+  assert.doesNotMatch(layout, /widget_altro/);
+  for (const file of ['android/res/layout/widget_mybank_4x2.xml', 'android/res/layout/widget_mybank_4x2_preview.xml']) {
+    const xml = fs.readFileSync(file, 'utf8');
+    for (const [key, name] of [['spesa', 'SPESA'], ['svago', 'SVAGO'], ['carburante', 'AUTO']]) {
+      const m = new RegExp(`@\\+id/widget_${key}_label"[\\s\\S]*?android:text="([^"]*)"`).exec(xml);
+      assert.equal(m?.[1], name, `${file}: nome di ${key}`);
+    }
+    assert.equal([...xml.matchAll(/android:layout_width="0dp"\s+android:layout_height="match_parent"\s+android:layout_weight="1"/g)].length, 3, file);
+  }
+  // il primo widget aggiorna anche questa versione
+  assert.match(fs.readFileSync('android/src/app/mybank/mobile/MyBankWidget.java', 'utf8'), /MyBankWidget4x2\.refreshAll/);
 });

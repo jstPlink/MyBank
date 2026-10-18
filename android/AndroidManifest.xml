@@ -37,5 +37,11 @@
             </intent-filter>
             <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_barre" />
         </receiver>
+        <receiver android:name=".MyBankWidget4x2" android:label="MyBank 4×2" android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info_4x2" />
+        </receiver>
     </application>
 </manifest>

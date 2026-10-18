@@ -2,6 +2,10 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.37.0
+- **Widget Android 4×2** («MyBank 4×2», terza voce nella lista dei widget): nello stile del widget a livello, con una striscia bassa del mese in alto (giorni rimanenti e i giorni del mese su una sola riga, weekend in rosso) e sotto Spesa, Svago e Auto (senza Altro) con il livello del residuo, stima e reale. Stessi dati e stessi tocchi degli altri widget.
+- Mockup in `design/`: widget 4×2 (varianti A-E; scelta la C).
+
 ## 0.36.3
 - **Movimenti**: il filtro per categoria elenca solo le **categorie principali** (le sotto categorie Cibo, Carburante e Autostrada non ci sono più; filtrando una categoria si vedono comunque quelle delle sue sotto categorie; una sotto categoria compare solo se è già il filtro scelto, per esempio dal dettaglio dello Storico). Dopo il tocco sul menu della categoria nelle righe non resta più il contorno rosso.
 

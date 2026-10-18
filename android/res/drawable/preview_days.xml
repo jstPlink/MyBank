@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Giorni del mese di esempio su una riga (passati chiari, weekend rossi) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:left="0.00dp" android:right="97.74dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="3.26dp" android:right="94.48dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="6.52dp" android:right="91.23dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="9.77dp" android:right="87.97dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="13.03dp" android:right="84.71dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="16.29dp" android:right="81.45dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="19.55dp" android:right="78.19dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="22.81dp" android:right="74.94dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="26.06dp" android:right="71.68dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="29.32dp" android:right="68.42dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="32.58dp" android:right="65.16dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="35.84dp" android:right="61.90dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="39.10dp" android:right="58.65dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="42.35dp" android:right="55.39dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="45.61dp" android:right="52.13dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="48.87dp" android:right="48.87dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
+    <item android:left="52.13dp" android:right="45.61dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="55.39dp" android:right="42.35dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
+    <item android:left="58.65dp" android:right="39.10dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="61.90dp" android:right="35.84dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="65.16dp" android:right="32.58dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="68.42dp" android:right="29.32dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="71.68dp" android:right="26.06dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="74.94dp" android:right="22.81dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
+    <item android:left="78.19dp" android:right="19.55dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
+    <item android:left="81.45dp" android:right="16.29dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="84.71dp" android:right="13.03dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="87.97dp" android:right="9.77dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="91.23dp" android:right="6.52dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="94.48dp" android:right="3.26dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="97.74dp" android:right="-0.00dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
+</layer-list>
