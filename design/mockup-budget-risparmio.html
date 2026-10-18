@@ -1,0 +1,686 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyBank · mockup Budget con ricorrenti, entrate e risparmio (Nothing Phone 4a, 393 px)</title>
+<!-- La pagina Budget è quella VERA dell'app: stesso CSS (public/style.css), stessi blocchi (residuo e giorni, budget, media, spesa reale e stimata,
+     una riga per categoria con i mattoncini da 75 € e il segno del ritmo, «Modifica budget»). Si aggiunge solo il blocco nuovo. -->
+<style>
+/* copia di public/style.css (il mockup è un file solo: va rigenerata se cambia lo stile dell'app) */
+/* MyBank — estetica tipografica, da giornale svizzero: carta e inchiostro, un solo rosso vermiglio, angoli vivi, linee nette.
+   Carattere: serif per i numeri e i titoli, monospazio maiuscolo per le etichette, sans per il testo.
+   Scala (e nessun'altra misura): 11 etichette · 13 testo secondario · 15 testo, campi e pulsanti · 22 titoli · 34 numeri grandi (28 sul telefono).
+   Caratteri: serif per titoli e importi (cifre tabulari), monospazio maiuscolo per etichette e nomi, sans per il resto.
+   Regole: nessun angolo arrotondato, nessuna ombra; filetti da 1px (sottili) e da 2px (a inizio sezione); un solo colore d'azione. */
+:root {
+  --paper: #f3f0ea; --ink: #131211; --mute: #6b665e; --hair: #d8d3c8;
+  --red: #e8431a; --green: #1d6b3c; --yellow: #e0b000;
+  --t-spesa: #1f4fd8; --t-svago: #c2188b; --t-carburante: #b8860b; --t-altro: #5b4b8a; --t-utenze: #0e7490; --t-ricorrente: #7a4a1e; --t-non_definito: #131211; --t-entrata: #1d6b3c; --t-giroconto: #9a958b; --t-cibo: var(--t-spesa); --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+  --f-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --f-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+  --f-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+  --fs-label: 11px; --fs-sm: 13px; --fs-md: 15px; --fs-lg: 22px; --fs-num: 34px;
+  --h: 42px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #121211; --ink: #edeae3; --mute: #9a958b; --hair: #2e2c29; --red: #ff5a2e; --green: #5ccb8a; --yellow: #f0c419;
+    --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #edeae3; --t-entrata: #5ccb8a; --t-giroconto: #6d6a63; --t-cibo: var(--t-spesa); --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+    color-scheme: dark;
+  }
+}
+@media (max-width: 720px) { :root { --fs-num: 28px; --h: 46px; } }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: var(--fs-md)/1.5 var(--f-sans); -webkit-font-smoothing: antialiased; }
+h1, h2, h3, p { margin: 0; }
+button, input, select, textarea { font: inherit; color: inherit; border-radius: 0; }
+button { cursor: pointer; }
+a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset: 3px; }
+:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }
+
+/* etichette e testo secondario */
+.label, .muted, label, th, .k, .sub { font-family: var(--f-mono); font-size: var(--fs-label); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.muted { text-transform: none; letter-spacing: 0; font-family: var(--f-sans); font-size: var(--fs-sm); }
+.error { color: var(--red); font-size: var(--fs-sm); min-height: 1.3em; }
+.num { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.pos { color: var(--green); } .neg { color: var(--red); }
+
+/* intestazione e schede */
+.top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px max(16px, calc((100vw - 1040px) / 2)) 10px; padding-top: calc(18px + env(safe-area-inset-top)); }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand h1 { font: 700 var(--fs-lg)/1 var(--f-serif); letter-spacing: -.02em; }
+.top-actions { display: flex; align-items: center; gap: 14px; }
+.version { font: 500 var(--fs-label)/1 var(--f-mono); letter-spacing: .04em; color: var(--mute); }
+.top-actions .ghost { height: 36px; min-height: 36px; padding: 0 14px; }
+#optionsBtn[aria-pressed=true] { background: var(--ink); color: var(--paper); }
+.tabs { display: flex; max-width: 1040px; margin: 0 auto; padding: 0 16px; border-bottom: 2px solid var(--ink); gap: 0; }
+.tabs > button { flex: 1 1 0; max-width: 140px; height: var(--h); background: none; border: 0; border-bottom: 6px solid transparent; margin-bottom: -2px; font: 600 var(--fs-md)/1 var(--f-sans); color: var(--mute); }
+.tabs > button:hover { color: var(--ink); }
+.tabs > button[aria-selected=true] { color: var(--ink); border-bottom-color: var(--red); }
+main { max-width: 1040px; margin: 0 auto; padding: 22px 16px calc(32px + env(safe-area-inset-bottom)); }
+
+/* pulsanti: primario = inchiostro pieno · secondario = filetto · link = testo sottolineato */
+button.primary, button.ghost { min-height: var(--h); padding: 0 20px; border: 1px solid var(--ink); font: 600 var(--fs-md)/1 var(--f-sans); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+button.primary { background: var(--ink); color: var(--paper); }
+button.primary:hover { background: var(--red); border-color: var(--red); color: #fff; }
+button.primary:disabled { opacity: .45; cursor: not-allowed; }
+button.ghost { background: transparent; color: var(--ink); }
+button.ghost:hover { background: var(--ink); color: var(--paper); }
+button.link { background: none; border: 0; padding: 4px 0; font-weight: 600; text-decoration: underline; text-decoration-color: var(--red); text-underline-offset: 3px; }
+button.link:hover { color: var(--red); }
+button.danger { color: var(--red); }
+.spin { width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* campi */
+label { display: grid; gap: 6px; }
+input, select, textarea { background: transparent; border: 1px solid var(--ink); color: var(--ink); font: 500 var(--fs-md) var(--f-sans); }
+input, select { height: var(--h); padding: 0 12px; }
+select { padding-right: 6px; }
+textarea { padding: 10px 12px; font: var(--fs-sm)/1.4 var(--f-mono); resize: vertical; }
+select, option { background-color: var(--paper); color: var(--ink); }
+input:read-only { border-color: var(--hair); color: var(--mute); }
+.bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-bottom: 18px; }
+.bar .grow { flex: 1 1 220px; }
+.bar .grow input { width: 100%; }
+
+/* blocchi: filetto spesso in alto, nessun bordo attorno */
+.panel, .bank { border-top: 2px solid var(--ink); padding: 14px 0 18px; margin-bottom: 20px; display: grid; gap: 12px; }
+.panel h2, .bank h2, h2.section { font: 700 var(--fs-lg)/1.2 var(--f-serif); letter-spacing: -.01em; }
+h2.section { margin: 30px 0 4px; }
+.panel > summary { cursor: pointer; font: 700 var(--fs-lg)/1.2 var(--f-serif); }
+.panel form { display: grid; gap: 14px; margin-top: 12px; }
+.foot { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.login { max-width: 360px; margin: 16vh auto 0; }
+.login h1 { font: 700 var(--fs-num)/1 var(--f-serif); letter-spacing: -.03em; }
+
+/* numeri grandi */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0 28px; margin-bottom: 22px; }
+.card { border-top: 2px solid var(--ink); padding: 10px 0 14px; }
+.card .v { font: 600 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; margin: 4px 0 2px; }
+.card .sub { text-transform: none; letter-spacing: 0; font-family: var(--f-sans); font-size: var(--fs-sm); }
+.good { color: var(--green); } .bad { color: var(--red); }
+.note { margin-top: 12px; }
+
+/* tabella dello storico */
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; }
+th, td { padding: 11px 12px; border-bottom: 1px solid var(--hair); }
+thead th { border-bottom: 2px solid var(--ink); text-align: right; font-weight: 500; }
+thead th:first-child, tbody th { text-align: left; padding-left: 0; }
+tbody th { font: 600 var(--fs-md) var(--f-sans); text-transform: none; letter-spacing: 0; color: var(--ink); }
+td.num, th.num { font: 600 var(--fs-sm) var(--f-serif); letter-spacing: -.01em; font-variant-numeric: tabular-nums lining-nums; }
+tbody tr.m { cursor: pointer; }
+tbody tr.m:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+tr.detail td { padding-left: 0; border-bottom: 1px solid var(--hair); }
+tfoot th, tfoot td { border-top: 2px solid var(--ink); border-bottom: 0; font-weight: 700; padding-top: 14px; }
+tfoot th { color: var(--ink); text-transform: none; letter-spacing: 0; font: 700 var(--fs-md) var(--f-sans); padding-left: 0; text-align: left; }
+td.zero { color: var(--mute); }
+
+/* tag: quadratino colorato + nome */
+.pill { display: inline-flex; align-items: center; gap: 7px; font: 500 var(--fs-label)/1.2 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink); margin-right: 14px; }
+.pill::before { content: ""; width: 9px; height: 9px; background: var(--c, var(--mute)); flex: none; }
+.pill[style*="non_definito"]::before { background: transparent; border: 2px solid var(--ink); }
+.pill.warn { color: var(--red); }
+.pill.warn::before { background: var(--red); }
+
+/* movimenti: righe con filetto, niente schede */
+.mvlist { border-top: 2px solid var(--ink); }
+.mv { padding: 14px 0 14px 12px; border-bottom: 1px solid var(--hair); border-left: 4px solid transparent; display: grid; align-items: center; }
+.mv.pending { border-left-color: var(--red); } /* la barra delle righe in sospeso non cambia la spaziatura: le altre hanno lo stesso margine, trasparente */
+.mv .amt { font: 600 var(--fs-md)/1 var(--f-serif); letter-spacing: -.01em; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.mv .amt.in { color: var(--green); }
+.mv select { height: 32px; font-size: var(--fs-sm); font-weight: 600; padding: 0 6px; }
+.d-date b { display: block; font: 600 var(--fs-md)/1.1 var(--f-serif); text-transform: lowercase; white-space: nowrap; }
+.d-date small { display: block; font: 500 var(--fs-label)/1.4 var(--f-mono); letter-spacing: .06em; color: var(--mute); }
+.d-title { font-weight: 600; overflow-wrap: anywhere; }
+.d-title .pill { margin: 0 0 0 10px; }
+.d-sub { color: var(--mute); font-size: var(--fs-sm); overflow-wrap: anywhere; }
+.d-amt { text-align: right; }
+.d-tag select { width: 100%; }
+/* tre colonne anche sul telefono: data | titolo e destinatario | importo sopra e categoria sotto */
+.mv { grid-template-columns: 50px minmax(0, 1fr) 112px; column-gap: 10px; row-gap: 6px; }
+.d-date { grid-column: 1; grid-row: 1 / span 2; align-self: start; }
+.d-main { grid-column: 2; grid-row: 1 / span 2; align-self: start; }
+.d-amt { grid-column: 3; grid-row: 1; }
+.d-tag { grid-column: 3; grid-row: 2; }
+.d-tag select { font-size: var(--fs-sm); }
+/* sul web quattro colonne: data | titolo e destinatario | importo | categoria */
+@media (min-width: 721px) {
+  .mv { grid-template-columns: 78px minmax(0, 1fr) 150px 300px; column-gap: 24px; }
+  .d-date, .d-main { grid-row: 1; align-self: center; }
+  .d-amt { grid-column: 3; grid-row: 1; }
+  .d-tag { grid-column: 4; grid-row: 1; }
+  .d-tag select { font-size: var(--fs-sm); }
+}
+
+/* budget */
+.fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+.meter { height: 6px; background: var(--hair); margin: 10px 0 8px; }
+.meter > i { display: block; height: 100%; background: var(--ink); }
+.meter.warn > i { background: var(--red); opacity: .6; } .meter.over > i { background: var(--red); }
+
+/* banche: ogni banca si chiude e si apre */
+.bank > summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; cursor: pointer; list-style: none; }
+.bank > summary::-webkit-details-marker { display: none; }
+.bank > summary h2 { flex: 1; }
+.bank > summary h2::before, .panel > summary::before { content: "▸"; display: inline-block; width: 1.2em; color: var(--red); font: 700 28px/1 var(--f-sans); vertical-align: -.12em; }
+.bank[open] > summary h2::before, .panel[open] > summary::before { content: "▾"; }
+.panel > summary { list-style: none; }
+.panel > summary::-webkit-details-marker { display: none; }
+.bank > :not(summary) { margin-top: 12px; }
+.acct { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--hair); flex-wrap: wrap; }
+.acct .n { flex: 1 1 160px; font-weight: 600; }
+.acct .s { font: 400 var(--fs-sm) var(--f-sans); text-transform: none; letter-spacing: 0; color: var(--mute); }
+.status { font: 600 var(--fs-label)/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 5px 8px; border: 1px solid var(--ink); }
+.status.ok { background: var(--ink); color: var(--paper); } .status.late { border-color: var(--red); color: var(--red); }
+.hours { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 8px; margin: 8px 0; }
+.hour { display: inline-flex; align-items: center; gap: 2px; }
+.hour select { height: 36px; width: 78px; font: 600 var(--fs-sm) var(--f-mono); padding: 0 4px; }
+.hour .ghost { min-height: 36px; height: 36px; padding: 0 12px; font-size: var(--fs-sm); margin-left: 4px; }
+.hour .x { width: 30px; height: 36px; display: inline-grid; place-items: center; background: transparent; border: 1px solid var(--ink); color: var(--red); font: 700 var(--fs-lg)/1 var(--f-sans); padding: 0; }
+.hour .x:hover:not(:disabled) { background: var(--red); border-color: var(--red); color: #fff; }
+.hour .x:disabled { opacity: .3; cursor: not-allowed; }
+
+#toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom)); transform: translate(-50%, 20px); background: var(--ink); color: var(--paper); padding: 12px 18px; opacity: 0; pointer-events: none; transition: .2s; max-width: min(560px, calc(100vw - 24px)); z-index: 20; font-size: var(--fs-sm); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+@media (max-width: 720px) {
+  .top { padding-left: 14px; padding-right: 14px; }
+  .tabs { padding: 0 4px; }
+  .tabs > button { font-size: var(--fs-sm); padding: 0 2px; min-width: 0; }
+  main { padding: 18px 14px calc(32px + env(safe-area-inset-bottom)); }
+  .bar > label { flex: 1 1 130px; }
+  .bar select, .bar input { width: 100%; }
+  .cards { grid-template-columns: 1fr 1fr; gap: 0 18px; }
+  th, td { padding: 10px 4px; }
+  td.num, th.num { font-size: var(--fs-sm); }
+  tbody th { font-size: var(--fs-sm); }
+  #storico .bar > label { flex: 0 0 auto; }
+  #storico .bar select { width: auto; min-width: 130px; }
+}
+@media (prefers-reduced-motion: reduce) { .spin { animation-duration: 2s; } #toast { transition: none; } }
+
+/* finestra del cambio password */
+dialog { border: 2px solid var(--ink); background: var(--paper); color: var(--ink); padding: 20px; width: min(440px, calc(100vw - 24px)); }
+dialog::backdrop { background: rgb(0 0 0 / .55); }
+dialog form { display: grid; gap: 14px; }
+dialog h2 { font: 700 var(--fs-lg)/1.2 var(--f-serif); }
+@media (max-width: 720px) { .top-actions { gap: 10px; } }
+
+/* avviso dei dati di prova */
+.demo { background: var(--red); color: #fff; text-align: center; font: 600 var(--fs-label)/1 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; padding: 7px 12px; }
+
+.logo { display: block; }
+
+/* Storico (entrate, uscite, bilancio): sempre su tre colonne, anche sul telefono */
+#yearCards { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 720px) {
+  #yearCards { gap: 0 12px; }
+}
+
+/* Storico: numeri grandi il 30% in più */
+#yearCards .v { font-size: var(--fs-num); overflow-wrap: anywhere; line-height: 1.12; }
+#yearCards .k { font-size: var(--fs-label); }
+@media (max-width: 720px) {
+  #yearCards .v { font-size: var(--fs-lg); }
+}
+/* Banche: gli orari stanno su una riga (menu senza freccia, più stretti) */
+.hours { gap: 8px 5px; }
+.hour { gap: 1px; }
+.hour select { width: 52px; padding: 0; text-align: center; text-align-last: center; appearance: none; -webkit-appearance: none; background-image: none; }
+.hour .x { width: 26px; }
+
+/* Banche, telefono: gli orari occupano tutta la larghezza (quattro in una riga) */
+@media (max-width: 720px) {
+  .hours { width: 100%; }
+  .hour { flex: 1 1 22%; min-width: 0; }
+  .hour select { flex: 1 1 auto; width: auto; min-width: 0; }
+  .hour .x { flex: none; }
+  .hour.add { flex: 1 1 100%; }
+  .hour.add .ghost { flex: none; }
+}
+
+/* Storico: il dettaglio di un mese, una categoria per riga: nome | barra bianca (quanto pesa sulle uscite) | importo */
+.legend { display: grid; margin-top: 4px; }
+.chip { display: grid; grid-template-columns: 136px minmax(0, 1fr) 96px; align-items: center; gap: 12px; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--mute); padding: 9px 0; text-align: left; color: var(--ink); }
+.chip:last-child { border-bottom: 0; }
+.chip:hover { color: var(--red); border-bottom-color: var(--red); }
+.chip .cname { font: 600 var(--fs-label)/1.2 var(--f-mono); letter-spacing: .05em; text-transform: uppercase; overflow-wrap: anywhere; }
+.chip .cbar { display: block; height: 10px; background: var(--hair); }
+.chip .cbar i { display: block; height: 100%; min-width: 2px; background: var(--ink); }
+.chip:hover .cbar i { background: var(--red); }
+.chip .camt { font: 600 var(--fs-sm) var(--f-serif); font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; text-align: right; }
+@media (max-width: 720px) { .chip { grid-template-columns: 120px minmax(0, 1fr) 90px; gap: 10px; } }
+tr.detail td { padding-top: 10px; padding-bottom: 12px; }
+
+/* Banche: le righe di conto e pocket si toccano per vedere i loro movimenti; filtro per conto nei Movimenti */
+.acct[data-account] { cursor: pointer; }
+.acct[data-account]:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.catfilter { margin: 0 0 10px; font-size: var(--fs-sm); }
+
+/* Opzioni: Notifiche, Documenti, Account, Server, Sessione */
+#opzioni h2.section { margin-top: 34px; }
+#opzioni h2.section.first { margin-top: 0; }
+.fields.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.fields.two input { width: 100%; min-width: 0; }
+#notifyList .acct:first-child { border-top: 0; }
+
+/* Opzioni → Banche: tutta la sezione si chiude e si apre */
+details.group > summary { list-style: none; cursor: pointer; }
+details.group > summary::-webkit-details-marker { display: none; }
+details.group > summary h2::before { content: "▸"; display: inline-block; width: 1.2em; color: var(--red); font: 700 28px/1 var(--f-sans); vertical-align: -.12em; }
+details.group[open] > summary h2::before { content: "▾"; }
+details.group > summary h2.section { margin: 0 0 12px; border-bottom: 0; }
+.reqs { display: grid; gap: 4px; margin: 6px 0; }
+.reqs b { font-variant-numeric: tabular-nums; }
+
+/* Opzioni: ogni categoria è un titolo con la riga sotto (come «Account»); Banche, Notifiche, ogni banca ed Enable Banking si chiudono, ma titolo e riga restano */
+.dim { color: var(--mute); }
+details.group > summary, .bank > summary, details.panel > summary { border-bottom: 2px solid var(--ink); padding-bottom: 6px; }
+details.group > summary h2.section { margin: 0; }
+details.group { margin-bottom: 20px; }
+details.group > .panel { border-top: 0; padding-top: 12px; }
+.bank, details.panel { border-top: 0; padding-top: 14px; }
+details.panel > summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+details.panel > summary h2 { font: 700 var(--fs-lg)/1.2 var(--f-serif); letter-spacing: -.01em; }
+details.panel > summary h2::before { content: "▸"; display: inline-block; width: 1.2em; color: var(--red); font: 700 28px/1 var(--f-sans); vertical-align: -.12em; }
+details.panel[open] > summary h2::before { content: "▾"; }
+details.panel > summary::before, details.panel[open] > summary::before { content: none; }
+
+/* Opzioni: la stessa distanza (34px) sopra ogni sezione, dentro e fuori dalle sezioni che si chiudono */
+#opzioni > details.group, #opzioni > h2.section, #opzioni > #serverPanel { margin: 34px 0 0; }
+#opzioni > :first-child { margin-top: 0; }
+#opzioni details.group > summary h2.section, #opzioni #serverPanel > h2.section { margin: 0 0 4px; }
+#opzioni > .panel, #opzioni #serverPanel > .panel { margin-bottom: 0; }
+#opzioni > .panel, #opzioni #serverPanel > .panel { padding-bottom: 0; }
+
+/* Opzioni: stessa distanza tra titolo e riga in tutte le categorie; Banche e Notifiche un po' più staccate dalle altre sezioni */
+#opzioni > h2.section, #opzioni #serverPanel > h2.section { margin-bottom: 6px; line-height: 28px; }
+#opzioni details.group > summary h2.section { margin: 0; line-height: 28px; }
+#opzioni details.group > summary h2::before { line-height: 28px; vertical-align: top; }
+#opzioni > h2.section:first-of-type { margin-top: 64px; }
+
+/* Login del localhost: pulsante http/https davanti al campo del server */
+.serverfield { display: flex; }
+.serverfield .ghost { min-height: var(--h); height: var(--h); padding: 0 10px; border-right: 0; font: 600 var(--fs-sm) var(--f-mono); text-transform: none; letter-spacing: 0; white-space: nowrap; }
+.serverfield input { flex: 1 1 auto; min-width: 0; }
+
+/* icone delle categorie (in un solo colore, quello del testo) */
+.ticon { display: inline-block; width: 18px; height: 18px; flex: none; vertical-align: -4px; }
+/* il menu della categoria: un solo blocco con l'icona dentro, dello stesso colore del testo */
+.tagbox { display: flex; align-items: center; gap: 2px; height: 32px; padding-left: 8px; border: 1px solid var(--ink); }
+.tagbox .ticon { width: 16px; height: 16px; color: inherit; }
+.tagbox select { flex: 1 1 auto; min-width: 0; height: 30px; border: 0; background: transparent; }
+.chip .cname { display: flex; align-items: center; gap: 8px; }
+.card .k .ticon { margin-right: 8px; vertical-align: -4px; }
+.chip .cbar i[style*="width:0%"] { min-width: 0; }
+
+/* Budget: in cima il mese (residuo, budget, speso, giorni); poi una riga per categoria: titolo con icona e residuo, barra alta 22px con tacche al 25/50/75%
+   e il segno rosso del ritmo (dove saresti oggi spendendo in modo uniforme), speso su budget e media 3 mesi. La barra mostra il residuo (si accorcia man mano che spendi) ed è rossa solo sotto il 25% (tutta rossa oltre il budget).
+   Il budget si modifica con «Modifica budget» (campi alti --h). Solo inchiostro, carta e --red. */
+
+.bhero { border-top: 2px solid var(--ink); padding: 12px 0 14px; }
+.bhero .big { font: 600 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; margin: 2px 0 10px; }
+.bheroh { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.bdays { text-align: right; }
+.bstats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-top: 1px solid var(--hair); padding-top: 12px; }
+.bcol { display: grid; gap: 14px; align-content: start; }
+.bcol > div .n { display: block; }
+.bcol > .dim, .bcol > .dim .n { color: color-mix(in srgb, var(--mute) 70%, #000); }
+.bhero .n, .bcat .n { font: 600 var(--fs-md) var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.bhero .n { font-size: var(--fs-lg); }
+.bcat { border-top: 1px solid var(--hair); padding: 12px 0 14px; }
+.bh { display: flex; justify-content: space-between; align-items: baseline; }
+.bh .n { font-size: var(--fs-lg); }
+.bname { display: flex; align-items: center; gap: 6px; font: 700 var(--fs-sm)/1.2 var(--f-mono); letter-spacing: .02em; text-transform: uppercase; }
+.bbar { position: relative; display: flex; height: 22px; margin: 10px 0 6px; }
+.bbar b { position: relative; flex: none; margin-right: 2px; background: var(--hair); }
+.bbar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--ink); }
+.bbar.low i { background: var(--red); }
+.bbar.over b { background: var(--red); }
+.bbar em { position: absolute; top: -7px; bottom: -7px; width: 4px; margin-left: -2px; background: var(--red); box-shadow: 0 0 0 2px var(--paper); z-index: 1; }
+.bsub { display: flex; justify-content: space-between; gap: 12px; font-size: var(--fs-sm); color: var(--mute); }
+.bsub b { color: var(--ink); font-weight: 400; }
+#budgetEdit { margin-top: 6px; }
+#budgetFields { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin-bottom: 14px; }
+#budgetFields label { display: flex; flex-direction: column; gap: 6px; }
+#budgetFields .ticon { vertical-align: -3px; margin-right: 6px; }
+#budgetFields input { width: 100%; padding: 0 10px; text-align: right; font: 600 var(--fs-lg) var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; }
+#budgetForm .foot { margin-top: 6px; }
+
+/* Documenti: tre categorie che si chiudono (titolo con la riga sotto, come nelle Opzioni), elenco dei file, caricamento e link */
+#docGroups > details.group { margin: 0 0 30px; }
+#documenti > #docGroups { padding-top: 14px; }
+#documenti > #docGroups > details.group:last-child { margin-bottom: 0; }
+details.group > summary h2.section { margin: 0; }
+.docbody { display: grid; gap: 14px; padding-top: 12px; }
+.docfile { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; width: 100%; background: none; border: 0; border-bottom: 1px solid var(--hair); padding: 10px 0; text-align: left; color: var(--ink); }
+.docfile:hover { color: var(--red); border-bottom-color: var(--red); }
+.docfile .n { font-weight: 600; overflow-wrap: anywhere; }
+.docfile .s { font: 500 var(--fs-label) var(--f-mono); color: var(--mute); white-space: nowrap; }
+.filebtn { display: inline-flex; align-items: center; justify-content: center; min-height: var(--h); padding: 0 20px; border: 1px solid var(--ink); font: 600 var(--fs-md)/1 var(--f-sans); text-transform: none; letter-spacing: 0; color: var(--ink); cursor: pointer; width: fit-content; }
+.filebtn:hover { background: var(--ink); color: var(--paper); }
+.stagedrow { display: flex; gap: 8px; margin-bottom: 8px; }
+.stagedrow input { flex: 1 1 auto; min-width: 0; }
+.stagedrow .x { width: 36px; flex: none; background: transparent; border: 1px solid var(--ink); color: var(--red); font: 700 var(--fs-lg)/1 var(--f-sans); }
+.docset > summary { cursor: pointer; font: 600 var(--fs-sm) var(--f-sans); color: var(--mute); }
+.docset form { display: grid; gap: 12px; margin-top: 10px; }
+.docimport code { font: var(--fs-label) var(--f-mono); }
+.docitem { border-bottom: 1px solid var(--hair); }
+.docitem .docfile { border-bottom: 0; padding-bottom: 4px; }
+.docitem .link { display: block; margin: 0 0 10px; font-size: var(--fs-sm); }
+.docitem:hover { border-bottom-color: var(--red); }
+.docnote { margin: 0 0 10px; font: 400 var(--fs-label) var(--f-sans); color: var(--mute); }
+.docnote.bad { color: var(--red); }
+.docnote .link { font-size: var(--fs-label); }
+
+/* Storico: i mesi con movimenti «Non definito» sono gialli */
+tbody tr.m.undef { background: color-mix(in srgb, var(--yellow) 26%, transparent); }
+tbody tr.m.undef:hover { background: color-mix(in srgb, var(--yellow) 36%, transparent); }
+.docgroup { margin: 16px 0 0; padding-bottom: 4px; border-bottom: 2px solid var(--ink); font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; }
+
+/* Movimenti: il testo informativo più staccato dalla riga; sotto la riga «Data» e «Importo», ognuno sopra la sua colonna, da toccare per ordinare */
+#mvSummary { margin-bottom: 18px; }
+.mvsort { display: grid; align-items: center; padding: 10px 0 8px 12px; border-left: 4px solid transparent; border-bottom: 1px solid var(--hair); grid-template-columns: 50px minmax(0, 1fr) 112px; column-gap: 10px; }
+.sortbtn { background: none; border: 0; padding: 4px 0; font: 500 var(--fs-label)/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); white-space: nowrap; width: fit-content; }
+.sortbtn.s-date { grid-column: 1; justify-self: start; }
+.sortbtn.s-amt { grid-column: 3; justify-self: end; }
+.sortbtn:hover { color: var(--ink); }
+.sortbtn.on { color: var(--ink); text-decoration: underline; text-decoration-color: var(--red); text-decoration-thickness: 2px; text-underline-offset: 5px; }
+@media (min-width: 721px) { .mvsort { grid-template-columns: 78px minmax(0, 1fr) 150px 190px; column-gap: 24px; } }
+#mvSummary b { color: var(--ink); font-weight: inherit; }
+.mvmore { margin: 22px 0 6px; text-align: center; }
+.mvmore button { min-width: 180px; }
+
+/* Movimenti: la matita per rinominare un movimento (accesa se ha un nome scelto a mano) */
+.ren { background: none; border: 0; padding: 0 6px; margin-left: 4px; color: var(--mute); font-size: var(--fs-md); line-height: 1; cursor: pointer; vertical-align: baseline; }
+.ren:hover, .ren.on { color: var(--red); }
+
+/* Storico: la riga delle entrate nel dettaglio del mese (importo verde, come il segno positivo) */
+.legend .chip.in, .legend .chip.in:hover { color: var(--green); }
+.legend .chip.in .cbar i { background: var(--green); }
+/* tacche sottili ogni 250 euro sulle barre del dettaglio del mese (--tick = passo in % della barra) */
+.chip .cbar { position: relative; }
+.chip .cbar[style*="--tick"]::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(90deg, transparent 0, transparent calc(var(--tick) - 1px), var(--paper) calc(var(--tick) - 1px), var(--paper) var(--tick)); }
+
+/* Scheda Ricorrenti: in cima il totale al mese, poi gli attivi dal pagamento più vicino e i non più attivi (spenti). Giorno e importo hanno la stessa dimensione (22). */
+#ricorrenti .bhero .n { display: block; }
+.rnote { font-size: var(--fs-sm); margin: 0; padding-bottom: 4px; }
+.rsec { display: flex; justify-content: space-between; margin-top: 18px; padding-top: 8px; border-top: 2px solid var(--ink); font: 700 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.rrow { display: grid; grid-template-columns: 38px 14px minmax(0, 1fr) auto; gap: 0 8px; align-items: center; padding: 11px 0; border-top: 1px solid var(--hair); cursor: pointer; }
+.rrow.open { border-top-color: var(--ink); }
+.rday, .ramt { font: 600 var(--fs-lg)/1 var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; }
+.rday small { display: block; margin-top: 3px; font: 400 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.ramt { white-space: nowrap; text-align: right; }
+.rname { display: flex; align-items: center; gap: 6px; min-width: 0; font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .02em; text-transform: uppercase; }
+.rname span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rname svg { width: 14px; height: 14px; flex: none; color: var(--red); }
+.rsub { margin-top: 1px; font-size: var(--fs-sm); color: var(--mute); }
+.rrow.off .rday, .rrow.off .rname, .rrow.off .ramt { color: var(--mute); }
+.rpanel { margin: 0 -2px; padding: 4px 14px 16px; background: color-mix(in srgb, var(--hair) 35%, transparent); border-bottom: 1px solid var(--hair); display: grid; gap: 12px; }
+.rpanel > .label { margin-top: 6px; }
+.rpanel .fields.two { margin: 0; }
+.rpanel .foot { margin: 0; }
+.rlinks { display: flex; gap: 18px; flex-wrap: wrap; }
+.rsw { display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 0; border: 0; background: none; font: inherit; font-size: var(--fs-sm); text-align: left; cursor: pointer; color: var(--ink); }
+.rsw i { position: relative; flex: none; width: 46px; height: 26px; border: 2px solid var(--ink); border-radius: 13px; transition: background .15s, border-color .15s; }
+.rsw i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--ink); transition: left .15s, background .15s; }
+.rsw.on i { background: var(--ink); }
+.rsw.on i::after { left: 23px; background: var(--paper); }
+.rsw.off { color: var(--mute); }
+.rsw.off i { border-color: var(--mute); }
+.rsw.off i::after { background: var(--mute); }
+.rsw:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+#recForm { display: grid; gap: 12px; margin-top: 18px; }
+#recForm h2.section { margin: 0; }
+#recAddBtn { margin-top: 0; }
+#recMain > .foot { margin-top: 18px; }
+
+/* Assegnare i movimenti ai ricorrenti: chip nelle righe, casella «Da assegnare», foglio dal basso e selezione dei movimenti da collegare */
+.rchip { display: inline-flex; align-items: center; height: 26px; margin-top: 6px; padding: 0 9px; border: 1px solid var(--ink); background: transparent; color: var(--ink); font: 700 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; cursor: pointer; }
+.rchip.fill { background: var(--ink); color: var(--paper); }
+.rchip.todo { border-color: var(--red); color: var(--red); }
+.rchip.alt { border-color: var(--hair); color: var(--mute); }
+.rchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.rchips .rchip { margin-top: 6px; }
+.rinbox { margin-top: 14px; padding: 0 12px 4px; border: 1px solid var(--red); }
+.rinbox .rsec { margin-top: 0; padding-top: 12px; border-top: 0; color: var(--red); }
+.rinrow { display: grid; grid-template-columns: 54px 1fr auto; gap: 0 12px; align-items: start; padding: 10px 0; border-top: 1px solid var(--hair); }
+.rinrow .rday { padding-top: 2px; }
+.rhint { font: 700 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.rpays { display: grid; }
+.rpay { display: grid; grid-template-columns: 82px 1fr auto 30px; gap: 0 10px; align-items: center; padding: 8px 0; border-top: 1px solid var(--hair); font-size: var(--fs-sm); }
+.rpay:first-child { border-top: 0; }
+.rpd { font: 600 var(--fs-sm) var(--f-serif); font-variant-numeric: tabular-nums lining-nums; }
+.rpt { min-width: 0; overflow-wrap: anywhere; font-size: var(--fs-md); }
+.rpt small { display: block; font: 400 var(--fs-label) var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--mute); }
+.rpa { font: 600 var(--fs-md) var(--f-serif); white-space: nowrap; font-variant-numeric: tabular-nums lining-nums; }
+.rx { width: 28px; height: 28px; padding: 0; border: 1px solid var(--hair); background: transparent; color: var(--mute); font-size: var(--fs-md); cursor: pointer; }
+.rx:hover { border-color: var(--red); color: var(--red); }
+#recPick { display: grid; gap: 4px; padding-bottom: 90px; }
+#recPick .rsec.first { margin-top: 0; align-items: baseline; }
+.pickq { display: block; margin: 6px 0 8px; }
+.pick { display: grid; grid-template-columns: 24px 56px 1fr auto; gap: 0 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--hair); cursor: pointer; }
+.pick input { position: absolute; opacity: 0; pointer-events: none; }
+.pick i { width: 22px; height: 22px; border: 1px solid var(--ink); position: relative; }
+.pick input:checked + i { background: var(--ink); }
+.pick input:checked + i::after { content: ""; position: absolute; left: 6px; top: 2px; width: 6px; height: 12px; border: solid var(--paper); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.pick input:focus-visible + i { outline: 2px solid var(--red); outline-offset: 2px; }
+.rsticky { position: fixed; left: 0; right: 0; bottom: 0; padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); background: var(--paper); border-top: 2px solid var(--ink); z-index: 5; }
+.rsticky .primary { width: 100%; }
+dialog.sheet { margin: auto auto 0; width: 100%; max-width: 520px; max-height: 88vh; overflow: auto; border-width: 2px 0 0; padding: 14px 16px calc(20px + env(safe-area-inset-bottom)); }
+dialog.sheet .grab { width: 40px; height: 4px; margin: 0 auto 12px; background: var(--hair); }
+dialog.sheet h2 { font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .04em; text-transform: uppercase; }
+.amini { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 1px solid var(--hair); padding: 9px 12px; font-size: var(--fs-md); }
+.amini small { display: block; color: var(--mute); font-size: var(--fs-sm); }
+.amini .n { font: 600 var(--fs-md) var(--f-serif); white-space: nowrap; }
+.aopts { display: grid; }
+.aopt { display: grid; grid-template-columns: 1fr 22px; gap: 0 10px; align-items: center; padding: 11px 0; border-top: 1px solid var(--hair); cursor: pointer; }
+.aopt:first-child { border-top: 2px solid var(--ink); }
+.aopt b { font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .02em; text-transform: uppercase; }
+.aopt small { display: block; font-size: var(--fs-sm); color: var(--mute); }
+.aopt input { position: absolute; opacity: 0; pointer-events: none; }
+.aopt i { width: 20px; height: 20px; border: 1px solid var(--ink); border-radius: 50%; position: relative; }
+.aopt input:checked + i::after { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--red); }
+.aopt input:focus-visible + i { outline: 2px solid var(--red); outline-offset: 2px; }
+.anew { display: grid; gap: 12px; padding: 4px 0 12px; }
+
+/* Telefono: le schede stanno in basso (barra fissa, il segno rosso sopra la scheda scelta) e la pagina non scorre di lato: il dito in orizzontale serve solo a cambiare scheda */
+html, body { overflow-x: hidden; }
+body { touch-action: pan-y; }
+.tablewrap { touch-action: pan-x pan-y; }
+@media (max-width: 720px) {
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; max-width: none; margin: 0; padding: 0 4px env(safe-area-inset-bottom); background: var(--paper); border-top: 2px solid var(--ink); border-bottom: 0; }
+  .tabs > button { max-width: none; border-bottom: 0; border-top: 6px solid transparent; margin: -2px 0 0; font-size: var(--fs-sm); }
+  .tabs > button[aria-selected=true] { border-top-color: var(--red); }
+  main { padding-bottom: calc(var(--h) + 36px + env(safe-area-inset-bottom)); }
+  #toast { bottom: calc(var(--h) + 20px + env(safe-area-inset-bottom)); }
+  .rsticky { bottom: calc(var(--h) + 4px + env(safe-area-inset-bottom)); padding-bottom: 12px; }
+}
+
+/* interruttore Attivo (bianco) / Inattivo (grigio) */
+.rsw span { font-weight: 600; }
+
+/* Movimenti, stile A: il secondo livello («Ricorrente» → a chi è assegnato) sta nella colonna del tag: sotto sul telefono, a sinistra sul web */
+.d-tag { display: grid; gap: 6px; }
+.d-tag .rchip { display: flex; justify-content: center; width: 100%; height: 24px; margin: 0; padding: 0 6px; min-width: 0; }
+.d-tag .rchip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 721px) {
+  .d-tag { display: flex; align-items: center; gap: 8px; }
+  .d-tag .rchip { order: -1; width: auto; max-width: 150px; flex: 0 1 auto; height: 26px; }
+  .d-tag .tagbox { flex: 1 1 0; min-width: 0; }
+}
+
+/* Storico: le sotto categorie, rientrate sotto la loro categoria */
+.legend .chip.sub .cname { padding-left: 14px; color: var(--mute); }
+
+/* targhetta della sotto categoria: la lista nativa è sopra la targhetta, trasparente */
+.schip { position: relative; }
+.schip select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+
+/* Ricorrenti: targhetta della cadenza (ANNO piena, MESE vuota, stessa larghezza), campanella tra giorno e targhetta, riga sotto il titolo allineata al nome */
+.rname .tg { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 20px; border: 1px solid var(--hair); color: var(--mute); font: 700 var(--fs-label) var(--f-mono); letter-spacing: .06em; font-style: normal; }
+.rname .tg.y { border-color: var(--ink); background: var(--ink); color: var(--paper); }
+.rrow.off .tg.y { background: transparent; color: var(--mute); border-color: var(--mute); }
+.rbell { display: flex; justify-content: center; }
+.rbell svg { width: 14px; height: 14px; color: var(--red); }
+.rrow.off .rbell svg { color: var(--mute); }
+.rmain .rsub { padding-left: 54px; }
+.rrow .ramt { padding-left: 4px; }
+
+/* Movimenti: dopo il tocco sul menu della categoria non resta il contorno rosso */
+.mv select:focus, .mv select:focus-visible, .tagbox select:focus, .tagbox select:focus-visible { outline: none; }
+
+</style>
+<style>
+/* solo tema scuro e misure del telefono (nell'app le dà la media query; qui la pagina è larga) */
+:root { --paper:#121211; --ink:#edeae3; --mute:#9a958b; --hair:#2e2c29; --red:#ff5a2e; --green:#5ccb8a; --yellow:#f0c419;
+  --t-spesa:#7a9cff; --t-svago:#ff7ac8; --t-carburante:#e6b84a; --t-altro:#b3a3e6; --fs-num:28px; --h:46px; color-scheme:dark; }
+html,body{overflow-x:visible}
+body{padding:24px;background:#3a3733;touch-action:auto}
+body>h1{font:700 15px var(--f-mono);color:#fff;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+body>p{color:#eee;font-size:13px;margin-bottom:20px;max-width:860px}
+.wall{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-start}
+figure{margin:0}
+figcaption{color:#fff;font:700 13px var(--f-mono);letter-spacing:.04em;text-transform:uppercase;margin-bottom:8px;max-width:393px}
+figcaption small{display:block;font:400 13px var(--f-sans);text-transform:none;letter-spacing:0;margin-top:2px;color:#eee}
+.phone{width:393px;min-height:852px;background:var(--paper);position:relative;border:1px solid #000;padding-bottom:calc(var(--h) + 24px);
+  background-image:linear-gradient(to right,#ff5a2e 50%,transparent 50%);background-size:8px 1px;background-repeat:repeat-x;background-position:0 852px}
+.phone::after{content:"fine schermo (852 px): da qui in giù si scorre";position:absolute;left:14px;top:854px;font:11px var(--f-mono);color:#ff5a2e}
+.status{height:28px;font:600 11px var(--f-mono);display:flex;justify-content:space-between;padding:8px 16px 0}
+.mtop{display:flex;justify-content:space-between;align-items:center;padding:6px 14px 0;height:44px}
+.mtop b{font:700 var(--fs-lg)/1 var(--f-serif);letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.mtop span{font:500 var(--fs-label)/1 var(--f-mono);letter-spacing:.04em;color:var(--mute)}
+.mtop em{font-style:normal;border:1px solid var(--ink);height:36px;padding:0 14px;display:inline-flex;align-items:center;font:600 var(--fs-md) var(--f-sans);margin-left:10px}
+.nav{position:fixed;left:auto;width:393px;bottom:auto}
+.mnav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--h) + 2px);display:flex;border-top:2px solid var(--ink);background:var(--paper);padding:0 4px;z-index:3}
+.mnav span{flex:1;text-align:center;font:600 var(--fs-sm) var(--f-sans);color:var(--mute);padding-top:14px;border-top:6px solid transparent;margin-top:-2px}
+.mnav .on{color:var(--ink);border-top-color:var(--red)}
+main{padding:12px 14px 0}
+.mockbud .foot{margin-top:14px}
+.mockbud .foot .primary{width:100%}
+
+/* ---- blocco nuovo: stesso linguaggio del Budget (filetto da 2px, etichette mono, importi serif, mattoncini) ---- */
+.rs{border-top:2px solid var(--ink);padding:12px 0 6px;margin-top:6px}
+.rs h2{font:700 var(--fs-lg)/1.2 var(--f-serif);letter-spacing:-.01em;display:flex;justify-content:space-between;align-items:baseline}
+.rs h2 small{font:400 var(--fs-label) var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mute)}
+.rs .n{font:600 var(--fs-md) var(--f-serif);letter-spacing:-.02em;font-variant-numeric:tabular-nums lining-nums;white-space:nowrap}
+.rs .n.big{font-size:var(--fs-lg)}
+.rs .row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:10px 0;border-top:1px solid var(--hair)}
+.rs .row:first-of-type{border-top:0}
+.rs .nm{font:700 var(--fs-sm)/1.2 var(--f-mono);letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:6px}
+.rs .rnt{font-size:var(--fs-sm);color:var(--mute);padding:0 0 8px}
+.sw{display:inline-block;width:9px;height:9px;background:var(--c);flex:none}
+.pos{color:var(--green)}
+.stk{display:flex;gap:2px;height:22px;margin:12px 0 6px}
+.stk i{display:block;height:100%;background:var(--c)}
+.stk i.sav{background:var(--green)}
+.scale{display:flex;justify-content:space-between;font:var(--fs-label) var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--mute);margin-bottom:6px}
+.verdict{margin-top:10px;border:1px solid var(--green);padding:10px 12px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:var(--fs-sm);color:var(--ink)}
+.verdict .n{color:var(--green);font-size:var(--fs-lg)}
+.verdict.no{border-color:var(--red)} .verdict.no .n{color:var(--red)}
+/* cascata */
+.cas .st{padding:10px 0 12px;border-top:1px solid var(--hair)}
+.cas .st:first-child{border-top:0}
+.cas .bar{height:10px;background:var(--hair);margin-top:8px;position:relative}
+.cas .bar i{position:absolute;top:0;bottom:0;background:var(--c)}
+.cas .st.res{border-top:2px solid var(--ink);background:color-mix(in srgb,var(--green) 10%,transparent);padding:10px 8px 12px;margin:0 -8px}
+/* mattoncini */
+.bk{display:flex;flex-wrap:wrap;gap:3px;margin:12px 0 10px}
+.bk b{width:calc((100% - 33px) / 12);height:20px;background:var(--c)}
+.bk b.sav{background:var(--green)}
+.leg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;border-top:1px solid var(--hair);padding-top:10px}
+.leg3 .n{display:block;font-size:var(--fs-lg)!important}
+/* hero esteso (E) */
+.bstats.three{grid-template-columns:1fr 1fr}
+.bstats .sep{grid-column:1 / -1;border-top:1px solid var(--hair);padding-top:12px}
+/* modifica (D) */
+.mockbud #budgetFields{margin-top:6px}
+.live{position:absolute;left:0;right:0;bottom:calc(var(--h) + 2px);background:var(--paper);border-top:2px solid var(--ink);padding:10px 14px 12px;z-index:2}
+.live .stk{height:14px;margin:8px 0 6px}
+.live .l1{display:flex;justify-content:space-between;align-items:baseline}
+.live .l1 .n{font:600 var(--fs-lg) var(--f-serif);letter-spacing:-.02em}
+</style></head><body>
+<h1>Budget · ricorrenti, entrate e risparmio</h1>
+<p>La pagina Budget è quella <b>vera dell'app</b> (stesso CSS, stessi dati e blocchi: residuo e giorni rimanenti, budget, media 3 mesi, spesa reale e stimata, una riga per categoria con mattoncini da 75 € e segno del ritmo, Modifica budget); si aggiunge solo il blocco nuovo. Calcolo (dati inventati): <b>entrate medie 3 mesi</b> 2.640 € − <b>ricorrenti</b> 760 € (mensili 612 + annuali ÷ 12 148) − <b>budget</b> impostato 920 € = <b>risparmio possibile</b> 960 € al mese. Solo tema scuro, schermo 393 px; le pagine sono più lunghe dello schermo (si scorre).</p>
+<div class="wall" id="wall"></div>
+
+<script>
+const ICON={spesa:'<path d="M3 4h2.5l2 11h10.5l2-8H6.3"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',svago:'<path d="M12 3l2.8 5.9 6.2.8-4.6 4.3 1.2 6.3L12 17.3 6.4 20.3l1.2-6.3L3 9.7l6.2-.8z"/>',carburante:'<path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h5"/>',altro:'<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>'};
+const icon=k=>`<svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
+const money=v=>new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v).replace(/\s/g,' ');
+// dati inventati: 18 ottobre, 13 giorni rimanenti
+const T={budget:920,spent:548,left:372,pace:534,avg3:888,daysLeft:13};
+const CATS=[['spesa','Spesa',450,276,261,438],['svago','Svago',150,126,87,142],['carburante','Auto',220,108,128,205],['altro','Altro',100,38,58,91]]
+  .map(([k,label,budget,spent,pace,avg3])=>({k,label,budget,spent,pace,avg3,left:budget-spent}));
+const BRICK=75,maxB=Math.max(...CATS.map(c=>c.budget));
+const stat=(l,v,dim)=>`<div${dim?' class="dim"':''}><span class="label">${l}</span><span class="n">${v}</span></div>`;
+const hero=(extra='')=>`<div class="bhero"><div class="bheroh"><div><span class="label">Residuo del mese</span><div class="big">${money(T.left)}</div></div><div class="bdays"><span class="label">Giorni rimanenti</span><div class="big">${T.daysLeft}</div></div></div>
+  <div class="bstats"><div class="bcol">${stat('Budget',money(T.budget))}${stat('Media 3 mesi',money(T.avg3),true)}</div><div class="bcol">${stat('Spesa reale',money(T.spent))}${stat('Spesa stimata',money(T.pace),true)}</div>${extra}</div></div>`;
+const cats=()=>CATS.map(c=>{
+  const leftE=Math.max(0,c.budget-c.spent),ratio=c.spent/c.budget,pace=((c.budget-c.pace)/maxB)*100;let b='';
+  for(let at=0;at<c.budget;at+=BRICK){const s=Math.min(BRICK,c.budget-at);b+=`<b style="width:calc(${s/maxB*100}% - 2px)"><i style="width:${Math.max(0,Math.min(1,(leftE-at)/s))*100}%"></i></b>`;}
+  return `<div class="bcat"><div class="bh"><span class="bname">${icon(c.k)}${c.label}</span><span class="n ${c.left<0?'neg':''}">${money(c.left)}</span></div>
+  <div class="bbar${ratio>1?' over':leftE/c.budget<.25?' low':''}">${b}<em style="left:${pace}%"></em></div>
+  <div class="bsub"><span>Spesi <b>${money(c.spent)}</b> di <b>${money(c.budget)}</b></span><span>Media <b>${money(c.avg3)}</b></span></div></div>`;}).join('');
+const editBtn=`<div class="foot"><button class="primary" type="button">Modifica budget</button></div>`;
+const frame=(inner,extra='')=>`<div class="phone"><div class="status"><span>9:41</span><span>5G ▮▮▮</span></div>
+  <div class="mtop"><b><svg width="22" height="22" viewBox="0 0 24 24" fill="var(--red)"><rect x="3" y="3" width="18" height="18"/></svg>MyBank</b><div style="display:flex;align-items:center"><span>0.38.0</span><em>Opzioni</em></div></div>
+  <main class="mockbud">${inner}</main>${extra}
+  <div class="mnav"><span>Storico</span><span>Movim.</span><span>Ricorr.</span><span class="on">Budget</span><span>Banche</span></div></div>`;
+const fig=(t,d,body)=>`<figure><figcaption>${t}<small>${d}</small></figcaption>${body}</figure>`;
+// quote dell'esempio
+const E=2640,F=760,B=920,S=E-F-B,pc=v=>(v/E*100).toFixed(1)+'%';
+const dets=`<div class="rnt">mensili ${money(612)} · annuali ÷ 12 ${money(148)}</div>`;
+const W=[];
+
+// A: una sola barra, dopo le categorie
+W.push(fig('A · Una barra sola','Sotto le categorie: le entrate medie sono una barra divisa in ricorrenti, budget e risparmio; sotto, gli importi e il verdetto.',
+ frame(hero()+cats()+`<div class="rs"><h2>Rientra nelle entrate? <small>media 3 mesi</small></h2>
+  <div class="stk"><i style="--c:var(--mute);width:${pc(F)}"></i><i style="--c:var(--ink);width:${pc(B)}"></i><i class="sav" style="width:${pc(S)}"></i></div>
+  <div class="scale"><span>0 €</span><span>entrate medie ${money(E)}</span></div>
+  <div class="row"><span class="nm"><i class="sw" style="--c:var(--mute)"></i>Ricorrenti</span><span class="n">${money(F)}</span></div>${dets}
+  <div class="row"><span class="nm"><i class="sw" style="--c:var(--ink)"></i>Budget impostato</span><span class="n">${money(B)}</span></div>
+  <div class="row"><span class="nm"><i class="sw" style="--c:var(--green)"></i>Risparmio possibile</span><span class="n pos">${money(S)}</span></div>
+  <div class="verdict"><span>Il budget rientra: resta il ${Math.round(S/E*100)}% delle entrate</span><span class="n">+${money(S)}</span></div></div>`+editBtn)));
+
+// B: cascata, subito dopo il riquadro del mese
+W.push(fig('B · Cascata','Dopo il riquadro del mese: un conto che si legge dall\'alto (entrate − ricorrenti − budget = risparmio), ogni voce con la sua barra sulla stessa scala.',
+ frame(hero()+`<div class="rs"><h2>Il mese in conto <small>media 3 mesi</small></h2><div class="cas">
+  <div class="st"><div class="row" style="border:0;padding:0"><span class="nm">Entrate medie</span><span class="n big pos">${money(E)}</span></div><div class="bar"><i style="--c:var(--green);left:0;width:100%"></i></div></div>
+  <div class="st"><div class="row" style="border:0;padding:0"><span class="nm">− Ricorrenti</span><span class="n big">${money(F)}</span></div><div class="bar"><i style="--c:var(--mute);left:0;width:${pc(F)}"></i></div><div class="rnt" style="padding:6px 0 0">11 attivi · mensili ${money(612)} · annuali ÷ 12 ${money(148)}</div></div>
+  <div class="st"><div class="row" style="border:0;padding:0"><span class="nm">− Budget</span><span class="n big">${money(B)}</span></div><div class="bar"><i style="--c:var(--mute);left:0;width:${pc(F)};opacity:.35"></i><i style="--c:var(--ink);left:${pc(F)};width:${pc(B)}"></i></div><div class="rnt" style="padding:6px 0 0">Spesa 450 · Svago 150 · Auto 220 · Altro 100</div></div>
+  <div class="st res"><div class="row" style="border:0;padding:0"><span class="nm">= Risparmio</span><span class="n big pos">${money(S)}</span></div><div class="bar"><i style="--c:var(--mute);left:0;width:${pc(F)};opacity:.35"></i><i style="--c:var(--ink);left:${pc(F)};width:${pc(B)};opacity:.35"></i><i style="--c:var(--green);left:${pc(F+B)};width:${pc(S)}"></i></div><div class="rnt" style="padding:6px 0 0;color:var(--ink)">il ${Math.round(S/E*100)}% delle entrate · ${money(S*12)} in un anno</div></div>
+  </div></div>`+cats()+editBtn)));
+
+// C: mattoncini da 75 euro, come le barre delle categorie
+const nb=v=>Math.round(v/75),bF=nb(F),bB=nb(B),bS=nb(E)-bF-bB;
+W.push(fig('C · Mattoncini da 75 €','Come le barre delle categorie: le entrate medie sono mattoncini da 75 € colorati per ricorrenti, budget e risparmio; sotto, i ricorrenti più pesanti.',
+ frame(hero()+cats()+`<div class="rs"><h2>Entrate medie <small>media 3 mesi</small></h2><div class="n big" style="font-size:var(--fs-num)">${money(E)}</div>
+  <div class="bk">${`<b style="--c:var(--mute)"></b>`.repeat(bF)}${`<b style="--c:var(--ink)"></b>`.repeat(bB)}${`<b class="sav"></b>`.repeat(bS)}</div>
+  <div class="leg3"><div><span class="label"><i class="sw" style="--c:var(--mute)"></i> Ricorr.</span><span class="n">${money(F)}</span></div><div><span class="label"><i class="sw" style="--c:var(--ink)"></i> Budget</span><span class="n">${money(B)}</span></div><div><span class="label"><i class="sw" style="--c:var(--green)"></i> Risparmio</span><span class="n pos">${money(S)}</span></div></div>
+  <div class="rnt" style="padding-top:10px">Un mattoncino = ${money(75)}. Mensili ${money(612)} · annuali ÷ 12 ${money(148)}.</div></div>
+  <div class="rs" style="margin-top:12px"><h2>Ricorrenti più pesanti <small>da Ricorrenti</small></h2>
+  <div class="row"><span class="nm">Affitto</span><span class="n">${money(480)}</span></div><div class="row"><span class="nm">Assicurazione auto <small style="font:400 var(--fs-label) var(--f-mono);color:var(--mute)">anno</small></span><span class="n">${money(96)}</span></div><div class="row"><span class="nm">Altri 9</span><span class="n">${money(184)}</span></div></div>`+editBtn)));
+
+// D: mentre si modifica il budget, striscia fissa in basso
+const NB=[600,300,400,500],NS=NB.reduce((a,b)=>a+b),NR=E-F-NS;
+W.push(fig('D · Mentre imposti il budget','In «Modifica budget» (i campi veri dell\'app) una striscia fissa sopra la barra delle schede mostra, mentre scrivi, quanto resta di risparmio; rossa se il budget non rientra. Qui 1.800 €: rientra di poco.',
+ frame(hero()+cats()+`<div id="budgetEdit"><div class="fields" id="budgetFields">${CATS.map((c,i)=>`<label><span>${icon(c.k)}${c.label}</span><input value="${NB[i]}" readonly></label>`).join('')}</div>
+  <div class="foot"><button class="primary" type="button">Salva budget</button><button class="ghost" type="button" style="margin-top:8px;width:100%">Annulla</button></div></div><div style="height:96px"></div>`,
+  `<div class="live"><div class="l1"><span class="label">Dopo i ricorrenti restano ${money(E-F)}</span><span class="label pos">rientra</span></div>
+   <div class="stk"><i style="--c:var(--mute);width:${pc(F)}"></i><i style="--c:var(--ink);width:${pc(NS)}"></i><i class="sav" style="width:${pc(NR)}"></i></div>
+   <div class="l1"><span class="nm" style="font:700 var(--fs-sm) var(--f-mono);text-transform:uppercase">Budget ${money(NS)}</span><span class="n pos">risparmio ${money(NR)}</span></div>
+   <div class="rnt" style="font-size:var(--fs-sm);color:var(--mute)">Con ${money(B)} risparmiavi ${money(S)}: così ne perdi ${money(S-NR)} al mese.</div></div>`)));
+
+// E: minimo, dentro il riquadro del mese
+W.push(fig('E · Dentro il riquadro del mese','La soluzione più piccola: nel riquadro in cima altre due cifre (entrate medie, ricorrenti) e una riga «risparmio possibile» con una barretta; niente blocco nuovo.',
+ frame(hero(`<div class="sep"><div class="bcol" style="grid-template-columns:1fr 1fr;display:grid;gap:16px"><div><span class="label">Entrate medie 3 mesi</span><span class="n pos" style="display:block">${money(E)}</span></div><div><span class="label">Ricorrenti al mese</span><span class="n" style="display:block">${money(F)}</span></div></div>
+   <div class="stk" style="height:12px;margin:12px 0 6px"><i style="--c:var(--mute);width:${pc(F)}"></i><i style="--c:var(--ink);width:${pc(B)}"></i><i class="sav" style="width:${pc(S)}"></i></div>
+   <div class="bsub"><span>Risparmio possibile <b class="pos">${money(S)}</b></span><span>${Math.round(S/E*100)}% delle entrate</span></div></div>`)+cats()+editBtn)));
+
+document.getElementById('wall').innerHTML=W.join('');
+</script>
+</body></html>

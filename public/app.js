@@ -761,10 +761,21 @@ async function loadBudget() {
   const t = d.month.totals;
   // in cima il mese (residuo, budget, speso, giorni rimanenti); poi per ogni categoria titolo con icona, residuo, barra con tacche al 25/50/75%
   // (il livello è il residuo del budget) e il segno del ritmo (dove saresti oggi spendendo in modo uniforme), speso su budget e media 3 mesi
-  // in alto residuo e giorni rimanenti (stessa dimensione); sotto due colonne: budget e media 3 mesi, spesa reale e spesa stimata (grigi media e stima)
+  // in alto residuo e giorni rimanenti (stessa dimensione); sotto tre colonne: budget e media spese (con i ricorrenti), spesa reale e spesa stimata, media entrate (verde); sotto la barra delle entrate medie divise in ricorrenti, budget e risparmio
   const stat = (label, v, dim) => `<div${dim ? ' class="dim"' : ''}><span class="label">${label}</span><span class="n">${v}</span></div>`;
+  // terza colonna e barra delle entrate medie: solo se il server le dà (un server non ancora aggiornato non ha `income3`)
+  const hasInc = t && t.income3 != null && t.recurring != null;
+  const incomeBar = () => {
+    const rec = t.recurring, bud = t.budget, sav = t.saving, tot = Math.max(t.income3, rec + bud, 1);
+    const w = (v) => `${(Math.max(0, v) / tot) * 100}%`;
+    const pct = (v) => (Math.max(0, v) / tot) * 100;
+    return `<div class="mbar" title="Entrate medie dei 3 mesi, divise tra ricorrenti, budget e risparmio possibile">
+      <div class="lab3">${rec > 0 ? `<span style="width:${w(rec)}">${money(rec)}</span>` : ''}<span style="width:${w(bud)}">${money(bud)}</span>${sav >= 0 ? `<span class="pos" style="width:${w(sav)}">${money(sav)}</span>` : `<span class="neg" style="flex:1;text-align:right">${money(sav)}</span>`}</div>
+      <div class="stk">${rec > 0 ? `<i style="background:var(--mute);width:${w(rec)}"></i>` : ''}<i style="background:var(--ink);width:${w(bud)}"></i>${sav >= 0 ? `<i style="background:var(--green);width:${w(sav)}"></i>` : ''}</div>
+      <div class="lab3 nm3">${rec > 0 ? `<span style="width:${w(rec)}">Ricorr.</span>` : ''}<span style="width:${w(bud)}">Budget</span>${sav >= 0 ? `<span style="width:${w(sav)}">Risparmio</span>` : `<span class="neg" style="flex:1;text-align:right">Sfora</span>`}</div></div>`;
+  };
   const hero = t ? `<div class="bhero"><div class="bheroh"><div><span class="label">Residuo del mese</span><div class="big ${t.left < 0 ? 'neg' : ''}">${money(t.left)}</div></div><div class="bdays"><span class="label">Giorni rimanenti</span><div class="big">${t.daysLeft}</div></div></div>
-      <div class="bstats"><div class="bcol">${stat('Budget', money(t.budget))}${t.avg3 == null ? '' : stat('Media 3 mesi', money(t.avg3), true)}</div><div class="bcol">${stat('Spesa reale', money(t.spent))}${t.pace == null ? '' : stat('Spesa stimata', money(t.pace), true)}</div></div></div>` : '';
+      <div class="bstats${hasInc ? ' c3' : ''}"><div class="bcol">${stat('Budget', money(t.budget))}${t.avg3 == null ? '' : stat('Media spese', money(t.avg3), true)}</div><div class="bcol">${stat('Spesa reale', money(t.spent))}${t.pace == null ? '' : stat('Spesa stimata', money(t.pace), true)}</div>${hasInc ? `<div class="bcol"><div><span class="label">Media entrate</span><span class="n pos">${money(t.income3)}</span></div></div>${incomeBar()}` : ''}</div></div>` : '';
   const maxBudget = Math.max(1, ...Object.values(d.month.cats).map((c) => c.budget)); // scala comune: un mattoncino è largo uguale in tutte le barre
   $('#budgetCards').innerHTML = hero +Object.entries(d.month.cats).map(([k, c]) => {
     const ratio = c.budget > 0 ? c.spent / c.budget : 0;

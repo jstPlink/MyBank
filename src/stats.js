@@ -3,6 +3,7 @@ import { accountNames, classify, parentTag, BUDGET_TAGS, TAGS } from './tags.js'
 import { cutoffOf } from './banks.js';
 import { visibleTransactions } from './import.js';
 import { localParts } from './schedule.js';
+import { recurringGroups, recurringTotals } from './recurring.js';
 
 const round = (n) => Math.round(n * 100) / 100;
 
@@ -68,6 +69,9 @@ export function listTransactions(db, { year, month, tag, q, account, ids, sort =
  * del mese) e reale (speso diviso i giorni passati, oggi compreso), più la spesa media mensile degli ultimi 3 mesi completi (`avg3`: conta solo
  * i mesi da quando ci sono dati; `null` se non ce n'è ancora nessuno), il `pace` (quanto avresti speso oggi spendendo in modo uniforme:
  * budget × giorni passati / giorni del mese) e i `totals` del mese (budget, speso, residuo, pace, media dei 3 mesi e giorni rimanenti).
+ * Nei `totals` anche: `recurring` (i ricorrenti attivi al mese: mensili + annuali ÷ 12), `avg3` (la media dei 3 mesi **comprende** i ricorrenti; senza
+ * è `avg3Cats`), `income3` (entrate medie dei 3 mesi completi precedenti, senza giroconti; `null` senza mesi) e `saving` (entrate medie − ricorrenti −
+ * budget impostato: quanto si potrebbe risparmiare al mese; negativo se il budget non rientra).
  */
 export function monthBudget(db, now = new Date()) {
   const p = localParts(now);
@@ -83,8 +87,10 @@ export function monthBudget(db, now = new Date()) {
   const first = cutoffOf(db).slice(0, 7);
   const past = [1, 2, 3].map((i) => { const d = new Date(Date.UTC(p.year, p.month - 1 - i, 1)); return d.toISOString().slice(0, 7); }).filter((m) => m >= first);
   const pastSpent = Object.fromEntries(BUDGET_TAGS.map((k) => [k, 0]));
+  let pastIncome = 0;
   for (const t of visibleTransactions(db)) {
-    if (t.amount >= 0 || !past.includes(t.date.slice(0, 7))) continue;
+    if (!past.includes(t.date.slice(0, 7))) continue;
+    if (t.amount > 0) { if (tags.get(t.id) !== 'giroconto') pastIncome += t.amount; continue; }
     const tag = parentTag(tags.get(t.id));
     if (tag in pastSpent) pastSpent[tag] += -t.amount;
   }
@@ -99,7 +105,15 @@ export function monthBudget(db, now = new Date()) {
   }
   const all = Object.values(cats);
   const sum = (f) => round(all.reduce((a, c) => a + (f(c) ?? 0), 0));
-  const totals = { budget: sum((c) => c.budget), spent: sum((c) => c.spent), left: sum((c) => c.left), pace: sum((c) => c.pace), avg3: all.some((c) => c.avg3 != null) ? sum((c) => c.avg3) : null, daysLeft: p.daysInMonth - p.day };
+  const recurring = recurringTotals(recurringGroups(db, now)).monthly; // i ricorrenti sono fuori dalle categorie: si sommano alla media
+  const avg3Cats = all.some((c) => c.avg3 != null) ? sum((c) => c.avg3) : null;
+  const income3 = past.length ? round(pastIncome / past.length) : null;
+  const budgetTot = sum((c) => c.budget);
+  const totals = {
+    budget: budgetTot, spent: sum((c) => c.spent), left: sum((c) => c.left), pace: sum((c) => c.pace),
+    avg3: avg3Cats == null ? null : round(avg3Cats + recurring), avg3Cats, recurring, income3,
+    saving: income3 == null ? null : round(income3 - recurring - budgetTot), daysLeft: p.daysInMonth - p.day,
+  };
   return { year: p.year, month: p.month, day: p.day, daysInMonth: p.daysInMonth, cats, totals };
 }
 

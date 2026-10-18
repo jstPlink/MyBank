@@ -914,3 +914,28 @@ test("il tag carburante si chiama «Auto» (la chiave interna resta carburante)"
   const budget = (await api("GET", "/api/budgets")).json.month.cats;
   assert.equal(budget.carburante.label, "Auto");
 });
+
+test('budget: la media dei 3 mesi comprende i ricorrenti, entrate medie e risparmio possibile', async (t) => {
+  const { api, db } = await setup(t);
+  await api('POST', '/api/login', { password: 'segreta' });
+  const { addMonths } = await import('../src/recurring.js');
+  const first = new Date().toISOString().slice(0, 8) + '01';
+  const at = (i) => addMonths(first, -i).slice(0, 8) + '10'; // il 10 di i mesi fa
+  let n = 0;
+  const put = (date, amount, party) => { const id = `b${++n}`; db.transactions[id] = { id, bank: 'revolut', account: 'a1', date, amount, description: party, party, currency: 'EUR' }; return id; };
+  const empty = (await api('GET', '/api/budgets')).json.month.totals;
+  assert.equal(empty.income3, 0); // senza movimenti la media è 0 (i mesi ci sono, le entrate no)
+  assert.equal(empty.recurring, 0);
+  for (const i of [1, 2, 3]) { put(at(i), 1000 * i, 'Stipendio'); put(at(i), -60 * i, 'Spesa x'); }
+  const pay = [1, 2, 3].map((i) => put(at(i), -30, 'Palestra'));
+  for (const id of pay) assert.equal((await api('PUT', `/api/transactions/${id}/tag`, { tag: 'ricorrente' })).status, 200);
+  const made = await api('POST', '/api/recurring', { name: 'Palestra', day: 10, assign: pay });
+  assert.equal(made.status, 200);
+  await api('PUT', '/api/budgets', { spesa: 300, svago: 100, carburante: 80, altro: 20 });
+  const t1 = (await api('GET', '/api/budgets')).json.month.totals;
+  assert.equal(t1.income3, 2000); // (1000 + 2000 + 3000) / 3
+  assert.equal(t1.recurring, 30);
+  assert.equal(t1.budget, 500);
+  assert.equal(t1.saving, 2000 - 30 - 500);
+  assert.ok(t1.avg3 >= t1.recurring && Math.abs(t1.avg3 - (t1.avg3Cats + t1.recurring)) < 0.01); // la media comprende i ricorrenti
+});

@@ -150,3 +150,17 @@ test('widget 4×2: registrato nel manifest, solo Spesa, Svago e Auto, striscia d
   // il primo widget aggiorna anche questa versione
   assert.match(fs.readFileSync('android/src/app/mybank/mobile/MyBankWidget.java', 'utf8'), /MyBankWidget4x2\.refreshAll/);
 });
+
+test("app Android: rotazione bloccata in verticale, tocco aptico leggero con il permesso VIBRATE", () => {
+  const manifest = fs.readFileSync('android/AndroidManifest.xml', 'utf8');
+  assert.match(manifest, /android:screenOrientation="portrait"/);
+  assert.match(manifest, /android\.permission\.VIBRATE/);
+  assert.match(fs.readFileSync('android/src/app/mybank/mobile/MainActivity.java', 'utf8'), /createOneShot\(HAPTIC_MS, HAPTIC_AMPLITUDE\)/);
+});
+
+test('stile: il CSS usa solo la scala del testo 11/13/15/22/34 (niente misure in px fuori scala)', () => {
+  const css = fs.readFileSync('public/style.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const sizes = [...css.matchAll(/font(?:-size)?:\s*(?:[\d.]+\s+)?(\d+(?:\.\d+)?)px/g)].map((m) => m[1]);
+  const off = sizes.filter((n) => !['11', '13', '15', '16', '22', '28', '34'].includes(n));
+  assert.deepEqual(off, []);
+});

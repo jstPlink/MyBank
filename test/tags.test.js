@@ -114,5 +114,5 @@ test('budget: ritmo (spesa uniforme fino a oggi) e totali del mese', () => {
   assert.equal(m.cats.spesa.pace, 140);
   assert.equal(m.cats.svago.pace, 28);
   assert.equal(m.cats.auto?.pace ?? m.cats.carburante.pace, null); // senza budget il ritmo non c'è
-  assert.deepEqual(m.totals, { budget: 372, spent: 10, left: 362, pace: 168, avg3: 0, daysLeft: 17 });
+  assert.deepEqual(m.totals, { budget: 372, spent: 10, left: 362, pace: 168, avg3: 0, avg3Cats: 0, recurring: 0, income3: 0, saving: -372, daysLeft: 17 });
 });

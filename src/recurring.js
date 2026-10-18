@@ -46,7 +46,7 @@ function analyze(db, now = new Date()) {
   const info = new Map(); // id → dati del movimento (uscite, giroconti esclusi)
   for (const t of visibleTransactions(db)) {
     if (t.amount >= 0 || tags.get(t.id) === 'giroconto') continue;
-    const title = db.renames[t.id] || t.party || t.description;
+    const title = (db.renames ?? {})[t.id] || t.party || t.description;
     const slug = recurringKey(t.party || t.description);
     const p = { id: t.id, date: t.date, amount: round(-t.amount), tag: tags.get(t.id), title, slug, explicit: Boolean(links[t.id]), account: names.get(t.account)?.name ?? t.accountLabel ?? '' };
     info.set(t.id, p);
@@ -56,7 +56,7 @@ function analyze(db, now = new Date()) {
     if (!g.name && p.slug === key) g.name = title;
     g.list.push(p);
   }
-  const reminderOf = (key) => { const n = db.notifications.find((x) => x.recurringKey === key); return n ? { id: n.id, text: n.text, day: n.day, ...(n.month ? { month: n.month } : {}), time: n.time } : null; };
+  const reminderOf = (key) => { const n = (db.notifications ?? []).find((x) => x.recurringKey === key); return n ? { id: n.id, text: n.text, day: n.day, ...(n.month ? { month: n.month } : {}), time: n.time } : null; };
   const groups = [];
   const make = (g, base) => {
     g.list.sort((a, b) => a.date.localeCompare(b.date) || a.id.localeCompare(b.id));

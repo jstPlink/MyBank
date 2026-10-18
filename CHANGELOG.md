@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.38.0
+- **Budget**: la voce «Media 3 mesi» diventa **«Media spese»** e ora **comprende i ricorrenti** attivi (mensili + annuali ÷ 12); nelle statistiche in alto c'è una **terza colonna «Media entrate»** (entrate medie dei 3 mesi precedenti, in verde) e sotto una **barra** con le entrate divise in ricorrenti, budget e risparmio possibile (se il budget non rientra compare «Sfora» in rosso). Server: `GET /api/budgets` aggiunge `totals.recurring`, `income3`, `saving`, `avg3Cats` e `avg3` con i ricorrenti (con un server non aggiornato terza colonna e barra non compaiono).
+- **App Android**: tocco aptico più leggero (vibrazione breve e debole, permesso `VIBRATE`) e schermo bloccato in verticale.
+- **Stile omologato**: una sola scala del testo (11/13/15/22/34, nessuna misura fuori scala) e tutti gli importi in serif a cifre tabulari (anche Movimenti e Storico); un test controlla la scala.
+- Mockup in `design/`: Budget con ricorrenti, entrate e risparmio (scelta la barra C3).
+
 ## 0.37.0
 - **Widget Android 4×2** («MyBank 4×2», terza voce nella lista dei widget): nello stile del widget a livello, con una striscia bassa del mese in alto (giorni rimanenti e i giorni del mese su una sola riga, weekend in rosso) e sotto Spesa, Svago e Auto (senza Altro) con il livello del residuo, stima e reale. Stessi dati e stessi tocchi degli altri widget.
 - Mockup in `design/`: widget 4×2 (varianti A-E; scelta la C).

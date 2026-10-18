@@ -125,6 +125,18 @@ public class MainActivity extends Activity {
 
     // ------------------------------------------------------------------ pagine del server
 
+    /** Il tocco aptico: una vibrazione breve e debole (HAPTIC_MS, HAPTIC_AMPLITUDE su 255); sui telefoni senza controllo dell'intensità si ripiega sul tasto della tastiera. */
+    private static final int HAPTIC_MS = 8, HAPTIC_AMPLITUDE = 96;
+
+    private void haptic() {
+        try {
+            android.os.Vibrator v = (android.os.Vibrator) getSystemService(VIBRATOR_SERVICE);
+            if (v != null && v.hasAmplitudeControl()) { v.vibrate(android.os.VibrationEffect.createOneShot(HAPTIC_MS, HAPTIC_AMPLITUDE)); return; }
+        } catch (Exception e) { /* si ripiega sul tocco di sistema */ }
+        if (web != null) web.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
+    }
+
+
     /** Ponte JavaScript: la pagina consegna il gettone per il widget e può chiedere di aggiornarlo o di cambiare server. */
     private final class Bridge {
         @JavascriptInterface public void saveToken(String token) { Server.saveToken(MainActivity.this, token); MyBankWidget.refreshAll(MainActivity.this); }
@@ -135,9 +147,9 @@ public class MainActivity extends Activity {
             if (url == null || !url.matches("(?i)^https?://.*")) return;
             try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); } catch (Exception e) { /* nessun browser */ }
         }
-        /** Un leggero tocco aptico (come un tasto della tastiera) quando si preme un pulsante; non serve nessun permesso. */
+        /** Un tocco aptico leggero (più breve e debole di un tasto della tastiera) quando si preme un pulsante. */
         @JavascriptInterface public void tick() {
-            runOnUiThread(new Runnable() { @Override public void run() { if (web != null) web.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP); } });
+            runOnUiThread(new Runnable() { @Override public void run() { haptic(); } });
         }
         @JavascriptInterface public void refreshWidget() { MyBankWidget.refreshAll(MainActivity.this); }
         /** Rilegge le notifiche dal server e le riprogramma; la prima volta chiede il permesso di mostrarle (Android 13 e successivi). */
