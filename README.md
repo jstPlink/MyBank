@@ -27,7 +27,7 @@ test/      schedule, tags, flow (giro completo con la banca finta), proxy, andro
 
 **Da quando.** Per ora MyBank memorizza e mostra solo i movimenti **dal 1 agosto 2026** (se la data viene anticipata, la prima lettura successiva rilegge tutto dalla nuova data): quelli di prima non si leggono né si salvano (all'avvio il server toglie dai dati quelli già presenti).
 
-**Tag dei movimenti.** Revolut è la banca principale ed è divisa in pocket. Ogni movimento in uscita prende il tag del **pocket da cui parte**:
+**Tag dei movimenti.** Revolut è la banca principale ed è divisa in pocket. Ogni movimento in uscita *potrebbe* prendere il tag del **pocket da cui parte**, ma **i movimenti nuovi** (letti dalla banca o importati) **restano tutti «Non definito» finché non li smisti tu** (`db.unsorted`; le entrate e i non contabili restano automatici): scegliere un tag dal menu del movimento li smista, e anche «automatico» li smista dando il tag del pocket. I movimenti già presenti non cambiano. Il tag del pocket è:
 
 | Pocket Revolut | Tag |
 |---|---|
@@ -179,7 +179,7 @@ Tutte dietro password (cookie o `Authorization: Bearer`), tranne login, versione
 
 ## Logo
 
-Una cassaforte (corpo e piedini rossi, manopola con indice chiaro) su fondo inchiostro: `design/logo-scelto.svg`, usato come icona del sito `public/icon.svg`, a sinistra del nome nell'app web e come icona adattiva di Android `android/res/drawable/ic_foreground.xml`. Il logo precedente (tre barre che si accorciano) e tutte le altre proposte sono in `design/`.
+Tre barre che crescono con un filetto di base, tutte inchiostro su fondo vermiglio: `design/logo-scelto.svg` (variante 8b di `design/proposte-icona-7d.html`), usato come icona del sito `public/icon.svg`, a sinistra del nome nell'app web e come icona adattiva di Android (`android/res/drawable/ic_foreground.xml` sul fondo `ic_background`). Il logo precedente (la cassaforte) e tutte le altre proposte sono in `design/`.
 
 ## Estetica
 

@@ -80,7 +80,12 @@ test('collegamento di UniCredit e Revolut, tag dei pocket, storico, budget e wid
   assert.deepEqual(banks.auto.hours, [5, 11, 14, 19]);
   assert.ok(banks.lastSync);
 
-  // i tag arrivano dal pocket di provenienza
+  // i movimenti nuovi restano tutti «Non definito» finché non li smisti tu (le uscite dei pocket non prendono il tag da sole)
+  const fresh = (await api('GET', '/api/transactions')).json.transactions;
+  assert.ok(fresh.filter((x) => x.amount < 0 && x.tag !== 'giroconto').every((x) => x.tag === 'non_definito'));
+  assert.ok(fresh.some((x) => x.tag === 'entrata') && fresh.some((x) => x.tag === 'giroconto')); // entrate e giroconti restano automatici
+  // da smistati (o con i dati di prima) i tag arrivano dal pocket di provenienza
+  ctx.db.unsorted = {};
   const all = (await api('GET', '/api/transactions')).json;
   const byTag = (tag) => all.transactions.filter((x) => x.tag === tag);
   assert.ok(byTag('spesa').length > 0 && byTag('spesa').every((x) => x.amount < 0));
@@ -315,6 +320,7 @@ test("movimenti di un solo conto o pocket (tocco su una riga di Banche)", async 
   await api("POST", "/api/login", { password: "segreta" });
   await api("PUT", "/api/banks/app", { appId: "app-di-prova", privateKey });
   await link(ctx, "revolut");
+  ctx.db.unsorted = {}; // come se i movimenti nuovi fossero già smistati: qui conta il filtro per conto
   const all = (await api("GET", "/api/transactions")).json;
   assert.equal(all.account, null);
   const spesa = (await api("GET", "/api/transactions?account=revolut-2")).json;
@@ -938,4 +944,25 @@ test('budget: la media dei 3 mesi comprende i ricorrenti, entrate medie e rispar
   assert.equal(t1.budget, 500);
   assert.equal(t1.saving, 2000 - 30 - 500);
   assert.ok(t1.avg3 >= t1.recurring && Math.abs(t1.avg3 - (t1.avg3Cats + t1.recurring)) < 0.01); // la media comprende i ricorrenti
+});
+
+test('movimenti nuovi: restano «Non definito» finché non scegli tu il tag, e la scelta (anche «automatico») li smista', async (t) => {
+  const ctx = await setup(t);
+  const { api } = ctx;
+  await api('POST', '/api/login', { password: 'segreta' });
+  await api('PUT', '/api/banks/app', { appId: 'app-di-prova', privateKey });
+  await link(ctx, 'revolut');
+  const list = async () => (await api('GET', '/api/transactions')).json.transactions;
+  const spesa = (await list()).find((x) => x.account === 'revolut-2' && x.amount < 0);
+  assert.equal(spesa.tag, 'non_definito');
+  assert.ok(ctx.db.unsorted[spesa.id]);
+  // una seconda lettura non rimette «da smistare» quelli già smistati
+  assert.equal((await api('PUT', `/api/transactions/${spesa.id}/tag`, { tag: null })).status, 200); // «automatico»: torna il tag del pocket
+  assert.ok(!ctx.db.unsorted[spesa.id]);
+  assert.equal((await list()).find((x) => x.id === spesa.id).tag, 'spesa');
+  await api('POST', '/api/banks/sync', {});
+  assert.equal((await list()).find((x) => x.id === spesa.id).tag, 'spesa');
+  // i dati di prima (senza `unsorted`) non cambiano
+  delete ctx.db.unsorted;
+  assert.ok((await list()).some((x) => x.tag === 'svago'));
 });

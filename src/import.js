@@ -42,7 +42,7 @@ export function importTransactions(db, items) {
     if (label) t.accountLabel = label;
     if (party) t.party = party;
     if (remittance) t.remittance = remittance;
-    if (db.transactions[id]) result.updated++; else result.added++;
+    if (db.transactions[id]) result.updated++; else { result.added++; (db.unsorted ??= {})[id] = true; }
     db.transactions[id] = t;
   }
   return result;

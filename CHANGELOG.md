@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## Da rilasciare
+- **Nuova icona**: tre barre che crescono con un filetto di base, inchiostro su vermiglio (al posto della cassaforte): icona del sito, logo accanto al nome e icona adattiva di Android. Proposte in `design/proposte-icona*.html`.
+
+## 0.38.1
+- **Movimenti nuovi da smistare**: quelli letti dalla banca (pagamenti in sospeso compresi) o importati da estratto conto restano tutti «Non definito» finché non scegli tu il tag; anche «automatico» li smista dando il tag del pocket. Le entrate e i non contabili restano automatici; i movimenti già presenti non cambiano. Server: `db.unsorted`.
+
 ## 0.38.0
 - **Budget**: la voce «Media 3 mesi» diventa **«Media spese»** e ora **comprende i ricorrenti** attivi (mensili + annuali ÷ 12); nelle statistiche in alto c'è una **terza colonna «Media entrate»** (entrate medie dei 3 mesi precedenti, in verde) e sotto una **barra** con le entrate divise in ricorrenti, budget e risparmio possibile (se il budget non rientra compare «Sfora» in rosso). Server: `GET /api/budgets` aggiunge `totals.recurring`, `income3`, `saving`, `avg3Cats` e `avg3` con i ricorrenti (con un server non aggiornato terza colonna e barra non compaiono).
 - **App Android**: tocco aptico più leggero (vibrazione breve e debole, permesso `VIBRATE`) e schermo bloccato in verticale.

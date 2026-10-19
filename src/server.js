@@ -121,6 +121,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     if (tag == null || tag === '') delete db.overrides[t.id];
     else if (TAGS[tag]) db.overrides[t.id] = tag;
     else return bad(res, 'Tag non valido.');
+    if (db.unsorted) delete db.unsorted[t.id]; // l'hai smistato tu (anche «automatico»)
     await store.save();
     res.json({ ok: true });
   }));

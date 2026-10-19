@@ -20,6 +20,7 @@ export function applyCutoff(db) {
   let removed = 0;
   for (const [id, t] of Object.entries(db.transactions)) if (t.date < from && !t.imported) { delete db.transactions[id]; removed++; } // gli importati da estratto conto restano
   for (const id of Object.keys(db.overrides)) if (!db.transactions[id]) delete db.overrides[id];
+  for (const id of Object.keys(db.unsorted ?? {})) if (!db.transactions[id]) delete db.unsorted[id];
   for (const id of Object.keys(db.renames ?? {})) if (!db.transactions[id]) delete db.renames[id];
   return removed;
 }
@@ -170,15 +171,17 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
       const t = mapTransaction(tx, conn, account, { seen });
       if (!t || t.date < from) continue;
       report.found++;
-      if (!db.transactions[t.id]) report.added++;
+      if (!db.transactions[t.id]) { report.added++; (db.unsorted ??= {})[t.id] = true; } // nuovo: lo smisti tu
       db.transactions[t.id] = t;
     }
     if (pendingList) {
-      for (const [id, t] of Object.entries(db.transactions)) if (t.pending && t.account === account.uid) delete db.transactions[id];
+      const hadPending = new Set(); // i sospesi si rileggono a ogni giro: solo quelli mai visti prima sono da smistare
+      for (const [id, t] of Object.entries(db.transactions)) if (t.pending && t.account === account.uid) { hadPending.add(id); delete db.transactions[id]; }
       const pseen = new Map();
       for (const tx of pendingList) {
         const t = mapTransaction(tx, conn, account, { seen: pseen, pending: true, today: isoDay(now) });
         if (!t || t.date < from) continue;
+        if (!db.transactions[t.id] && !hadPending.has(t.id)) (db.unsorted ??= {})[t.id] = true;
         db.transactions[t.id] = t;
         report.pending++;
       }

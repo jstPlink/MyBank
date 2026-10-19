@@ -82,9 +82,11 @@ export function accountNames(db) {
 /**
  * Il tag di tutti i movimenti: Map id → tag.
  * Non contabile (giroconto) se: il testo è un giro tra pocket; l'IBAN della controparte è un mio conto; oppure lo stesso importo esce da un conto ed entra
- * in un altro della stessa banca entro un giorno. Poi: entrata, tag del pocket di provenienza o «Non definito».
+ * in un altro della stessa banca entro un giorno. Poi: entrata, tag del pocket di provenienza o «Non definito» (un movimento nuovo, registrato in
+ * `db.unsorted`, resta «Non definito» finché non scegli un tag: la scelta, anche «automatico», lo toglie da lì).
  */
 export function classify(db) {
+  const unsorted = db.unsorted ?? {}; // movimenti nuovi: restano «Non definito» finché non li smisti tu (il tag del pocket non si applica da solo)
   const names = accountNames(db);
   // mesi per cui c'è l'estratto della carta di credito (i suoi acquisti sono già movimenti): l'addebito mensile sul conto è solo il saldo
   const cardMonths = new Set(Object.values(db.transactions).filter((t) => t.account === CARD_ACCOUNT).map((t) => t.date.slice(0, 7)));
@@ -110,7 +112,7 @@ export function classify(db) {
     if (tags.has(t.id)) continue;
     if (t.amount > 0) { tags.set(t.id, 'entrata'); continue; }
     const pocket = names.get(t.account);
-    tags.set(t.id, (pocket && pocketTag(pocket.name)) || 'non_definito');
+    tags.set(t.id, (!unsorted[t.id] && pocket && pocketTag(pocket.name)) || 'non_definito');
   }
   return tags;
 }
