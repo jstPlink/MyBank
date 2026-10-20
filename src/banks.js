@@ -63,18 +63,42 @@ export async function startLink({ client, db, bank, redirectUrl, now = Date.now(
   return res.url;
 }
 
+/**
+ * Ogni nuovo consenso porta da Enable Banking identificativi di conto nuovi, ma i movimenti (e le scelte a mano) si riconoscono dall'`uid` del conto:
+ * se cambiasse, tutto verrebbe riletto come nuovo e da assegnare daccapo. Per questo `uid` resta quello della prima volta e `apiUid` è quello
+ * di adesso (l'unico che si manda alla banca). Un conto nuovo si riconosce come il vecchio dall'IBAN o, senza IBAN (i pocket), da nome, tipo e valuta,
+ * purché ce ne sia uno solo; se ce ne sono più d'uno uguali si abbinano in ordine solo quando il numero coincide.
+ */
+export function keepAccountIds(oldAccounts, fresh) {
+  const sig = (a) => (a.iban ? `iban|${a.iban}` : `n|${a.name}|${a.type}|${a.currency}`);
+  const groups = (list) => { const m = new Map(); for (const a of list) (m.get(sig(a)) ?? m.set(sig(a), []).get(sig(a))).push(a); return m; };
+  const olds = groups(oldAccounts);
+  const used = new Map();
+  return fresh.map((a) => {
+    const group = olds.get(sig(a));
+    const sameNew = fresh.filter((b) => sig(b) === sig(a));
+    const i = used.get(sig(a)) ?? 0;
+    used.set(sig(a), i + 1);
+    const old = group && group.length === sameNew.length ? group[i] : null;
+    return { ...a, uid: old ? old.uid : a.uid, apiUid: a.uid };
+  });
+}
+
 /** Al ritorno dalla banca: il codice si scambia con la sessione e si salvano i conti collegati. */
 export async function finishLink({ client, db, code, state, now = Date.now() }) {
   const pending = db.banking.pending[state];
   if (!pending || now - pending.createdAt > PENDING_MS) throw new Error('Richiesta di collegamento scaduta o sconosciuta: riparti dalla scheda Banche.');
   const session = await client.createSession(code);
   delete db.banking.pending[state];
+  const oldAccounts = db.banking.connections.filter((c) => c.bank === pending.bank).flatMap((c) => c.accounts);
   const conn = {
     id: session.session_id, bank: pending.bank, aspsp: session.aspsp ?? pending.aspsp,
-    accounts: (session.accounts ?? []).map((a) => ({ uid: a.uid, iban: a.account_id?.iban ?? '', name: a.name ?? '', currency: a.currency ?? 'EUR', type: a.cash_account_type ?? '' })),
+    accounts: keepAccountIds(oldAccounts, (session.accounts ?? []).map((a) => ({ uid: a.uid, iban: a.account_id?.iban ?? '', name: a.name ?? '', currency: a.currency ?? 'EUR', type: a.cash_account_type ?? '' }))),
     validUntil: session.access?.valid_until ?? pending.validUntil, createdAt: new Date(now).toISOString(), lastSync: null, calls: [],
   };
   if (!conn.accounts.length) throw new Error('La banca non ha reso disponibile nessun conto.');
+  const prev = db.banking.connections.find((c) => c.bank === pending.bank);
+  if (prev && conn.accounts.every((a) => prev.accounts.some((p) => p.uid === a.uid))) { conn.lastSync = prev.lastSync ?? null; conn.from = prev.from; } // stessi conti: si riparte dall'ultima lettura invece di rileggere tutto
   db.banking.connections = [...db.banking.connections.filter((c) => c.bank !== pending.bank), conn]; // un nuovo consenso sostituisce il vecchio
   return conn;
 }
@@ -159,13 +183,13 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
   const seen = new Map();
   for (const account of conn.accounts) {
     let booked;
-    try { booked = await fetchAccount(client, account.uid, isoDay(since)); }
+    try { booked = await fetchAccount(client, account.apiUid ?? account.uid, isoDay(since)); }
     catch (e) {
       if (conn.lastSync && !backfill) throw e;
-      booked = await fetchAccount(client, account.uid, isoDay(Math.max(fromMs, now - FALLBACK_SYNC_DAYS * DAY))); // la banca non concede uno storico così lungo
+      booked = await fetchAccount(client, account.apiUid ?? account.uid, isoDay(Math.max(fromMs, now - FALLBACK_SYNC_DAYS * DAY))); // la banca non concede uno storico così lungo
     }
     let pendingList = null;
-    try { pendingList = await fetchAccount(client, account.uid, isoDay(now - FALLBACK_SYNC_DAYS * DAY), 'PDNG'); } catch { /* sospesi non disponibili: si tengono quelli di prima */ }
+    try { pendingList = await fetchAccount(client, account.apiUid ?? account.uid, isoDay(now - FALLBACK_SYNC_DAYS * DAY), 'PDNG'); } catch { /* sospesi non disponibili: si tengono quelli di prima */ }
 
     for (const tx of booked) {
       const t = mapTransaction(tx, conn, account, { seen });

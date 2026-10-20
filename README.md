@@ -110,9 +110,11 @@ Una seconda versione del widget, **accanto a quella a livello**: nella lista dei
 
 ### Widget Android 4×2 («MyBank 4×2»)
 
-Una terza voce nella lista dei widget, nello stile di quello a livello ma più grande (griglia 4×2): in alto una **striscia bassa del mese** (**giorni rimanenti** e, su una sola riga, **i giorni del mese**: passati chiari, weekend in rosso; targhette di 7 dp); sotto **tre celle uguali**, **Spesa**, **Svago** e **Auto** (niente Altro), con il **livello del residuo** che riempie la cella dal basso (rosso solo sotto il 25%), nome e residuo su una targhetta scura e, in basso, «stima» e «reale». Stessi dati e stessi tocchi degli altri widget (il mese apre il Budget, una categoria i Movimenti filtrati). Mockup in `design/mockup-widget-4x2.html` (variante C).
+Una terza voce nella lista dei widget, nello stile di quello a livello ma più grande (griglia 4×2): in alto la **striscia del mese** (senza la scritta «Mese»: il **numero dei giorni rimanenti** grande, con «giorni rimanenti» su due righe accanto, e su una sola riga **i giorni del mese**: passati chiari, weekend in rosso; targhette di 7 dp, **una tacca ogni sette giorni con il numero sotto**: 1, 8, 15, 22, 29; la riga ha sempre 33 colonne, così tacche e numeri restano allineati anche nei mesi corti); sotto **tre celle uguali**, **Spesa**, **Svago** e **Auto** (niente Altro), con il **livello del residuo** che riempie la cella dal basso (rosso solo sotto il 25%), nome e residuo su una targhetta scura e, in basso, «stima» e «reale». Stessi dati e stessi tocchi degli altri widget (il mese apre il Budget, una categoria i Movimenti filtrati). Mockup in `design/mockup-widget-4x2.html` (variante C).
 
 **Limiti delle banche.** Le banche concedono 4 accessi al giorno senza l'utente presente (PSD2): sono esattamente i 4 automatici, per questo gli orari sono al massimo 4. Le letture a mano (fino a 10 al giorno per banca) dichiarano alla banca che c'è una persona presente (intestazioni «PSU») e contano a parte. Il consenso dura al massimo 180 giorni: alla scadenza si ricollega con un tocco.
+
+**Ricollegare una banca non rimette niente a zero.** Ogni nuovo consenso porta da Enable Banking identificativi di conto nuovi; MyBank riconosce i conti già noti (dall'IBAN o, per i pocket senza IBAN, da nome, tipo e valuta, solo se non ci sono due conti uguali) e tiene il loro `uid` della prima volta (`apiUid` è quello di adesso, l'unico che si manda alla banca). I movimenti già presenti restano gli stessi (nessun duplicato) e tag, nomi e ricorrenti scelti a mano restano al loro posto; la lettura riparte dall'ultima. Scollegare una banca invece toglie i suoi movimenti, come prima.
 
 ## Come si avvia
 
@@ -179,7 +181,7 @@ Tutte dietro password (cookie o `Authorization: Bearer`), tranne login, versione
 
 ## Logo
 
-Tre barre che crescono con un filetto di base, tutte inchiostro su fondo vermiglio: `design/logo-scelto.svg` (variante 8b di `design/proposte-icona-7d.html`), usato come icona del sito `public/icon.svg`, a sinistra del nome nell'app web e come icona adattiva di Android (`android/res/drawable/ic_foreground.xml` sul fondo `ic_background`). Il logo precedente (la cassaforte) e tutte le altre proposte sono in `design/`.
+Tre barre in crescita (carta, l'ultima rossa) su una linea di base, su fondo inchiostro, con ampi margini perché il ritaglio circolare di Android non le tagli: `design/logo-scelto.svg`, usato come icona del sito `public/icon.svg`, a sinistra del nome nell'app web e come icona adattiva di Android `android/res/drawable/ic_foreground.xml` (disegno ridotto al 72% per restare nella zona sicura) (fondo `ic_background` in `android/res/values/colors.xml`). Le proposte, compresa la cassaforte e le barre su rosso usate prima, sono in `design/` (`proposte-icona-2.html` per l'ultima scelta, la 4).
 
 ## Estetica
 

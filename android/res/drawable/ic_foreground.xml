@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Logo MyBank: tre barre che crescono con un filetto di base, tutto inchiostro sul fondo vermiglio dell'icona adattiva; stessi tratti di design/logo-scelto.svg (108x108), già dentro la zona sicura -->
+<!-- Logo MyBank: tre barre in crescita (l'ultima rossa) su una linea di base, ridotte al 72% di design/logo-scelto.svg e centrate: ogni punto sta entro 28 dal centro, dentro la zona sicura dell'icona adattiva (raggio 33 su 108) -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#131211" android:pathData="M28,52 H40 V72 H28 Z M48,40 H60 V72 H48 Z M68,24 H80 V72 H68 Z M22,78 H86 V86 H22 Z" />
+    <path android:fillColor="#F3F0EA" android:pathData="M36.72,55.26 H45.36 V69.66 H36.72 Z" />
+    <path android:fillColor="#F3F0EA" android:pathData="M49.68,46.62 H58.32 V69.66 H49.68 Z" />
+    <path android:fillColor="#E8431A" android:pathData="M62.64,35.1 H71.28 V69.66 H62.64 Z" />
+    <path android:fillColor="#F3F0EA" android:pathData="M33.84,71.1 H74.16 V72.9 H33.84 Z" />
 </vector>

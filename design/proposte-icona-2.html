@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyBank: proposte icona</title>
+<style>
+  :root { --ink:#131211; --ink2:#1d1b19; --paper:#F3F0EA; --red:#E8431A; --mute:#8a857d; --line:#34312d; }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--ink); color: var(--paper); font: 13px/1.5 system-ui, sans-serif; padding: 28px 20px 60px; max-width: 1100px; margin: 0 auto; }
+  h1 { font: 700 22px Georgia, serif; border-top: 2px solid var(--paper); padding-top: 10px; }
+  p.n { color: var(--mute); margin: 8px 0 20px; max-width: 70ch; }
+  label.g { font: 11px ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; margin-bottom: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); padding: 16px; }
+  .card h2 { font: 11px ui-monospace, monospace; text-transform: uppercase; letter-spacing: .06em; color: var(--red); margin-bottom: 4px; }
+  .card p { color: var(--mute); font-size: 13px; min-height: 40px; }
+  .row { display: flex; align-items: flex-end; gap: 14px; margin-top: 14px; }
+  .ic { position: relative; overflow: hidden; flex: none; }
+  .ic svg { display: block; width: 100%; height: 100%; }
+  .circ { border-radius: 50%; }
+  .sq { border-radius: 28%; }
+  .big { width: 120px; height: 120px; }
+  .mid { width: 64px; height: 64px; }
+  .sm { width: 44px; height: 44px; }
+  .guide .ic::after { content: ""; position: absolute; left: 50%; top: 50%; width: 61.1%; height: 61.1%; transform: translate(-50%,-50%); border: 1px dashed #5ec8ff; border-radius: 50%; pointer-events: none; }
+  .home { margin-top: 36px; border-top: 2px solid var(--paper); padding-top: 10px; }
+  .strip { display: flex; flex-wrap: wrap; gap: 22px 18px; margin-top: 14px; background: #1a1918; padding: 22px 16px; }
+  .app { width: 72px; text-align: center; font-size: 12px; color: #d6d2ca; }
+  .app .ic { width: 56px; height: 56px; margin: 0 auto 6px; }
+  .ph { width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 6px; }
+</style>
+</head>
+<body>
+<h1>MyBank: proposte per l'icona</h1>
+<p class="n">Il problema dell'icona attuale: la cassaforte è ridotta a 0,55 per stare nella zona sicura, quindi nel cerchio del telefono resta piccola e sottile, e sul fondo scuro si perde. Qui ogni proposta riempie bene il cerchio (il tratteggio azzurro è la zona sicura Android da 66 su 108) e tiene i margini larghi, così non viene più tagliata. Mostro il ritaglio circolare e quello squadrato.</p>
+<label class="g"><input type="checkbox" id="gd"> mostra la zona sicura</label>
+
+<div class="grid" id="grid"></div>
+
+<div class="home">
+  <h1 style="border:0;padding:0;font-size:15px">Sulla schermata (accanto ad altre icone)</h1>
+  <div class="strip" id="strip"></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="v1" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#E8431A"/>
+      <rect x="30" y="28" width="48" height="46" fill="#131211"/>
+      <rect x="35" y="74" width="9" height="5" fill="#131211"/><rect x="64" y="74" width="9" height="5" fill="#131211"/>
+      <circle cx="54" cy="52" r="11" fill="none" stroke="#F3F0EA" stroke-width="4.5"/>
+      <rect x="51.5" y="38" width="5" height="12" fill="#F3F0EA"/>
+    </symbol>
+    <symbol id="v2" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#131211"/>
+      <text x="46" y="73" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="58" fill="#F3F0EA">M</text>
+      <rect x="73" y="62" width="9" height="9" fill="#E8431A"/>
+    </symbol>
+    <symbol id="v3" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#E8431A"/>
+      <rect x="30" y="27" width="48" height="2.5" fill="#F3F0EA"/>
+      <rect x="30" y="78.5" width="48" height="2.5" fill="#F3F0EA"/>
+      <text x="54" y="71" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="52" fill="#F3F0EA">€</text>
+    </symbol>
+    <symbol id="v4" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#131211"/>
+      <rect x="30" y="58" width="12" height="20" fill="#F3F0EA"/>
+      <rect x="48" y="46" width="12" height="32" fill="#F3F0EA"/>
+      <rect x="66" y="30" width="12" height="48" fill="#E8431A"/>
+      <rect x="26" y="80" width="56" height="2.5" fill="#F3F0EA"/>
+    </symbol>
+    <symbol id="v5" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#F3F0EA"/>
+      <rect x="30" y="30" width="48" height="2.5" fill="#131211"/>
+      <rect x="30" y="38" width="48" height="6" fill="#131211"/>
+      <rect x="30" y="50" width="34" height="6" fill="#131211"/>
+      <rect x="30" y="62" width="48" height="6" fill="#E8431A"/>
+      <rect x="30" y="74" width="26" height="6" fill="#131211"/>
+    </symbol>
+    <symbol id="v6" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#131211"/>
+      <circle cx="54" cy="54" r="25" fill="none" stroke="#F3F0EA" stroke-width="4"/>
+      <text x="54" y="66" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-weight="700" font-size="36" fill="#E8431A">€</text>
+    </symbol>
+    <symbol id="v7" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#E8431A"/>
+      <path d="M29,77 V31 H41 L54,52 L67,31 H79 V77 H68 V50 L58,66 H50 L40,50 V77 Z" fill="#F3F0EA"/>
+    </symbol>
+    <symbol id="v8" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#F3F0EA"/>
+      <rect x="30" y="28" width="48" height="46" fill="#E8431A"/>
+      <rect x="35" y="74" width="9" height="5" fill="#131211"/><rect x="64" y="74" width="9" height="5" fill="#131211"/>
+      <circle cx="54" cy="52" r="11" fill="none" stroke="#F3F0EA" stroke-width="4.5"/>
+      <rect x="51.5" y="38" width="5" height="12" fill="#131211"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+  const V = [
+    ["1 · Cassaforte piena", "La cassaforte di oggi, ma grande e su fondo rosso: corpo inchiostro, manopola carta."],
+    ["2 · Monogramma", "M serif su inchiostro, con un quadratino rosso come il punto fermo di un giornale."],
+    ["3 · Euro a filetti", "€ serif su rosso tra due filetti carta: il più «giornale svizzero»."],
+    ["4 · Barre del bilancio", "Tre barre in crescita, l'ultima rossa, sopra una linea di base."],
+    ["5 · Registro (chiara)", "Righe di un estratto conto con una riga rossa evidenziata. Fondo carta: spicca sui telefoni scuri."],
+    ["6 · Moneta", "Cerchio a filetto con l'euro rosso dentro, su inchiostro."],
+    ["7 · M geometrica", "M a spigoli vivi disegnata a blocchi, carta su rosso. Nessun carattere da incorporare."],
+    ["8 · Cassaforte su carta", "La cassaforte rossa su fondo carta, manopola e indice a contrasto."]
+  ];
+  const use = n => `<svg viewBox="0 0 108 108"><use href="#v${n}"/></svg>`;
+  document.getElementById("grid").innerHTML = V.map((v, i) => `
+    <div class="card"><h2>${v[0]}</h2><p>${v[1]}</p>
+      <div class="row">
+        <div class="ic circ big">${use(i+1)}</div>
+        <div class="ic sq mid">${use(i+1)}</div>
+        <div class="ic circ sm">${use(i+1)}</div>
+      </div></div>`).join("");
+  const ph = ["#3b5ba9","#c2873a","#2f7a5c","#7b4fa0","#a33a52","#4a4a4a"];
+  const cell = (n, name, ic) => `<div class="app">${ic}${name}</div>`;
+  let s = "";
+  ph.slice(0, 2).forEach(c => s += cell(0, "App", `<div class="ph" style="background:${c}"></div>`));
+  V.forEach((v, i) => s += cell(0, "MyBank " + (i+1), `<div class="ic circ">${use(i+1)}</div>`));
+  ph.slice(2).forEach(c => s += cell(0, "App", `<div class="ph" style="background:${c}"></div>`));
+  document.getElementById("strip").innerHTML = s;
+  document.getElementById("gd").onchange = e => document.body.classList.toggle("guide", e.target.checked);
+</script>
+</body>
+</html>

@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.39.0
+- **Ricollegare una banca non rimette niente a zero**: un nuovo consenso porta da Enable Banking `uid` di conto nuovi e prima tutti i movimenti venivano riletti come nuovi (duplicati, tag da riassegnare). Ora i conti già noti si riconoscono (IBAN o, per i pocket, nome, tipo e valuta, solo se non ce ne sono due uguali), tengono il loro `uid` e si legge dall'ultima lettura; `apiUid` è quello di adesso, l'unico mandato alla banca. Scollegare una banca toglie ancora i suoi movimenti. Serve il server aggiornato. Test in `test/banks.test.js`.
+- **Nuova icona**: tre barre in crescita (carta, l'ultima rossa) su una linea di base su fondo inchiostro, ridotte al 72% per restare nella zona sicura del ritaglio di Android (icona adattiva, `public/icon.svg`, `design/logo-scelto.svg`).
+- **Widget 4×2, striscia del mese**: tolta la scritta «Mese»; il numero dei giorni rimanenti è più grande (24 sp) con «giorni rimanenti» su due righe accanto; i giorni del mese hanno una **tacca ogni sette giorni con il numero sotto** (1, 8, 15, 22, 29), riga sempre a 33 colonne per restare allineata nei mesi corti; striscia alta 42 dp.
+- Mockup in `design/`: icona (`proposte-icona-2.html`) e striscia del mese del widget (`mockup-widget-mese.html`, scelta B con tacche T3).
+
 ## Da rilasciare
 - **Nuova icona**: tre barre che crescono con un filetto di base, inchiostro su vermiglio (al posto della cassaforte): icona del sito, logo accanto al nome e icona adattiva di Android. Proposte in `design/proposte-icona*.html`.
 

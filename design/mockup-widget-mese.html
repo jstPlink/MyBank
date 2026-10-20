@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MyBank · mockup striscia del mese del widget 4×2 (tema scuro, dati inventati)</title>
+<style>
+/* Colori del widget a livello (MyBankWidget4x2): cella #1C1A18, livello #5B564C (rosso scuro #8A2A17 sotto il 25%), carta #F3F0EA,
+   grigio #A8A298, rosso #FF5A2E, giorni passati #F1ECE1, rimasti #2A2825, weekend #D9573A / #3D1710. Un solo carattere: sans-serif. */
+*{box-sizing:border-box;margin:0}
+body{padding:24px;background:#3a3733;font:13px/1.4 sans-serif;color:#F3F0EA}
+body>h1{font:700 15px ui-monospace,Consolas,monospace;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+body>p{font-size:13px;color:#ddd;max-width:760px;margin-bottom:20px}
+.wall{display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start}
+figcaption{font:700 13px ui-monospace,Consolas,monospace;letter-spacing:.04em;text-transform:uppercase;margin-bottom:2px}
+figcaption small{display:block;font:400 13px sans-serif;text-transform:none;letter-spacing:0;color:#ddd;max-width:361px;margin:2px 0 10px}
+.w{width:361px;height:190px;background:#131211;padding:6px 8px;display:grid;grid-template-columns:repeat(12,1fr);border-radius:12px}
+.c{position:relative;margin:2.25px;background:#1C1A18;border-radius:3px;overflow:hidden;padding:6px 7px;display:flex;flex-direction:column;min-width:0}
+.c .lv{position:absolute;left:0;right:0;bottom:0;background:#5B564C;border-top:1.5px solid #A8A298}
+.c.late .lv{background:#8A2A17;border-top-color:#FF5A2E}
+.c .t{position:absolute;inset:0;pointer-events:none;opacity:.25;background:linear-gradient(#A8A298,#A8A298) 0 25%/100% 1px no-repeat,linear-gradient(#A8A298,#A8A298) 0 50%/100% 1px no-repeat,linear-gradient(#A8A298,#A8A298) 0 75%/100% 1px no-repeat}
+.tag{position:relative;align-self:flex-start;background:#1C1A18;border-radius:2px;padding:2px 5px 3px;max-width:100%}
+.nm{font-weight:700;font-size:7.5px;color:#A8A298;text-transform:uppercase;line-height:1.2}
+.rs{font-weight:700;font-size:15px;line-height:1.1;color:#F3F0EA;white-space:nowrap}
+.late .rs{color:#FF5A2E}
+.sp{flex:1}
+.et{position:relative;align-self:flex-start;background:#1C1A18;border-radius:2px;padding:1px 5px;font-size:9px;line-height:1.35;margin-top:2px;white-space:nowrap}
+.et.r{color:#FF5A2E}
+.num{display:flex;align-items:center;gap:3px}
+.num b{font-size:20px;line-height:1}.num span{font-size:9px;color:#A8A298;line-height:1.15;white-space:nowrap}
+.wk{display:grid;gap:2px;grid-template-columns:repeat(31,1fr);grid-auto-rows:7px}
+.wk i{display:block;border-radius:1px;background:#2A2825}
+.wk i.p{background:#F1ECE1}.wk i.s{background:#3D1710}.wk i.p.s{background:#D9573A}
+.s0{grid-column:1/13;grid-row:1;padding:4px 7px}.s1{grid-column:1/5;grid-row:2}.s2{grid-column:5/9;grid-row:2}.s3{grid-column:9/13;grid-row:2}
+.row{display:flex;align-items:center;gap:8px;height:100%}.row .wk{flex:1}
+.wkt{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tk{display:grid;gap:2px;grid-template-columns:repeat(31,1fr);height:7px;align-items:start}
+.tk i{display:block;justify-self:center;width:1px;height:3px;background:#A8A298;opacity:.7}
+.tk.t2 i.m{height:6px;opacity:1}
+.tk.t3 i{opacity:0}.tk.t3 i.n{opacity:.9;height:3px;overflow:visible;position:relative;width:1px}
+.tk.t3 i.n::after{content:attr(data-d);position:absolute;top:3px;left:50%;transform:translateX(-50%);font-size:9px;line-height:1;color:#A8A298}
+.tk.t3{height:14px}
+.stack{display:flex;flex-direction:column;gap:1px}.big{font-size:20px;line-height:1}.lb{font-size:9px;color:#A8A298;line-height:1.15;white-space:nowrap}
+.col{display:flex;flex-direction:column;justify-content:space-between;height:100%}.col .wk{flex:1}
+</style></head><body>
+<h1>Widget 4×2: striscia del mese</h1>
+<p>La versione con la striscia del mese in alto e Spesa, Svago e Auto sotto. Oggi tutto il mese sta su una riga: «Mese», «13 giorni rimanenti» e i 31 giorni. Scelta la B (senza «Mese», «giorni rimanenti» su due righe); qui tre modi di mostrare le tacche dei giorni del mese. Dati inventati (oggi è il 18 ottobre).</p>
+<div class="wall">
+<figure><figcaption>B · Com'è (senza tacche)<small>La B scelta: numero a 24 sp, «giorni rimanenti» su due righe, i 31 giorni.</small></figcaption><div class="w" style="grid-template-rows:42px 1fr">
+  <div class="c mese s0"><div class="row"><b class="big" style="font-size:24px">13</b><span class="lb">giorni<br>rimanenti</span><div class="wk one" data-w="31"></div></div></div>
+  <div class="c s1"><div class="lv" style="height:62%"></div><div class="t"></div><div class="tag"><div class="nm">Spesa</div><div class="rs">186 €</div></div><div class="sp"></div><div class="et">stima 9 €/g</div><div class="et">reale 7 €/g</div></div>
+  <div class="c late s2"><div class="lv" style="height:18%"></div><div class="t"></div><div class="tag"><div class="nm">Svago</div><div class="rs">24 €</div></div><div class="sp"></div><div class="et">stima 5 €/g</div><div class="et r">reale 7 €/g</div></div>
+  <div class="c s3"><div class="lv" style="height:74%"></div><div class="t"></div><div class="tag"><div class="nm">Auto</div><div class="rs">112 €</div></div><div class="sp"></div><div class="et">stima 4 €/g</div><div class="et">reale 3 €/g</div></div>
+</div></figure>
+<figure><figcaption>T1 · Una tacca per giorno<small>Sotto ogni giorno una tacca sottile; la striscia sale a 48 px.</small></figcaption><div class="w" style="grid-template-rows:48px 1fr">
+  <div class="c mese s0"><div class="row"><b class="big" style="font-size:24px">13</b><span class="lb">giorni<br>rimanenti</span><div class="wkt"><div class="wk one" data-w="31"></div><div class="tk t1" data-t="t1"></div></div></div></div>
+  <div class="c s1"><div class="lv" style="height:62%"></div><div class="t"></div><div class="tag"><div class="nm">Spesa</div><div class="rs">186 €</div></div><div class="sp"></div><div class="et">stima 9 €/g</div><div class="et">reale 7 €/g</div></div>
+  <div class="c late s2"><div class="lv" style="height:18%"></div><div class="t"></div><div class="tag"><div class="nm">Svago</div><div class="rs">24 €</div></div><div class="sp"></div><div class="et">stima 5 €/g</div><div class="et r">reale 7 €/g</div></div>
+  <div class="c s3"><div class="lv" style="height:74%"></div><div class="t"></div><div class="tag"><div class="nm">Auto</div><div class="rs">112 €</div></div><div class="sp"></div><div class="et">stima 4 €/g</div><div class="et">reale 3 €/g</div></div>
+</div></figure>
+<figure><figcaption>T2 · Tacca lunga a ogni lunedì<small>Tacche corte per i giorni e più lunghe ai lunedì (inizio settimana): si leggono le settimane del mese.</small></figcaption><div class="w" style="grid-template-rows:48px 1fr">
+  <div class="c mese s0"><div class="row"><b class="big" style="font-size:24px">13</b><span class="lb">giorni<br>rimanenti</span><div class="wkt"><div class="wk one" data-w="31"></div><div class="tk t2" data-t="t2"></div></div></div></div>
+  <div class="c s1"><div class="lv" style="height:62%"></div><div class="t"></div><div class="tag"><div class="nm">Spesa</div><div class="rs">186 €</div></div><div class="sp"></div><div class="et">stima 9 €/g</div><div class="et">reale 7 €/g</div></div>
+  <div class="c late s2"><div class="lv" style="height:18%"></div><div class="t"></div><div class="tag"><div class="nm">Svago</div><div class="rs">24 €</div></div><div class="sp"></div><div class="et">stima 5 €/g</div><div class="et r">reale 7 €/g</div></div>
+  <div class="c s3"><div class="lv" style="height:74%"></div><div class="t"></div><div class="tag"><div class="nm">Auto</div><div class="rs">112 €</div></div><div class="sp"></div><div class="et">stima 4 €/g</div><div class="et">reale 3 €/g</div></div>
+</div></figure>
+<figure><figcaption>T3 · Numeri a 1, 8, 15, 22, 29<small>Una tacca ogni sette giorni con il numero del giorno sotto (9 sp, come «giorni rimanenti»); la striscia sale a 56 px.</small></figcaption><div class="w" style="grid-template-rows:56px 1fr">
+  <div class="c mese s0"><div class="row"><b class="big" style="font-size:24px">13</b><span class="lb">giorni<br>rimanenti</span><div class="wkt"><div class="wk one" data-w="31"></div><div class="tk t3" data-t="t3"></div></div></div></div>
+  <div class="c s1"><div class="lv" style="height:62%"></div><div class="t"></div><div class="tag"><div class="nm">Spesa</div><div class="rs">186 €</div></div><div class="sp"></div><div class="et">stima 9 €/g</div><div class="et">reale 7 €/g</div></div>
+  <div class="c late s2"><div class="lv" style="height:18%"></div><div class="t"></div><div class="tag"><div class="nm">Svago</div><div class="rs">24 €</div></div><div class="sp"></div><div class="et">stima 5 €/g</div><div class="et r">reale 7 €/g</div></div>
+  <div class="c s3"><div class="lv" style="height:74%"></div><div class="t"></div><div class="tag"><div class="nm">Auto</div><div class="rs">112 €</div></div><div class="sp"></div><div class="et">stima 4 €/g</div><div class="et">reale 3 €/g</div></div>
+</div></figure>
+</div>
+<script>
+document.querySelectorAll('.tk').forEach(el=>{
+  const k=el.dataset.t;let h='';
+  for(let d=1;d<=31;d++){const dow=(3+d-1)%7;
+    if(k==='t1')h+='<i></i>';
+    else if(k==='t2')h+='<i class="'+(dow===0||d===1?'m':'')+'"></i>';
+    else h+='<i class="'+((d-1)%7===0?'n':'')+'" data-d="'+d+'"></i>';}
+  el.innerHTML=h;
+});
+// Ottobre 2026 inizia di giovedì; oggi è il 18 (passati 1-18, weekend in rosso).
+const lead=3,days=31,today=18;
+document.querySelectorAll('.wk').forEach(el=>{
+  let cells=[];
+  for(let d=1;d<=days;d++){const dow=(lead+d-1)%7;cells.push((d<=today?'p':'')+(dow>=5?' s':''));}
+  el.innerHTML=cells.map(c=>'<i class="'+c+'"></i>').join('');
+});
+</script>
+</body></html>
