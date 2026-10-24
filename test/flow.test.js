@@ -142,11 +142,7 @@ test('collegamento di UniCredit e Revolut, tag dei pocket, storico, budget e wid
   assert.equal(w.cats.spesa.budget, 300.5);
   assert.equal(w.cats.altro.budget, 60);
   assert.equal(w.cats.altro.label, 'Altro');
-  assert.equal(w.cats.altro.budget, 60);
-  assert.equal(w.cats.altro.label, 'Altro');
-  assert.equal(w.daysLeft, w.daysInMonth - w.day);
-  assert.ok(w.sundays.length >= 4 && w.sundays.length <= 5);
-  assert.ok(w.lastSync);
+  assert.equal(w.totals.daysLeft, w.daysInMonth - w.day);
 });
 
 test('l\'aggiornamento automatico conta a parte e si ferma a 4 al giorno; a mano si può ancora leggere', async (t) => {
@@ -282,38 +278,6 @@ test("all'avvio i movimenti precedenti alla data di inizio si tolgono dai dati",
   fs.rmSync(dir, { recursive: true, force: true });
 });
 
-test("statistiche di spesa: per categoria, mese per mese e dove vanno i soldi (senza giroconti ed entrate)", async (t) => {
-  const ctx = await setup(t);
-  const { api } = ctx;
-  await api("POST", "/api/login", { password: "segreta" });
-  await api("PUT", "/api/banks/app", { appId: "app-di-prova", privateKey });
-  await link(ctx, "unicredit");
-  await link(ctx, "revolut");
-
-  const year = new Date().getFullYear();
-  const st = (await api("GET", `/api/stats?year=${year}`)).json;
-  assert.ok(st.total > 0 && st.count > 0);
-  // la somma delle categorie è il totale; le quote fanno cento
-  assert.ok(Math.abs(st.byTag.reduce((a, e) => a + e.total, 0) - st.total) < 0.05);
-  assert.ok(Math.abs(st.byTag.reduce((a, e) => a + e.share, 0) - 100) < 0.5);
-  assert.ok(st.byTag.every((e, i, all) => i === 0 || all[i - 1].total >= e.total)); // dalla più pesante
-  assert.ok(st.byTag.every((e) => e.tag !== "giroconto" && e.tag !== "entrata"));
-  // coincide con le uscite dello Storico
-  const sum = (await api("GET", `/api/summary?year=${year}`)).json;
-  assert.ok(Math.abs(sum.total.uscite - st.total) < 0.05);
-  // mese per mese: dodici mesi, la somma è il totale dell'anno
-  assert.equal(st.months.length, 12);
-  assert.ok(Math.abs(st.months.reduce((a, m) => a + m.total, 0) - st.total) < 0.05);
-  // dove vanno i soldi: fino a 8 voci, dalla più pesante
-  assert.ok(st.top.length > 0 && st.top.length <= 8);
-  assert.ok(st.top.every((p, i, all) => i === 0 || all[i - 1].total >= p.total));
-  // un mese solo: il totale è quello di quel mese, il grafico resta di tutto l'anno
-  const busy = st.months.filter((m) => m.total > 0).at(-1);
-  const one = (await api("GET", `/api/stats?year=${year}&month=${busy.month}`)).json;
-  assert.equal(one.total, busy.total);
-  assert.equal(one.months.length, 12);
-});
-
 test("movimenti di un solo conto o pocket (tocco su una riga di Banche)", async (t) => {
   const ctx = await setup(t);
   const { api } = ctx;
@@ -331,27 +295,6 @@ test("movimenti di un solo conto o pocket (tocco su una riga di Banche)", async 
   const only = (await api("GET", "/api/transactions?account=revolut-2&tag=spesa")).json;
   assert.ok(only.transactions.length > 0 && only.transactions.every((x) => x.tag === "spesa" && x.account === "revolut-2"));
   assert.equal((await api("GET", "/api/transactions?account=non-esiste")).json.transactions.length, 0);
-});
-
-test("statistiche: anche le entrate, il bilancio e da chi arrivano", async (t) => {
-  const ctx = await setup(t);
-  const { api } = ctx;
-  await api("POST", "/api/login", { password: "segreta" });
-  await api("PUT", "/api/banks/app", { appId: "app-di-prova", privateKey });
-  await link(ctx, "unicredit");
-  await link(ctx, "revolut");
-  const year = new Date().getFullYear();
-  const st = (await api("GET", `/api/stats?year=${year}`)).json;
-  const sum = (await api("GET", `/api/summary?year=${year}`)).json;
-  assert.ok(st.income.total > 0 && st.income.count > 0);
-  assert.ok(Math.abs(st.income.total - sum.total.entrate) < 0.05); // come lo Storico
-  assert.ok(Math.abs(st.balance - sum.total.bilancio) < 0.05);
-  assert.ok(Math.abs(st.balance - (st.income.total - st.total)) < 0.02);
-  assert.ok(Math.abs(st.months.reduce((a, m) => a + m.entrate, 0) - st.income.total) < 0.05);
-  assert.ok(st.income.top.length > 0 && st.income.top.length <= 8);
-  assert.ok(st.income.top.every((p, i, all) => i === 0 || all[i - 1].total >= p.total));
-  assert.equal(st.income.top[0].name, "Azienda Esempio Srl"); // lo stipendio; i giri tra i miei conti non sono entrate
-  assert.ok(!st.income.top.some((p) => p.name === "Mario Rossi")); // i giri tra i miei conti (giroconti) non sono entrate
 });
 
 test("anticipando la data di inizio, la prima lettura successiva rilegge tutto dalla nuova data", async (t) => {
@@ -432,11 +375,11 @@ test("ricorrenti: solo quelli creati a mano, movimenti «Ricorrente» da assegna
   const plain = add(addMonths(today, -2), 40, 'Altro negozio');
   assert.equal((await api('PUT', '/api/recurring/assign', { ids: [plain], key: net.key })).status, 200);
   assert.equal((await api('GET', '/api/transactions?tag=ricorrente')).json.transactions.find((x) => x.id === plain).tag, 'ricorrente');
-  // l'importo è la media dei movimenti assegnati (3 x 12,99 + 40) / 4; a mano si sceglie, e si torna alla media
+  // l'importo è la media dei totali mensili: i 40 € cadono in un mese che ha già 12,99 € (totale 52,99), quindi (12,99 + 12,99 + 52,99) / 3; a mano si sceglie, e si torna alla media
   const avg = (await api('GET', '/api/recurring')).json.groups.find((g) => g.key === net.key);
-  assert.deepEqual([avg.amount, avg.average], [19.74, true]);
+  assert.deepEqual([avg.amount, avg.average], [26.32, true]);
   const renamed = (await api('PUT', `/api/recurring/${net.key}`, { amount: '15,50', name: 'Netflix Premium' })).json.groups.find((g) => g.key === net.key); // l'importo non si modifica
-  assert.deepEqual([renamed.amount, renamed.average, renamed.name], [19.74, true, 'Netflix Premium']);
+  assert.deepEqual([renamed.amount, renamed.average, renamed.name], [26.32, true, 'Netflix Premium']);
   const back = (await api('PUT', `/api/recurring/${net.key}`, { name: 'Netflix' })).json.groups.find((g) => g.key === net.key);
   assert.equal(back.name, 'Netflix');
   assert.equal((await api('PUT', '/api/recurring/zzz', { amount: '3' })).status, 404);
@@ -493,23 +436,25 @@ test("ricorrenti: solo quelli creati a mano, movimenti «Ricorrente» da assegna
   assert.deepEqual([withPay.amount, withPay.average], [39, true]);
 });
 
-test("sotto categorie: Cibo, Carburante e Autostrada contano nella categoria, si vedono a parte e il filtro include le sotto categorie", async (t) => {
+test("sotto categorie di Auto: Carburante e Autostrada contano nella categoria, si vedono a parte e il filtro include le sotto categorie", async (t) => {
   const { api, db } = await setup(t);
   await api('POST', '/api/login', { password: 'segreta' });
   const today = new Date().toISOString().slice(0, 10);
   const put = (id, date, amount, party) => { db.transactions[id] = { id, bank: 'revolut', account: 'a1', date, amount: -amount, description: party, party, currency: 'EUR' }; };
   put('s1', today, 30, 'Esselunga'); put('s2', today, 20, 'Q8'); put('s3', today, 10, 'Telepass'); put('s4', today, 7, 'Altro');
-  for (const [id, tag] of [['s1', 'cibo'], ['s2', 'auto_carburante'], ['s3', 'autostrada']]) assert.equal((await api('PUT', `/api/transactions/${id}/tag`, { tag })).status, 200);
+  assert.equal((await api('PUT', '/api/transactions/s1/tag', { tag: 'spesa' })).status, 200);
+  assert.equal((await api('PUT', '/api/transactions/s1/tag', { tag: 'cibo' })).status, 400); // la sotto categoria «Cibo» non esiste più
+  for (const [id, tag] of [['s2', 'auto_carburante'], ['s3', 'autostrada']]) assert.equal((await api('PUT', `/api/transactions/${id}/tag`, { tag })).status, 200);
   // budget: contano nella categoria da cui dipendono
   const cats = (await api('GET', '/api/budgets')).json.month.cats;
   assert.equal(cats.spesa.spent, 30); assert.equal(cats.carburante.spent, 30); // 20 + 10
   // Storico: la categoria ha il totale, le sotto categorie si vedono a parte
   const m = (await api('GET', `/api/summary?year=${today.slice(0, 4)}`)).json.months[Number(today.slice(5, 7)) - 1];
-  assert.deepEqual([m.tags.spesa, m.tags.carburante, m.subs.cibo, m.subs.auto_carburante, m.subs.autostrada, m.uscite], [30, 30, 30, 20, 10, 67]);
-  assert.ok(!('cibo' in m.tags));
-  // Movimenti: il filtro su una categoria include le sue sotto categorie
-  const n = async (tag) => (await api('GET', `/api/transactions?tag=${tag}`)).json.total;
-  assert.deepEqual([await n('spesa'), await n('cibo'), await n('carburante'), await n('auto_carburante'), await n('autostrada')], [1, 1, 2, 1, 1]);
+  assert.deepEqual([m.tags.spesa, m.tags.carburante, m.subs.auto_carburante, m.subs.autostrada, m.uscite], [30, 30, 20, 10, 67]);
+  // Movimenti: il filtro su una categoria include le sue sotto categorie; più tag insieme (elenco separato da virgole) si sommano
+  const n = async (tag) => (await api('GET', `/api/transactions?tag=${encodeURIComponent(tag)}`)).json.total;
+  assert.deepEqual([await n('spesa'), await n('carburante'), await n('auto_carburante'), await n('autostrada')], [1, 2, 1, 1]);
+  assert.deepEqual([await n('spesa,autostrada'), await n('spesa,carburante'), await n('spesa,svago,altro'), await n('')], [2, 3, 1 + (await n('altro')), 4]);
 });
 
 test("notifiche: testo, giorno del mese e orario si salvano nel server", async (t) => {
@@ -916,12 +861,12 @@ test("il tag carburante si chiama «Auto» (la chiave interna resta carburante)"
   const tags = (await api("GET", "/api/transactions")).json.tags;
   assert.equal(tags.carburante, "Auto");
   assert.equal(tags.auto_carburante, "Carburante"); // la sotto categoria di Auto ha un'altra chiave
-  assert.equal(tags.cibo, "Cibo"); assert.equal(tags.autostrada, "Autostrada");
+  assert.ok(!("cibo" in tags)); assert.equal(tags.autostrada, "Autostrada");
   const budget = (await api("GET", "/api/budgets")).json.month.cats;
   assert.equal(budget.carburante.label, "Auto");
 });
 
-test('budget: la media dei 3 mesi comprende i ricorrenti, entrate medie e risparmio possibile', async (t) => {
+test('budget: la media dei 3 mesi comprende i ricorrenti; entrate medie e ricorrenti nei totali', async (t) => {
   const { api, db } = await setup(t);
   await api('POST', '/api/login', { password: 'segreta' });
   const { addMonths } = await import('../src/recurring.js');
@@ -942,8 +887,8 @@ test('budget: la media dei 3 mesi comprende i ricorrenti, entrate medie e rispar
   assert.equal(t1.income3, 2000); // (1000 + 2000 + 3000) / 3
   assert.equal(t1.recurring, 30);
   assert.equal(t1.budget, 500);
-  assert.equal(t1.saving, 2000 - 30 - 500);
-  assert.ok(t1.avg3 >= t1.recurring && Math.abs(t1.avg3 - (t1.avg3Cats + t1.recurring)) < 0.01); // la media comprende i ricorrenti
+  assert.equal(t1.totalSpend, 530); // ricorrenti + budget
+  assert.ok(t1.avg3 >= t1.recurring); // la media comprende i ricorrenti
 });
 
 test('movimenti nuovi: restano «Non definito» finché non scegli tu il tag, e la scelta (anche «automatico») li smista', async (t) => {
@@ -965,4 +910,25 @@ test('movimenti nuovi: restano «Non definito» finché non scegli tu il tag, e 
   // i dati di prima (senza `unsorted`) non cambiano
   delete ctx.db.unsorted;
   assert.ok((await list()).some((x) => x.tag === 'svago'));
+});
+
+test("ricorrenti: l'importo è la media dei totali mensili (i pagamenti dello stesso mese si sommano prima)", async (t) => {
+  const { api, db } = await setup(t);
+  await api('POST', '/api/login', { password: 'segreta' });
+  const { addMonths } = await import('../src/recurring.js');
+  const first = new Date().toISOString().slice(0, 8) + '01';
+  let n = 0;
+  const pay = (date, amount) => { const id = `m${++n}`; db.transactions[id] = { id, bank: 'revolut', account: 'a1', date, amount: -amount, description: 'Metlife', party: 'Metlife', currency: 'EUR' }; return id; };
+  // due pagamenti nello stesso mese (17 € e 1 €) e uno solo (18 €) negli altri: ogni mese vale 18 €, la media resta 18 €
+  const ids = [pay(addMonths(first, -1).slice(0, 8) + '05', 17), pay(addMonths(first, -1).slice(0, 8) + '20', 1), pay(addMonths(first, -2).slice(0, 8) + '05', 18), pay(addMonths(first, -3).slice(0, 8) + '05', 18)];
+  const made = await api('POST', '/api/recurring', { name: 'Metlife', day: 5, assign: ids });
+  assert.equal(made.status, 200);
+  const g = made.json.groups.find((x) => x.key === made.json.key);
+  assert.deepEqual([g.amount, g.periods, g.count], [18, 3, 4]);
+  // gli annuali: si sommano i pagamenti dello stesso anno
+  const y = new Date().getFullYear();
+  const a1 = pay(`${y - 1}-03-10`, 100), a2 = pay(`${y - 1}-09-10`, 20), a3 = pay(`${y - 2}-03-10`, 120);
+  const ann = await api('POST', '/api/recurring', { name: 'Assicurazione', annual: true, day: 10, month: 3, assign: [a1, a2, a3] });
+  const ga = ann.json.groups.find((x) => x.key === ann.json.key);
+  assert.deepEqual([ga.amount, ga.periods, ga.monthly], [120, 2, 10]);
 });

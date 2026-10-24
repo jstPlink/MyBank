@@ -50,7 +50,7 @@
         <div class="bar">
           <label>Anno <select id="mvYear"></select></label>
           <label>Mese <select id="mvMonth"></select></label>
-          <label>Tag <select id="mvTag"></select></label>
+          <div class="tagfilter"><span class="label">Tag</span><details id="mvTagBox"><summary id="mvTagSummary">Tutti</summary><div id="mvTagList" class="tagopts"></div></details></div>
           <label class="grow">Cerca <input id="mvSearch" type="search" placeholder="Descrizione o importo…" autocomplete="off"></label>
         </div>
         <p class="catfilter" id="mvAccount" hidden></p>
@@ -72,7 +72,7 @@
             <label>Giorno del pagamento <input id="rfDay" type="number" inputmode="numeric" min="1" max="31" step="1" required placeholder="1-31"></label>
           </div>
           <label id="rfMonthRow" hidden>Mese del pagamento <select id="rfMonth"></select></label>
-          <p class="note muted">L'importo non si scrive: è la media dei movimenti che assegni a questo ricorrente (nei Movimenti, tag «Ricorrente»).</p>
+          <p class="note muted">L'importo non si scrive: è la media dei totali mensili dei movimenti che assegni a questo ricorrente (nei Movimenti, tag «Ricorrente»).</p>
           <div class="foot"><button class="primary" type="submit">Aggiungi</button><button class="ghost" type="button" id="recCancel">Annulla</button></div>
         </form>
         </div>

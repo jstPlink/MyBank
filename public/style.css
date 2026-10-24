@@ -1,4 +1,6 @@
 /* MyBank — estetica tipografica, da giornale svizzero: carta e inchiostro, un solo rosso vermiglio, angoli vivi, linee nette.
+   Il file è per sezioni (variabili · base · intestazione e schede · pulsanti e campi · Storico · Movimenti · Budget · Banche · Opzioni e Documenti ·
+   Ricorrenti · telefono); le regole in fondo a una sezione possono rifinire quelle sopra.
    Carattere: serif per i numeri e i titoli, monospazio maiuscolo per le etichette, sans per il testo.
    Scala (e nessun'altra misura): 11 etichette · 13 testo secondario · 15 testo, campi e pulsanti · 22 titoli · 34 numeri grandi (28 sul telefono).
    Caratteri: serif per titoli e importi (cifre tabulari), monospazio maiuscolo per etichette e nomi, sans per il resto.
@@ -6,7 +8,7 @@
 :root {
   --paper: #f3f0ea; --ink: #131211; --mute: #6b665e; --hair: #d8d3c8;
   --red: #e8431a; --green: #1d6b3c; --yellow: #e0b000;
-  --t-spesa: #1f4fd8; --t-svago: #c2188b; --t-carburante: #b8860b; --t-altro: #5b4b8a; --t-utenze: #0e7490; --t-ricorrente: #7a4a1e; --t-non_definito: #131211; --t-entrata: #1d6b3c; --t-giroconto: #9a958b; --t-cibo: var(--t-spesa); --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+  --t-spesa: #1f4fd8; --t-svago: #c2188b; --t-carburante: #b8860b; --t-altro: #5b4b8a; --t-utenze: #0e7490; --t-ricorrente: #7a4a1e; --t-non_definito: #131211; --t-entrata: #1d6b3c; --t-giroconto: #9a958b; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
   --f-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --f-sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --f-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
@@ -17,7 +19,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #121211; --ink: #edeae3; --mute: #9a958b; --hair: #2e2c29; --red: #ff5a2e; --green: #5ccb8a; --yellow: #f0c419;
-    --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #edeae3; --t-entrata: #5ccb8a; --t-giroconto: #6d6a63; --t-cibo: var(--t-spesa); --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+    --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #edeae3; --t-entrata: #5ccb8a; --t-giroconto: #6d6a63; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
     color-scheme: dark;
   }
 }
@@ -93,7 +95,7 @@ h2.section { margin: 30px 0 4px; }
 .card { border-top: 2px solid var(--ink); padding: 10px 0 14px; }
 .card .v { font: 600 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; margin: 4px 0 2px; }
 .card .sub { text-transform: none; letter-spacing: 0; font-family: var(--f-sans); font-size: var(--fs-sm); }
-.good { color: var(--green); } .bad { color: var(--red); }
+.bad { color: var(--red); }
 .note { margin-top: 12px; }
 
 /* tabella dello storico */
@@ -150,9 +152,6 @@ td.zero { color: var(--mute); }
 
 /* budget */
 .fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
-.meter { height: 6px; background: var(--hair); margin: 10px 0 8px; }
-.meter > i { display: block; height: 100%; background: var(--ink); }
-.meter.warn > i { background: var(--red); opacity: .6; } .meter.over > i { background: var(--red); }
 
 /* banche: ogni banca si chiude e si apre */
 .bank > summary { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; cursor: pointer; list-style: none; }
@@ -360,7 +359,6 @@ details.group > summary h2.section { margin: 0; }
 .stagedrow .x { width: 36px; flex: none; background: transparent; border: 1px solid var(--ink); color: var(--red); font: 700 var(--fs-lg)/1 var(--f-sans); }
 .docset > summary { cursor: pointer; font: 600 var(--fs-sm) var(--f-sans); color: var(--mute); }
 .docset form { display: grid; gap: 12px; margin-top: 10px; }
-.docimport code { font: var(--fs-label) var(--f-mono); }
 .docitem { border-bottom: 1px solid var(--hair); }
 .docitem .docfile { border-bottom: 0; padding-bottom: 4px; }
 .docitem .link { display: block; margin: 0 0 10px; font-size: var(--fs-sm); }
@@ -526,13 +524,29 @@ body { touch-action: pan-y; }
 /* Movimenti: dopo il tocco sul menu della categoria non resta il contorno rosso */
 .mv select:focus, .mv select:focus-visible, .tagbox select:focus, .tagbox select:focus-visible { outline: none; }
 
-/* Budget: terza colonna (media entrate, in verde) e barra delle entrate medie divise in ricorrenti (grigio), budget (inchiostro) e risparmio possibile (verde) */
-.bstats.c3 { grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-.bstats .pos { color: var(--green); }
-.mbar { grid-column: 1 / -1; border-top: 1px solid var(--hair); padding-top: 12px; }
-.mbar .stk { display: flex; gap: 2px; height: 12px; }
-.mbar .stk i { display: block; height: 100%; }
-.lab3 { display: flex; font: 600 var(--fs-md) var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; margin-bottom: 6px; white-space: nowrap; }
-.lab3 span { display: block; flex: none; min-width: max-content; padding-right: 8px; } /* un segmento stretto non si sovrappone al vicino */
-.lab3 .pos { color: var(--green); } .lab3 .neg { color: var(--red); }
-.lab3.nm3 { margin: 6px 0 0; font: var(--fs-label) var(--f-mono); letter-spacing: .04em; text-transform: uppercase; color: var(--mute); }
+/* Budget, riquadro in cima: spesa media e entrata media su tre colonne (l'entrata sopra la spesa totale), poi spesa fissa, budget e spesa totale della stessa
+   dimensione (22) */
+.bhero .bstats { grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.bhero .bstats .n, .bhero .bstats .label, .bfix .label, .bfix .n { display: block; }
+.bstats .pos .n { color: var(--green); }
+.bstats .dim .n, .bfix .grey .n { color: color-mix(in srgb, var(--mute) 70%, #000); } /* lo stesso grigio per spesa media e spesa fissa */
+.bfix { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; border-top: 1px solid var(--hair); padding-top: 12px; margin-top: 12px; }
+.bfix .n { font: 600 var(--fs-lg) var(--f-serif); letter-spacing: -.02em; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.bfix .tot .n { color: var(--red); }
+
+/* Movimenti: filtro per tag a caselle (tutte spuntate = nessun filtro) */
+.tagfilter { position: relative; display: grid; gap: 6px; min-width: 130px; }
+.tagfilter details { position: relative; }
+.tagfilter summary { height: var(--h); display: flex; align-items: center; padding: 0 12px; border: 1px solid var(--ink); cursor: pointer; list-style: none; font: 500 var(--fs-md) var(--f-sans); }
+.tagfilter summary::-webkit-details-marker { display: none; }
+.tagfilter summary::after { content: "▾"; margin-left: auto; padding-left: 8px; color: var(--red); }
+.tagfilter details[open] summary::after { content: "▴"; }
+.tagopts { position: absolute; z-index: 6; left: 0; min-width: 100%; width: max-content; max-width: calc(100vw - 28px); margin-top: 2px; background: var(--paper); border: 1px solid var(--ink); border-top-width: 2px; padding: 4px 12px; }
+.tagopt { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--hair); cursor: pointer; font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .02em; text-transform: uppercase; color: var(--ink); }
+.tagopt:first-child { border-top: 0; }
+.tagopt input { position: absolute; opacity: 0; pointer-events: none; }
+.tagopt i { width: 20px; height: 20px; border: 1px solid var(--ink); position: relative; }
+.tagopt input:checked + i { background: var(--ink); }
+.tagopt input:checked + i::after { content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid var(--paper); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.tagopt input:focus-visible + i { outline: 2px solid var(--red); outline-offset: 2px; }
+.tagopt .tagname { display: flex; align-items: center; gap: 6px; }

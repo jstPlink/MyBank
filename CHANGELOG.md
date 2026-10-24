@@ -2,6 +2,14 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.39.1
+- **Budget, riquadro in cima rifatto**: residuo e giorni; spesa media (grigia, con i ricorrenti) ed entrata media (verde); spesa fissa (grigia), budget e **spesa totale** (rossa), tutte della stessa dimensione. Spesa reale e spesa stimata tolte dal riquadro (restano ritmo e stima nelle categorie). Server: `totals.recurring`, `income3`, `totalSpend`.
+- **Ricorrenti**: l'importo è la **media dei totali mensili** (per gli annuali: dei totali annuali): i pagamenti dello stesso mese si sommano prima (17 € + 1 € = 18 €), poi si fa la media tra i mesi. `periods` dice su quanti mesi (o anni) è calcolata.
+- **Movimenti**: il filtro per tag è un elenco di **caselle** (tutte spuntate = nessun filtro, togli quelle che non vuoi); `GET /api/transactions?tag=a,b` accetta più tag.
+- **Sotto categoria «Cibo» tolta**: i movimenti che l'avevano tornano in Spesa (restano Carburante e Autostrada sotto Auto).
+- **Pulizia del codice**: tolti `GET /api/stats` e `spendStats`, i campi inutilizzati dei dati del widget e dei totali, le compatibilità con server vecchi nella pagina e il CSS morto; commenti e documentazione allineati; la spesa fissa e riserva dei ricorrenti si leggono dal server.
+- Mockup in `design/`: nuovo riquadro del Budget.
+
 ## 0.39.0
 - **Ricollegare una banca non rimette niente a zero**: un nuovo consenso porta da Enable Banking `uid` di conto nuovi e prima tutti i movimenti venivano riletti come nuovi (duplicati, tag da riassegnare). Ora i conti già noti si riconoscono (IBAN o, per i pocket, nome, tipo e valuta, solo se non ce ne sono due uguali), tengono il loro `uid` e si legge dall'ultima lettura; `apiUid` è quello di adesso, l'unico mandato alla banca. Scollegare una banca toglie ancora i suoi movimenti. Serve il server aggiornato. Test in `test/banks.test.js`.
 - **Nuova icona**: tre barre in crescita (carta, l'ultima rossa) su una linea di base su fondo inchiostro, ridotte al 72% per restare nella zona sicura del ritaglio di Android (icona adattiva, `public/icon.svg`, `design/logo-scelto.svg`).

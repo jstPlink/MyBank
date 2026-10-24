@@ -10,7 +10,7 @@ import { createAuth } from './auth.js';
 import { AUTO_PER_DAY, BANKS, applyCutoff, cutoffOf, startLink, finishLink, syncConnection, publicState } from './banks.js';
 import { checkKey, createClient, psuHeaders } from './eb.js';
 import { AUTO_HOURS, TZ, nextRun } from './schedule.js';
-import { monthBudget, listTransactions, spendStats, widgetData, yearSummary } from './stats.js';
+import { monthBudget, listTransactions, yearSummary } from './stats.js';
 import { DOCUMENTS, cleanFileName, downloadFile, listDocuments, listFolder, normalizeDocuments, uploadFile } from './documents.js';
 import { PARSER_VERSION, parseStatement } from './estratto.js';
 import { UNICREDIT_PARSER, parseFlexia, parseUnicreditAccount, pdfWords } from './unicredit.js';
@@ -87,12 +87,6 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     res.json(yearSummary(db, year));
   });
 
-  // Statistiche di spesa: per categoria, mese per mese, dove vanno i soldi.
-  app.get('/api/stats', (req, res) => {
-    const year = Number(req.query.year) || new Date().getFullYear();
-    res.json(spendStats(db, { year, month: Number(req.query.month) || 0 }));
-  });
-
   app.get('/api/transactions', (req, res) => {
     const account = String(req.query.account ?? '');
     const recurring = String(req.query.recurring ?? '');
@@ -121,7 +115,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     if (tag == null || tag === '') delete db.overrides[t.id];
     else if (TAGS[tag]) db.overrides[t.id] = tag;
     else return bad(res, 'Tag non valido.');
-    if (db.unsorted) delete db.unsorted[t.id]; // l'hai smistato tu (anche «automatico»)
+    delete db.unsorted[t.id]; // l'hai smistato tu (anche con «automatico»): il movimento non è più «da smistare»
     await store.save();
     res.json({ ok: true });
   }));
@@ -149,7 +143,8 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     res.json({ budgets: db.settings.budgets, month: monthBudget(db) });
   }));
 
-  app.get('/api/widget', (req, res) => res.json(widgetData(db)));
+  // i dati del widget sono quelli del mese (le categorie con budget, speso e residuo)
+  app.get('/api/widget', (req, res) => res.json(monthBudget(db)));
 
   // ---------------------------------------------------------------- importazione da estratto conto
   app.post('/api/import', wrap(async (req, res) => {
@@ -380,7 +375,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
   app.post('/api/recurring', wrap(async (req, res) => {
     const name = String(req.body?.name ?? '').replace(/\s+/g, ' ').trim().slice(0, 80);
     if (!name) return bad(res, 'Scrivi il nome del pagamento.');
-    // l'importo non si scrive: è la media dei movimenti che assegni (finché non ce ne sono resta 0)
+    // l'importo non si scrive: è la media dei totali mensili dei movimenti che assegni (finché non ce ne sono resta 0)
     const annual = Boolean(req.body?.annual);
     let next = String(req.body?.next ?? '');
     if (req.body?.day != null && req.body.day !== '') {
@@ -399,7 +394,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     await store.save();
     res.json({ ...recurringState(), key: `m-${m.id}` });
   }));
-  // modifica di un ricorrente: nome, cadenza, prossimo pagamento (l'importo non si modifica: è la media dei movimenti assegnati)
+  // modifica di un ricorrente: nome, cadenza, prossimo pagamento (l'importo non si modifica: è la media dei totali mensili dei movimenti assegnati)
   app.put('/api/recurring/:key', wrap(async (req, res) => {
     const m = db.recurringManual.find((x) => `m-${x.id}` === req.params.key);
     if (!m) return bad(res, 'Ricorrente sconosciuto.', 404);

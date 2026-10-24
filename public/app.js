@@ -1,4 +1,6 @@
-// MyBank: interfaccia web (e dell'app Android, che la carica dal server). Nessuna dipendenza.
+// MyBank: interfaccia web (e dell'app Android, che la include nell'APK). Nessuna dipendenza, nessuna logica: ogni cifra arriva dal server (/api/…).
+// Struttura del file, in ordine: utilità e icone · rete (api, modalità localhost) · accesso · Opzioni · schede (hash, swipe) · Storico · Movimenti ·
+// aptico · Ricorrenti (elenco, foglio «Assegna», selezione) · Budget · Banche · Documenti · Notifiche · avvio.
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const money = (n) => (n == null ? '–' : new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: 'always' }).format(n));
@@ -6,10 +8,10 @@ const MONTHS = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'L
 const fmtDate = (iso) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 const fmtDateTime = (iso) => (iso ? new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'mai');
 const THIS_YEAR = new Date().getFullYear();
-let TAGS = { spesa: 'Spesa', cibo: 'Cibo', svago: 'Svago', carburante: 'Auto', auto_carburante: 'Carburante', autostrada: 'Autostrada', altro: 'Altro', utenze: 'Utenze', ricorrente: 'Ricorrente', non_definito: 'Non definito', entrata: 'Entrata', giroconto: 'Non contabile' };
+let TAGS = { spesa: 'Spesa', svago: 'Svago', carburante: 'Auto', auto_carburante: 'Carburante', autostrada: 'Autostrada', altro: 'Altro', utenze: 'Utenze', ricorrente: 'Ricorrente', non_definito: 'Non definito', entrata: 'Entrata', giroconto: 'Non contabile' };
 
 // Le sotto categorie dipendono da una categoria (come sul server): nei menu si distinguono con un trattino.
-const SUB_PARENT = { cibo: 'spesa', auto_carburante: 'carburante', autostrada: 'carburante' };
+const SUB_PARENT = { auto_carburante: 'carburante', autostrada: 'carburante' };
 const parentTag = (k) => SUB_PARENT[k] ?? k;
 const tagLabel = (k, v) => (SUB_PARENT[k] ? `– ${v}` : v);
 
@@ -20,7 +22,6 @@ const ICON_PATHS = {
   carburante: '<path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h5"/>',
   altro: '<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>',
   utenze: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',
-  cibo: '<path d="M7 3v8a2 2 0 0 0 2 2v8M5 3v5M9 3v5M17 3c-2 2-3 5-3 8h3v10"/>',
   auto_carburante: '<path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h5"/>',
   autostrada: '<path d="M8 3L5 21M16 3l3 18M12 4v3M12 10.5v3M12 17v3"/>',
   ricorrente: '<path d="M4 10a8 8 0 0 1 14-4l2 2M20 14a8 8 0 0 1-14 4l-2-2M20 4v4h-4M4 20v-4h4"/>',
@@ -30,10 +31,7 @@ const ICON_PATHS = {
 };
 const icon = (k) => `<svg class="ticon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[k] ?? ICON_PATHS.altro}</svg>`;
 
-// I nomi dei tag arrivano dal server; questo nome si impone anche qui, così si vede subito anche con un server non ancora aggiornato.
-const withNames = (tags) => ({ ...tags, giroconto: 'Non contabile', carburante: 'Auto' });
-
-const state = { tab: 'storico', year: THIS_YEAR, open: new Set(), bankOpen: {}, mv: { year: THIS_YEAR, month: 0, tag: '', q: '', account: '', sort: 'date', dir: 'desc', items: [], total: 0, shown: 100, base: '', paged: false } };
+const state = { tab: 'storico', year: THIS_YEAR, open: new Set(), bankOpen: {}, mv: { year: THIS_YEAR, month: 0, tags: [], q: '', account: '', sort: 'date', dir: 'desc', items: [], total: 0, shown: 100, base: '' } };
 
 // ------------------------------------------------------------------ rete
 
@@ -171,15 +169,13 @@ function applyHash() {
   const [tab, arg] = (location.hash || '#storico').slice(1).split(':');
   if (tab === 'movimenti' && arg && TAGS[arg]) {
     const now = new Date();
-    Object.assign(state.mv, { year: now.getFullYear(), month: now.getMonth() + 1, tag: arg, q: '', account: '' });
+    Object.assign(state.mv, { year: now.getFullYear(), month: now.getMonth() + 1, tags: [arg], q: '', account: '' });
     $('#mvSearch').value = '';
   }
   show(tab);
 }
 
 function show(tab) {
-  if (tab === 'statistiche') tab = 'storico'; // la scheda Statistiche non c'è più: il suo lavoro lo fa lo Storico
-  if (tab === 'documenti') tab = 'opzioni'; // i Documenti ora stanno nelle Opzioni
   if (!TABS.includes(tab)) tab = 'storico';
   state.tab = tab;
   history.replaceState(null, '', `#${tab}`);
@@ -261,7 +257,7 @@ $('#yearSelect').addEventListener('change', (e) => { state.year = Number(e.targe
 $('#yearTable').addEventListener('click', (e) => {
   const see = e.target.closest('[data-see]');
   if (see) { // «Vedi movimenti»: la scheda Movimenti già filtrata per quell'anno, mese e categoria
-    Object.assign(state.mv, { year: state.year, month: Number(see.dataset.seeMonth), tag: see.dataset.see, q: '', account: '' });
+    Object.assign(state.mv, { year: state.year, month: Number(see.dataset.seeMonth), tags: [see.dataset.see], q: '', account: '' });
     $('#mvSearch').value = '';
     return show('movimenti');
   }
@@ -276,24 +272,16 @@ $('#yearTable').addEventListener('click', (e) => {
 
 // Si mostrano sempre 100 movimenti alla volta: se ce ne sono di più, in fondo c'è «Mostra altro» (altri 100 ogni volta).
 const MORE = 100;
+/** Le chiavi dei tag che si possono filtrare: le categorie principali (e una sotto categoria già scelta). */
+const filterTagKeys = () => Object.keys(TAGS).filter((k) => !SUB_PARENT[k] || state.mv.tags.includes(k));
 async function loadMoves(keep = false) {
-  const { year, month, tag, q } = state.mv;
-  const base = `/api/transactions?year=${year}&month=${month}&tag=${tag}&q=${encodeURIComponent(q)}&account=${encodeURIComponent(state.mv.account)}&recurring=${encodeURIComponent(state.mv.recurring?.key ?? '')}&sort=${state.mv.sort}&dir=${state.mv.dir}`;
+  const { year, month, tags, q } = state.mv;
+  const base = `/api/transactions?year=${year}&month=${month}&tag=${encodeURIComponent(tags.join(','))}&q=${encodeURIComponent(q)}&account=${encodeURIComponent(state.mv.account)}&recurring=${encodeURIComponent(state.mv.recurring?.key ?? '')}&sort=${state.mv.sort}&dir=${state.mv.dir}`;
   const [d, sum] = await Promise.all([
     api('GET', `${base}&limit=1000&offset=0`),
     api('GET', `/api/summary?year=${year}`),
   ]);
-  TAGS = withNames(d.tags);
-  // Con un server più vecchio (senza ordinamento e totali) la pagina si arrangia da sola sui movimenti che ha ricevuto.
-  if (!d.totals) {
-    d.totals = { entrate: 0, uscite: 0 };
-    for (const t of d.transactions) if (t.tag !== 'giroconto') { if (t.amount > 0) d.totals.entrate += t.amount; else d.totals.uscite -= t.amount; }
-  }
-  if (!d.sort) {
-    const key = { date: (t) => t.date, amount: (t) => t.amount }[state.mv.sort];
-    const mul = state.mv.dir === 'asc' ? 1 : -1;
-    d.transactions.sort((a, b) => (typeof key(a) === 'number' ? key(a) - key(b) : String(key(a)).localeCompare(String(key(b)))) * mul || b.date.localeCompare(a.date));
-  }
+  TAGS = d.tags; // i nomi dei tag li dà il server
   // filtro per conto o pocket (si arriva dalla scheda Banche): si vede e si toglie con un tocco
   const bar = $('#mvAccount');
   bar.hidden = !d.account && !state.mv.recurring;
@@ -301,11 +289,16 @@ async function loadMoves(keep = false) {
   else if (d.account) bar.innerHTML = `Conto o pocket: <b>${esc(d.account.name)}</b> <button class="link" data-clearaccount="1">Togli il filtro</button>`;
   $('#mvYear').innerHTML = `<option value="0">Tutti</option>${yearOptions(sum.years, year)}`;
   $('#mvMonth').innerHTML = `<option value="0">Tutti</option>${MONTHS.map((m, i) => `<option value="${i + 1}" ${i + 1 === month ? 'selected' : ''}>${m}</option>`).join('')}`;
-  // il filtro ha solo le categorie principali (il filtro su una categoria include già le sue sotto categorie); una sotto categoria compare solo se è quella già scelta (si arriva dal dettaglio dello Storico)
-  $('#mvTag').innerHTML = `<option value="">Tutti</option>${Object.entries(TAGS).filter(([k]) => !SUB_PARENT[k] || k === tag).map(([k, v]) => `<option value="${k}" ${k === tag ? 'selected' : ''}>${esc(tagLabel(k, v))}</option>`).join('')}`;
+  // il filtro per tag: una casella per ogni categoria principale (il filtro su una categoria include già le sue sotto categorie; una sotto categoria compare solo se è già scelta,
+  // per esempio dal dettaglio dello Storico). Tutte spuntate = nessun filtro; togliendone una si vedono gli altri tag.
+  const keys = filterTagKeys();
+  const picked = new Set(tags.length ? tags : keys);
+  $('#mvTagList').innerHTML = keys.map((k) => `<label class="tagopt"><input type="checkbox" data-tagopt="${k}" ${picked.has(k) ? 'checked' : ''}><i></i><span class="tagname" style="color:var(--t-${k})">${icon(k)}${esc(tagLabel(k, TAGS[k]))}</span></label>`).join('');
+  $('#mvTagSummary').textContent = !tags.length ? 'Tutti' : tags.length <= 2 ? tags.map((k) => TAGS[k]).join(', ') : `${tags.length} di ${keys.length}`;
   // la riga informativa: quanti movimenti e il totale; con il filtro «Entrata» le entrate, con gli altri filtri le uscite, senza filtro entrambe
   // le cifre (numero dei movimenti, entrate, uscite) in bianco, il resto del testo in grigio
-  const sums = tag === 'entrata' ? `entrate <b>${money(d.totals.entrate)}</b>` : tag ? `uscite <b>${money(d.totals.uscite)}</b>` : `entrate <b>${money(d.totals.entrate)}</b> · uscite <b>${money(d.totals.uscite)}</b>`;
+  const onlyIn = tags.length === 1 && tags[0] === 'entrata', withIn = !tags.length || tags.includes('entrata');
+  const sums = onlyIn ? `entrate <b>${money(d.totals.entrate)}</b>` : withIn ? `entrate <b>${money(d.totals.entrate)}</b> · uscite <b>${money(d.totals.uscite)}</b>` : `uscite <b>${money(d.totals.uscite)}</b>`;
   $('#mvSummary').innerHTML = d.total
     ? `<b>${d.total}</b> movimenti${d.totals.unassigned ? ` · <span class="red">${d.totals.unassigned} da assegnare</span>` : ''} · ${sums}`
     : 'Nessun movimento. Collega una banca dalla scheda Banche.';
@@ -319,7 +312,6 @@ async function loadMoves(keep = false) {
   state.mv.items = d.transactions;
   state.mv.total = d.total;
   state.mv.base = base;
-  state.mv.paged = 'offset' in d; // un server più vecchio non sa dare altre pagine
   state.mv.shown = keep ? Math.max(MORE, state.mv.shown) : MORE;
   await ensureMoves();
   renderMovesList();
@@ -334,7 +326,7 @@ function assignFromMove(t) {
 async function ensureMoves() {
   const m = state.mv;
   const want = Math.min(m.shown, m.total);
-  while (m.paged && m.items.length < want) {
+  while (m.items.length < want) {
     const more = await api('GET', `${m.base}&limit=1000&offset=${m.items.length}`);
     if (!more.transactions.length) break;
     m.items = m.items.concat(more.transactions);
@@ -371,8 +363,8 @@ function renderMovesList() {
       <div class="d-tag"><div class="tagbox" style="color:var(--t-${t.tag})">${icon(t.tag)}${select}</div>${chip}${subChip}</div>
     </div>`;
   }).join('');
-  // «Mostra altro» in fondo, se ci sono altri movimenti da mostrare (un server vecchio ne dà al massimo 1000 e non sa dare altre pagine)
-  const left = (state.mv.paged ? state.mv.total : state.mv.items.length) - rows.length;
+  // «Mostra altro» in fondo, se ci sono altri movimenti da mostrare
+  const left = state.mv.total - rows.length;
   const more = $('#mvMore');
   more.hidden = !(left > 0);
   more.innerHTML = more.hidden ? '' : '<button class="ghost" data-more="1">Mostra altro</button>';
@@ -381,7 +373,13 @@ $('#movimenti').addEventListener('change', async (e) => {
   const el = e.target;
   if (el.id === 'mvYear') state.mv.year = Number(el.value);
   else if (el.id === 'mvMonth') state.mv.month = Number(el.value);
-  else if (el.id === 'mvTag') state.mv.tag = el.value;
+  else if (el.dataset.tagopt !== undefined) { // casella di un tag: tutte spuntate = nessun filtro; se ne togli una si vedono gli altri
+    const all = filterTagKeys();
+    const on = new Set(state.mv.tags.length ? state.mv.tags : all);
+    if (el.checked) on.add(el.dataset.tagopt); else on.delete(el.dataset.tagopt);
+    if (!on.size) { el.checked = true; toast('Lascia almeno un tag.'); return; }
+    state.mv.tags = all.every((k) => on.has(k)) ? [] : all.filter((k) => on.has(k));
+  }
   else if (el.dataset.tag || el.dataset.sub) { // categoria dalla lista principale, sotto categoria dalla targhetta (vuota = torna alla categoria)
     const id = el.dataset.tag || el.dataset.sub;
     const it = state.mv.items.find((x) => x.id === id);
@@ -391,7 +389,7 @@ $('#movimenti').addEventListener('change', async (e) => {
       if (it) { it.tag = value; if (value === 'ricorrente') it.recurring = null; else delete it.recurring; }
       toast(`Tag: ${TAGS[value]}`);
       if (value === 'ricorrente' && it) { renderMovesList(); assignFromMove(it); return; }
-      if (state.mv.tag) { await loadMoves(true); return; }
+      if (state.mv.tags.length) { await loadMoves(true); return; }
       renderMovesList();
     } catch (err) { fail(err); }
     return;
@@ -456,7 +454,8 @@ function recPanel(g) {
   const rm = g.reminder;
   const shortD = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' });
   const pays = (g.payments ?? []).map((p) => `<div class="rpay"><b class="rpd">${shortD(p.date)}</b><span class="rpt">${esc(p.title)}<small>${esc(p.account)}${p.explicit ? ' · assegnato' : ''}</small></span><span class="rpa">${money(p.amount)}</span>${p.explicit ? `<button type="button" class="rx" data-unlink="${esc(p.id)}" aria-label="Scollega questo movimento" title="Scollega">×</button>` : '<span></span>'}</div>`).join('');
-  const note = !g.amount ? 'Importo: si calcola dai movimenti che assegni (nessuno ancora).' : `Importo: media dei ${g.count} movimenti assegnati.`;
+  const unit = g.annual ? ['anno', 'anni'] : ['mese', 'mesi'];
+  const note = !g.periods ? 'Importo: si calcola dai movimenti che assegni (nessuno ancora).' : `Importo: media dei totali di ${g.periods} ${g.periods === 1 ? unit[0] : unit[1]} (${g.count} moviment${g.count === 1 ? 'o' : 'i'} assegnati; i pagamenti dello stesso ${unit[0]} si sommano).`;
   const mo = (sel) => MONTHS.map((m, i) => `<option value="${i + 1}" ${i + 1 === sel ? 'selected' : ''}>${m}</option>`).join('');
   const reminder = !g.active ? '<p class="muted rnote">Riattivalo per impostare un promemoria.</p>'
     : !rm ? '<div class="foot"><button class="primary" type="button" data-radd>Aggiungi promemoria</button></div>'
@@ -519,9 +518,8 @@ function renderRecurring() {
   if (picking) return renderPicker();
   const { groups, totals, unassigned } = state.rec.data;
   const act = groups.filter((g) => g.active), off = groups.filter((g) => !g.active);
-  // due cifre grandi, calcolate dai ricorrenti attivi: il costo fisso (i mensili) e quanto mettere da parte ogni mese per gli annuali (importo ÷ 12)
-  const sumM = (list) => Math.round(list.reduce((t, g) => t + g.monthly, 0) * 100) / 100;
-  const fixed = sumM(act.filter((g) => !g.annual)), reserve = sumM(act.filter((g) => g.annual));
+  // due cifre grandi, calcolate dal server sui ricorrenti attivi: il costo fisso (i mensili) e quanto mettere da parte ogni mese per gli annuali (importo ÷ 12)
+  const { fixed, reserve } = totals;
   $('#recHero').innerHTML = `<div class="bhero"><div class="bheroh"><div><span class="label">Costo fisso mensile</span><div class="big">${money(fixed)}</div></div><div class="bdays"><span class="label">Da mettere da parte al mese</span><div class="big">${money(reserve)}</div></div></div></div>`;
   $('#recList').innerHTML = recInbox(unassigned, groups) + (groups.length
     ? `<div class="rsec"><span>Attivi · dal più vicino</span><span>${act.length}</span></div>${act.map(recRow).join('') || '<p class="muted">Nessun ricorrente attivo.</p>'}
@@ -718,7 +716,7 @@ $('#recList').addEventListener('click', async (e) => {
       return recCall('PUT', `/api/recurring/${encodeURIComponent(key)}`, body, 'Modifiche salvate.');
     }
     if (e.target.closest('[data-rmoves]')) {
-      Object.assign(state.mv, { year: 0, month: 0, tag: '', q: '', account: '', recurring: { key, name: g.name } });
+      Object.assign(state.mv, { year: 0, month: 0, tags: [], q: '', account: '', recurring: { key, name: g.name } });
       $('#mvSearch').value = '';
       return show('movimenti');
     }
@@ -759,23 +757,14 @@ const BRICK = 75; // euro per mattoncino delle barre del budget
 async function loadBudget() {
   const d = await api('GET', '/api/budgets');
   const t = d.month.totals;
-  // in cima il mese (residuo, budget, speso, giorni rimanenti); poi per ogni categoria titolo con icona, residuo, barra con tacche al 25/50/75%
-  // (il livello è il residuo del budget) e il segno del ritmo (dove saresti oggi spendendo in modo uniforme), speso su budget e media 3 mesi
-  // in alto residuo e giorni rimanenti (stessa dimensione); sotto tre colonne: budget e media spese (con i ricorrenti), spesa reale e spesa stimata, media entrate (verde); sotto la barra delle entrate medie divise in ricorrenti, budget e risparmio
-  const stat = (label, v, dim) => `<div${dim ? ' class="dim"' : ''}><span class="label">${label}</span><span class="n">${v}</span></div>`;
-  // terza colonna e barra delle entrate medie: solo se il server le dà (un server non ancora aggiornato non ha `income3`)
-  const hasInc = t && t.income3 != null && t.recurring != null;
-  const incomeBar = () => {
-    const rec = t.recurring, bud = t.budget, sav = t.saving, tot = Math.max(t.income3, rec + bud, 1);
-    const w = (v) => `${(Math.max(0, v) / tot) * 100}%`;
-    const pct = (v) => (Math.max(0, v) / tot) * 100;
-    return `<div class="mbar" title="Entrate medie dei 3 mesi, divise tra ricorrenti, budget e risparmio possibile">
-      <div class="lab3">${rec > 0 ? `<span style="width:${w(rec)}">${money(rec)}</span>` : ''}<span style="width:${w(bud)}">${money(bud)}</span>${sav >= 0 ? `<span class="pos" style="width:${w(sav)}">${money(sav)}</span>` : `<span class="neg" style="flex:1;text-align:right">${money(sav)}</span>`}</div>
-      <div class="stk">${rec > 0 ? `<i style="background:var(--mute);width:${w(rec)}"></i>` : ''}<i style="background:var(--ink);width:${w(bud)}"></i>${sav >= 0 ? `<i style="background:var(--green);width:${w(sav)}"></i>` : ''}</div>
-      <div class="lab3 nm3">${rec > 0 ? `<span style="width:${w(rec)}">Ricorr.</span>` : ''}<span style="width:${w(bud)}">Budget</span>${sav >= 0 ? `<span style="width:${w(sav)}">Risparmio</span>` : `<span class="neg" style="flex:1;text-align:right">Sfora</span>`}</div></div>`;
-  };
+  // In cima il riquadro del mese: residuo e giorni; poi spesa media (con i ricorrenti, grigia) ed entrata media (verde, sopra la spesa totale); poi spesa fissa
+  // (i ricorrenti, grigia), budget impostato e spesa totale (la somma dei due, rossa), tutte e tre della stessa dimensione. Le cifre le calcola il server.
+  // Sotto, una riga per categoria: titolo con icona e residuo, barra a mattoncini (il livello è il residuo del budget) col segno del ritmo (dove saresti
+  // oggi spendendo in modo uniforme), speso su budget e media 3 mesi.
+  const cell = (label, v, cls = '') => `<div class="${cls}"><span class="label">${label}</span><span class="n">${v}</span></div>`;
   const hero = t ? `<div class="bhero"><div class="bheroh"><div><span class="label">Residuo del mese</span><div class="big ${t.left < 0 ? 'neg' : ''}">${money(t.left)}</div></div><div class="bdays"><span class="label">Giorni rimanenti</span><div class="big">${t.daysLeft}</div></div></div>
-      <div class="bstats${hasInc ? ' c3' : ''}"><div class="bcol">${stat('Budget', money(t.budget))}${t.avg3 == null ? '' : stat('Media spese', money(t.avg3), true)}</div><div class="bcol">${stat('Spesa reale', money(t.spent))}${t.pace == null ? '' : stat('Spesa stimata', money(t.pace), true)}</div>${hasInc ? `<div class="bcol"><div><span class="label">Media entrate</span><span class="n pos">${money(t.income3)}</span></div></div>${incomeBar()}` : ''}</div></div>` : '';
+      <div class="bstats">${cell('Spesa media', money(t.avg3), 'dim')}<div></div>${cell('Entrata media', money(t.income3), 'pos')}</div>
+      <div class="bfix">${cell('Spesa fissa', money(t.recurring), 'grey')}${cell('Budget', money(t.budget))}${cell('Spesa totale', money(t.totalSpend), 'tot')}</div></div>` : '';
   const maxBudget = Math.max(1, ...Object.values(d.month.cats).map((c) => c.budget)); // scala comune: un mattoncino è largo uguale in tutte le barre
   $('#budgetCards').innerHTML = hero +Object.entries(d.month.cats).map(([k, c]) => {
     const ratio = c.budget > 0 ? c.spent / c.budget : 0;
@@ -806,7 +795,7 @@ $('#budgetForm').addEventListener('submit', async (e) => {
 
 async function loadBanks() {
   const d = await api('GET', '/api/banks');
-  TAGS = withNames(d.tags ?? TAGS);
+  TAGS = d.tags;
   const auto = d.lastAuto;
   const hrs = d.auto.hours;
   const pad = (h) => `${String(h).padStart(2, '0')}:00`;
@@ -863,7 +852,7 @@ $('#banche').addEventListener('click', async (e) => {
   if (!t) {
     // un tocco su una riga di conto o pocket apre i Movimenti filtrati per quel conto
     const row = e.target.closest('[data-account]');
-    if (row) { Object.assign(state.mv, { year: THIS_YEAR, month: 0, tag: '', q: '', account: row.dataset.account }); $('#mvSearch').value = ''; show('movimenti'); }
+    if (row) { Object.assign(state.mv, { year: THIS_YEAR, month: 0, tags: [], q: '', account: row.dataset.account }); $('#mvSearch').value = ''; show('movimenti'); }
     return;
   }
   try {

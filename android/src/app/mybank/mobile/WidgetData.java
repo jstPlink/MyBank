@@ -23,7 +23,7 @@ final class WidgetData {
         JSONObject cats = o.getJSONObject("cats");
         WidgetData d = new WidgetData();
         for (int i = 0; i < KEYS.length; i++) {
-            JSONObject c = cats.optJSONObject(KEYS[i]); // un server non ancora aggiornato non ha «altro»: resta senza budget
+            JSONObject c = cats.optJSONObject(KEYS[i]); // una categoria assente resta senza budget
             if (c == null) continue;
             d.budget[i] = c.optDouble("budget", 0);
             d.spent[i] = c.optDouble("spent", 0);

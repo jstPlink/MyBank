@@ -63,13 +63,17 @@ function analyze(db, now = new Date()) {
     const annual = base.annual;
     const latest = g.list.at(-1);
     const last = latest ? latest.date : null;
-    // l'importo non si scrive: è la media dei movimenti assegnati (finché non ce ne sono resta quello di partenza, di norma 0)
-    const amount = g.list.length ? round(g.list.reduce((t, p) => t + p.amount, 0) / g.list.length) : base.amount;
+    // L'importo non si scrive: è la media dei totali di ogni periodo (il mese; l'anno per gli annuali). Prima si sommano i pagamenti dello stesso periodo
+    // (due pagamenti da 17 € e 1 € nello stesso mese valgono 18 €), poi si fa la media tra i periodi che hanno pagamenti. Senza movimenti resta quello di partenza (di norma 0).
+    const perPeriod = new Map();
+    for (const p of g.list) { const k = p.date.slice(0, annual ? 4 : 7); perPeriod.set(k, (perPeriod.get(k) ?? 0) + p.amount); }
+    const periods = perPeriod.size;
+    const amount = periods ? round([...perPeriod.values()].reduce((t, v) => t + v, 0) / periods) : base.amount;
     const due = nextDue(last ? addMonths(last, annual ? 12 : 1) : base.next, annual, today);
     const recent = last ? (toMs(today) - toMs(last)) / DAY <= (annual ? 400 : 45) : true;
     const active = typeof state[g.key]?.active === 'boolean' ? state[g.key].active : recent;
     groups.push({
-      key: g.key, name: base.name, amount, annual, monthly: round(annual ? amount / 12 : amount), next: due, last, count: g.list.length, active, manual: base.manual, average: g.list.length > 0, reminder: reminderOf(g.key),
+      key: g.key, name: base.name, amount, annual, monthly: round(annual ? amount / 12 : amount), next: due, last, count: g.list.length, periods, active, manual: base.manual, average: g.list.length > 0, reminder: reminderOf(g.key),
       payments: g.list.slice(-12).reverse().map((p) => ({ id: p.id, date: p.date, amount: p.amount, title: p.title, account: p.account, explicit: p.explicit })),
       _ids: g.list.map((p) => p.id),
     });
