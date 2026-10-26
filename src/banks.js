@@ -24,7 +24,35 @@ export function applyCutoff(db) {
   for (const id of Object.keys(db.renames ?? {})) if (!db.transactions[id]) delete db.renames[id];
   return removed;
 }
-export const CONSENT_DAYS = 180;       // durata del consenso richiesto (la banca può ridurla)
+/**
+ * Toglie i movimenti di una banca il cui conto non è più fra quelli collegati (copie rimaste da un vecchio collegamento: `account` è un uid che non c'è più).
+ * Se esiste il movimento attuale identico (stessa banca, data, importo e descrizione) gli passano le scelte a mano (tag, nome, ricorrente, «già smistato»).
+ * Gli importati (estratti conto, buste paga) non si toccano. Restituisce quanti ne ha tolti.
+ */
+export function purgeOrphans(db) {
+  const live = new Set(db.banking.connections.flatMap((c) => c.accounts.map((a) => a.uid)));
+  const linked = new Set(db.banking.connections.map((c) => c.bank)); // solo le banche collegate: senza collegamento non c'è un conto "attuale" con cui confrontare
+  const bankTx = Object.values(db.transactions).filter((t) => linked.has(t.bank) && !t.imported);
+  const same = (t) => `${t.bank}|${t.date}|${t.amount}|${t.description}|${t.pending ? 1 : 0}`;
+  const twins = new Map();
+  for (const t of bankTx) if (live.has(t.account)) twins.set(same(t), t);
+  let removed = 0;
+  for (const t of bankTx) {
+    if (live.has(t.account)) continue;
+    const twin = twins.get(same(t));
+    if (twin) {
+      if (db.overrides[t.id] && !db.overrides[twin.id]) db.overrides[twin.id] = db.overrides[t.id];
+      if (db.renames[t.id] && !db.renames[twin.id]) db.renames[twin.id] = db.renames[t.id];
+      if (db.recurringLinks[t.id] && !db.recurringLinks[twin.id]) db.recurringLinks[twin.id] = db.recurringLinks[t.id];
+      if (!db.unsorted?.[t.id]) delete db.unsorted?.[twin.id];
+    }
+    for (const m of [db.transactions, db.overrides, db.renames, db.unsorted, db.recurringLinks]) if (m) delete m[t.id];
+    removed++;
+  }
+  return removed;
+}
+
+export const CONSENT_DAYS = 180;      // durata del consenso richiesto (la banca può ridurla)
 export const AUTO_PER_DAY = 4;         // accessi automatici al giorno concessi dalle banche (PSD2: senza l'utente presente)
 export const MANUAL_PER_DAY = 10;      // letture a mano: l'utente è presente e la richiesta lo dichiara con le intestazioni PSU
 const FALLBACK_SYNC_DAYS = 90;
@@ -98,7 +126,8 @@ export async function finishLink({ client, db, code, state, now = Date.now() }) 
   };
   if (!conn.accounts.length) throw new Error('La banca non ha reso disponibile nessun conto.');
   const prev = db.banking.connections.find((c) => c.bank === pending.bank);
-  if (prev && conn.accounts.every((a) => prev.accounts.some((p) => p.uid === a.uid))) { conn.lastSync = prev.lastSync ?? null; conn.from = prev.from; } // stessi conti: si riparte dall'ultima lettura invece di rileggere tutto
+  if (prev && conn.accounts.every((a) => prev.accounts.some((p) => p.uid === a.uid))) { conn.lastSync = prev.lastSync ?? null; conn.from = prev.from; }
+  if (prev) conn.calls = callsOf(prev, now); // i limiti giornalieri sono della banca, non del consenso: ricollegare non li azzera
   db.banking.connections = [...db.banking.connections.filter((c) => c.bank !== pending.bank), conn]; // un nuovo consenso sostituisce il vecchio
   return conn;
 }
@@ -170,7 +199,7 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
   const label = BANKS[conn.bank]?.label ?? conn.bank;
   if (Date.parse(conn.validUntil) <= now) throw new Error(`Il collegamento con ${label} è scaduto: ricollega la banca dalla scheda Banche.`);
   const left = quota(conn, now);
-  if (auto ? left.auto <= 0 : left.manual <= 0) throw new Error(`${label}: raggiunto il limite di ${auto ? AUTO_PER_DAY : MANUAL_PER_DAY} letture al giorno. Riprova più tardi.`);
+  if (auto ? left.auto <= 0 : left.manual <= 0) throw new Error(`Raggiunto il limite di ${auto ? AUTO_PER_DAY : MANUAL_PER_DAY} letture al giorno. Riprova più tardi.`);
   conn.calls.push({ t: now, auto });
 
   const from = cutoffOf(db);
@@ -212,6 +241,7 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
     }
   }
   applyCutoff(db);
+  purgeOrphans(db);
   conn.lastSync = new Date(now).toISOString();
   conn.from = from;
   return report;

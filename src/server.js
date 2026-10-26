@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createAuth } from './auth.js';
-import { AUTO_PER_DAY, BANKS, applyCutoff, cutoffOf, startLink, finishLink, syncConnection, publicState } from './banks.js';
+import { AUTO_PER_DAY, BANKS, applyCutoff, purgeOrphans, cutoffOf, startLink, finishLink, syncConnection, publicState } from './banks.js';
 import { checkKey, createClient, psuHeaders } from './eb.js';
 import { AUTO_HOURS, TZ, nextRun } from './schedule.js';
 import { monthBudget, listTransactions, yearSummary } from './stats.js';
@@ -40,7 +40,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
   const store = openStore(dir);
   const { db } = store;
   if (cutoff) db.settings.cutoff = cutoff; // di norma i movimenti partono dal 1 agosto 2026 (vedi banks.js)
-  if (applyCutoff(db)) store.save(); // quelli di prima si tolgono dai dati
+  if (applyCutoff(db) + purgeOrphans(db)) store.save(); // quelli di prima e le copie di vecchi collegamenti si tolgono dai dati
   const auth = createAuth({ dir, password });
   const app = express();
   app.set('trust proxy', true);

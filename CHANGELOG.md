@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.39.2
+- **Niente più copie dopo aver ricollegato una banca**: i movimenti di una banca collegata il cui conto non è più fra quelli attuali (le copie con «UniCredit · » senza nome del conto) si cancellano da soli all'avvio del server e dopo ogni lettura; se esiste l'identico movimento attuale (banca, data, importo, descrizione) gli passano tag, nome, ricorrente e «già smistato». Gli importati dagli estratti non si toccano. Ricollegare non azzera più il conteggio delle letture del giorno. Test in `test/banks.test.js`.
+- **Movimenti, filtri**: la barra non va più a capo da sola (sul telefono anno e mese affiancati, tag e ricerca a tutta larghezza) e sopra c'è il contatore **Filtri x/4** (anno, mese, tag, ricerca attivi).
+- **Banche**: l'errore del limite di letture non ripete più il nome della banca («Revolut: Revolut: …»).
+- **Nuova icona**: tre barre che crescono con un filetto di base, inchiostro su vermiglio (al posto della cassaforte): icona del sito, logo accanto al nome e icona adattiva di Android. Proposte in `design/proposte-icona*.html`.
+
 ## 0.39.1
 - **Budget, riquadro in cima rifatto**: residuo e giorni; spesa media (grigia, con i ricorrenti) ed entrata media (verde); spesa fissa (grigia), budget e **spesa totale** (rossa), tutte della stessa dimensione. Spesa reale e spesa stimata tolte dal riquadro (restano ritmo e stima nelle categorie). Server: `totals.recurring`, `income3`, `totalSpend`.
 - **Ricorrenti**: l'importo è la **media dei totali mensili** (per gli annuali: dei totali annuali): i pagamenti dello stesso mese si sommano prima (17 € + 1 € = 18 €), poi si fa la media tra i mesi. `periods` dice su quanti mesi (o anni) è calcolata.
@@ -15,9 +21,6 @@ Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il 
 - **Nuova icona**: tre barre in crescita (carta, l'ultima rossa) su una linea di base su fondo inchiostro, ridotte al 72% per restare nella zona sicura del ritaglio di Android (icona adattiva, `public/icon.svg`, `design/logo-scelto.svg`).
 - **Widget 4×2, striscia del mese**: tolta la scritta «Mese»; il numero dei giorni rimanenti è più grande (24 sp) con «giorni rimanenti» su due righe accanto; i giorni del mese hanno una **tacca ogni sette giorni con il numero sotto** (1, 8, 15, 22, 29), riga sempre a 33 colonne per restare allineata nei mesi corti; striscia alta 42 dp.
 - Mockup in `design/`: icona (`proposte-icona-2.html`) e striscia del mese del widget (`mockup-widget-mese.html`, scelta B con tacche T3).
-
-## Da rilasciare
-- **Nuova icona**: tre barre che crescono con un filetto di base, inchiostro su vermiglio (al posto della cassaforte): icona del sito, logo accanto al nome e icona adattiva di Android. Proposte in `design/proposte-icona*.html`.
 
 ## 0.38.1
 - **Movimenti nuovi da smistare**: quelli letti dalla banca (pagamenti in sospeso compresi) o importati da estratto conto restano tutti «Non definito» finché non scegli tu il tag; anche «automatico» li smista dando il tag del pocket. Le entrate e i non contabili restano automatici; i movimenti già presenti non cambiano. Server: `db.unsorted`.

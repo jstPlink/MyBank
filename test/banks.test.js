@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { finishLink, syncConnection, keepAccountIds } from '../src/banks.js';
+import { finishLink, syncConnection, keepAccountIds, purgeOrphans } from '../src/banks.js';
 
 const txs = [
   { transaction_id: 'A1', booking_date: '2026-09-02', credit_debit_indicator: 'DBIT', transaction_amount: { amount: '12.50', currency: 'EUR' }, creditor: { name: 'Bar' } },
@@ -44,4 +44,20 @@ test('conti uguali senza IBAN si abbinano solo se il numero coincide', () => {
   assert.deepEqual(same.map((a) => a.uid), ['a', 'b']);
   const diff = keepAccountIds(old, [{ uid: 'n1', name: 'P', type: 'x', currency: 'EUR' }]);
   assert.deepEqual(diff.map((a) => a.uid), ['n1']);              // ambiguo: meglio un conto nuovo che uno scambiato
+});
+
+test('purgeOrphans toglie le copie senza conto collegato e passa le scelte a mano a quelle attuali', () => {
+  const mk = (id, account, extra = {}) => ({ id, bank: 'unicredit', account, date: '2026-09-01', amount: -5, description: 'Bar', currency: 'EUR', ...extra });
+  const db = {
+    banking: { connections: [{ bank: 'unicredit', accounts: [{ uid: 'nuovo' }] }] },
+    transactions: { a: mk('a', 'vecchio'), b: mk('b', 'nuovo'), c: mk('c', 'nuovo', { description: 'Altro' }), d: mk('d', 'estratto:x', { imported: true }) },
+    overrides: { a: 'svago' }, renames: { a: 'Caffè' }, unsorted: { b: true }, recurringLinks: {},
+  };
+  assert.equal(purgeOrphans(db), 1);
+  assert.deepEqual(Object.keys(db.transactions).sort(), ['b', 'c', 'd']);
+  assert.equal(db.overrides.b, 'svago');
+  assert.equal(db.renames.b, 'Caffè');
+  assert.equal(db.unsorted.b, undefined); // la copia vecchia era già smistata
+  assert.equal(db.overrides.a, undefined);
+  assert.equal(purgeOrphans(db), 0);
 });

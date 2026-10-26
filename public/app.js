@@ -287,6 +287,8 @@ async function loadMoves(keep = false) {
   bar.hidden = !d.account && !state.mv.recurring;
   if (state.mv.recurring) bar.innerHTML = `Pagamenti ricorrenti: <b>${esc(state.mv.recurring.name)}</b> <button class="link" data-clearaccount="1">Togli il filtro</button>`;
   else if (d.account) bar.innerHTML = `Conto o pocket: <b>${esc(d.account.name)}</b> <button class="link" data-clearaccount="1">Togli il filtro</button>`;
+  // contatore dei filtri: sempre «attivi/totali» sui quattro campi della barra (anno, mese, tag, ricerca)
+  $('#mvFilters').innerHTML = `Filtri <b>${[year, month, tag, q.trim()].filter(Boolean).length}/4</b>`;
   $('#mvYear').innerHTML = `<option value="0">Tutti</option>${yearOptions(sum.years, year)}`;
   $('#mvMonth').innerHTML = `<option value="0">Tutti</option>${MONTHS.map((m, i) => `<option value="${i + 1}" ${i + 1 === month ? 'selected' : ''}>${m}</option>`).join('')}`;
   // il filtro per tag: una casella per ogni categoria principale (il filtro su una categoria include già le sue sotto categorie; una sotto categoria compare solo se è già scelta,

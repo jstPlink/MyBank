@@ -77,6 +77,8 @@ textarea { padding: 10px 12px; font: var(--fs-sm)/1.4 var(--f-mono); resize: ver
 select, option { background-color: var(--paper); color: var(--ink); }
 input:read-only { border-color: var(--hair); color: var(--mute); }
 .bar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px; margin-bottom: 18px; }
+.fcount { flex: 1 0 100%; margin: 0 0 -6px; font: 500 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.fcount b { color: var(--ink); font-weight: 600; }
 .bar .grow { flex: 1 1 220px; }
 .bar .grow input { width: 100%; }
 
@@ -189,6 +191,10 @@ td.zero { color: var(--mute); }
   th, td { padding: 10px 4px; }
   td.num, th.num { font-size: var(--fs-sm); }
   tbody th { font-size: var(--fs-sm); }
+  /* filtri dei Movimenti: righe fisse (anno e mese affiancati, tag e ricerca a tutta larghezza), così non vanno a capo da soli e il menu del tag si apre largo come lo schermo */
+  #mvBar { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  #mvBar > .fcount, #mvBar > .tagfilter, #mvBar > .grow { grid-column: 1 / -1; }
+  #mvBar > label { min-width: 0; }
   #storico .bar > label { flex: 0 0 auto; }
   #storico .bar select { width: auto; min-width: 130px; }
 }

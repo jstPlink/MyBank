@@ -1,6 +1,6 @@
 {
   "name": "mybank",
-  "version": "0.39.1",
+  "version": "0.39.2",
   "description": "MyBank: i movimenti di UniCredit e Revolut, il budget e il widget, dal web e da Android.",
   "type": "module",
   "main": "src/server.js",
