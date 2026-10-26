@@ -882,6 +882,7 @@ test('budget: la media dei 3 mesi comprende i ricorrenti; entrate medie e ricorr
   for (const id of pay) assert.equal((await api('PUT', `/api/transactions/${id}/tag`, { tag: 'ricorrente' })).status, 200);
   const made = await api('POST', '/api/recurring', { name: 'Palestra', day: 10, assign: pay });
   assert.equal(made.status, 200);
+  await api('PUT', `/api/recurring/${made.json.key}/active`, { active: true }); // l'ultimo pagamento può avere più di 45 giorni: senza questo il test dipende dal giorno del mese
   await api('PUT', '/api/budgets', { spesa: 300, svago: 100, carburante: 80, altro: 20 });
   const t1 = (await api('GET', '/api/budgets')).json.month.totals;
   assert.equal(t1.income3, 2000); // (1000 + 2000 + 3000) / 3

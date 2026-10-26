@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.39.3
+- **Test del Budget stabile**: il test sulla media dei ricorrenti falliva dopo il 25 del mese (l'ultimo pagamento superava i 45 giorni e il ricorrente risultava inattivo), facendo diventare rossa la verifica su GitHub. Ora forza il ricorrente attivo.
+
 ## 0.39.2
 - **Niente più copie dopo aver ricollegato una banca**: i movimenti di una banca collegata il cui conto non è più fra quelli attuali (le copie con «UniCredit · » senza nome del conto) si cancellano da soli all'avvio del server e dopo ogni lettura; se esiste l'identico movimento attuale (banca, data, importo, descrizione) gli passano tag, nome, ricorrente e «già smistato». Gli importati dagli estratti non si toccano. Ricollegare non azzera più il conteggio delle letture del giorno. Test in `test/banks.test.js`.
 - **Movimenti, filtri**: la barra non va più a capo da sola (sul telefono anno e mese affiancati, tag e ricerca a tutta larghezza) e sopra c'è il contatore **Filtri x/4** (anno, mese, tag, ricerca attivi).
