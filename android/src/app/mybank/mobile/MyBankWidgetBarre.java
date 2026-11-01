@@ -102,7 +102,7 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank_barre);
         Calendar now = Calendar.getInstance();
-        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH);
+        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
         v.setImageViewBitmap(R.id.widget_month_bg, MyBankWidget.plainCell());
         v.setImageViewBitmap(R.id.widget_weeks, MyBankWidget.weeks());
         v.setTextViewText(R.id.widget_days_num, d.needLogin ? "—" : MyBankWidget.daysLeftNumber(daysLeft));

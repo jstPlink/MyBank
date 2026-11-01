@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.40.0
+- **Giorni rimanenti compreso oggi** (Budget e widget): il 1° di un mese di 30 giorni sono 30, l'ultimo giorno 1. Il segno del ritmo include già la spesa stimata di oggi (il 1° di un mese di 20 giorni con budget 100 sta su 95); ora lo verifica un test.
+- **Le tue scelte non si perdono più quando la banca registra un pagamento in sospeso**: il registrato eredita tag a mano, nome, ricorrente assegnato e lo stato «già smistato» del sospeso (`inheritChoices`: stesso conto, importo e nome, data entro 14 giorni), così non torna «Non definito» dopo un aggiornamento.
+- **Anche le entrate nuove** (banca o importate) restano «Non definito» finché non le smisti tu con «Entrata»; i non contabili restano automatici.
+- Test: quello dei ricorrenti non dipende più dal giorno del mese in cui gira.
+
 ## 0.39.3
 - **Test del Budget stabile**: il test sulla media dei ricorrenti falliva dopo il 25 del mese (l'ultimo pagamento superava i 45 giorni e il ricorrente risultava inattivo), facendo diventare rossa la verifica su GitHub. Ora forza il ricorrente attivo.
 

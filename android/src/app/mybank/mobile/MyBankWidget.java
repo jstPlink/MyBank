@@ -85,7 +85,7 @@ public class MyBankWidget extends AppWidgetProvider {
         return s;
     }
 
-    /** I giorni che restano alla fine del mese: il numero grande e, accanto, «giorni rimanenti» su due righe. */
+    /** I giorni che restano alla fine del mese, oggi compreso (l'ultimo giorno ne resta 1): il numero grande e, accanto, «giorni rimanenti» su due righe. */
     static String daysLeftNumber(int n) { return String.valueOf(Math.max(0, n)); }
 
     static String daysLeftText(int n) {
@@ -184,7 +184,7 @@ public class MyBankWidget extends AppWidgetProvider {
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank);
         Calendar now = Calendar.getInstance();
-        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH);
+        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
         v.setImageViewBitmap(R.id.widget_month_bg, plainCell());
         v.setImageViewBitmap(R.id.widget_weeks, weeks());
         v.setTextViewText(R.id.widget_days_num, d.needLogin ? "—" : daysLeftNumber(daysLeft));

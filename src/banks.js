@@ -22,6 +22,7 @@ export function applyCutoff(db) {
   for (const id of Object.keys(db.overrides)) if (!db.transactions[id]) delete db.overrides[id];
   for (const id of Object.keys(db.unsorted ?? {})) if (!db.transactions[id]) delete db.unsorted[id];
   for (const id of Object.keys(db.renames ?? {})) if (!db.transactions[id]) delete db.renames[id];
+  for (const id of Object.keys(db.recurringLinks ?? {})) if (!db.transactions[id]) delete db.recurringLinks[id];
   return removed;
 }
 /**
@@ -52,7 +53,30 @@ export function purgeOrphans(db) {
   return removed;
 }
 
-export const CONSENT_DAYS = 180;      // durata del consenso richiesto (la banca può ridurla)
+
+/**
+ * Un movimento in sospeso non ha mai l'identificativo di quello registrato (e, senza identificativo della banca, quello di un sospeso cambia ogni giorno):
+ * quando la banca lo registra, il registrato è un movimento nuovo per l'app. Perché le tue scelte non si perdano, un movimento nuovo che somiglia a un
+ * sospeso di prima (stesso conto, stesso importo, stesso nome, data vicina) lo «eredita»: tag a mano, nome a mano, ricorrente assegnato e lo stato
+ * «già smistato». `old` è l'elenco dei sospesi di prima, ancora presenti nei dati: ogni sospeso si usa una volta sola. Restituisce true se ha ereditato.
+ */
+export function inheritChoices(db, t, old) {
+  const same = (a, b) => String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
+  const gap = (a, b) => Math.abs(Date.parse(`${a}T12:00:00Z`) - Date.parse(`${b}T12:00:00Z`)) / DAY;
+  const near = old.filter((p) => p.id !== t.id && p.account === t.account && Math.round(p.amount * 100) === Math.round(t.amount * 100)
+    && (same(p.description, t.description) || (t.party && same(p.party, t.party))) && gap(p.date, t.date) <= 14);
+  if (!near.length) return false;
+  const p = near.sort((a, b) => gap(a.date, t.date) - gap(b.date, t.date))[0];
+  old.splice(old.indexOf(p), 1);
+  if (db.overrides[p.id]) { db.overrides[t.id] = db.overrides[p.id]; delete db.overrides[p.id]; }
+  if (db.renames?.[p.id]) { db.renames[t.id] = db.renames[p.id]; delete db.renames[p.id]; }
+  if (db.recurringLinks?.[p.id]) { db.recurringLinks[t.id] = db.recurringLinks[p.id]; delete db.recurringLinks[p.id]; }
+  if (db.unsorted?.[p.id]) { db.unsorted[t.id] = true; delete db.unsorted[p.id]; } // se l'avevi già smistato, il nuovo non torna «da smistare»
+  return true;
+}
+
+
+export const CONSENT_DAYS = 180;       // durata del consenso richiesto (la banca può ridurla)
 export const AUTO_PER_DAY = 4;         // accessi automatici al giorno concessi dalle banche (PSD2: senza l'utente presente)
 export const MANUAL_PER_DAY = 10;      // letture a mano: l'utente è presente e la richiesta lo dichiara con le intestazioni PSU
 const FALLBACK_SYNC_DAYS = 90;
@@ -220,11 +244,16 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
     let pendingList = null;
     try { pendingList = await fetchAccount(client, account.apiUid ?? account.uid, isoDay(now - FALLBACK_SYNC_DAYS * DAY), 'PDNG'); } catch { /* sospesi non disponibili: si tengono quelli di prima */ }
 
+    // i sospesi di prima: quando la banca li registra, i registrati ereditano le tue scelte (vedi inheritChoices)
+    const oldPending = Object.values(db.transactions).filter((x) => x.pending && x.account === account.uid);
     for (const tx of booked) {
       const t = mapTransaction(tx, conn, account, { seen });
       if (!t || t.date < from) continue;
       report.found++;
-      if (!db.transactions[t.id]) { report.added++; (db.unsorted ??= {})[t.id] = true; } // nuovo: lo smisti tu
+      if (!db.transactions[t.id]) {
+        report.added++;
+        if (!inheritChoices(db, t, oldPending)) (db.unsorted ??= {})[t.id] = true; // nuovo: lo smisti tu (a meno che sia un sospeso che avevi già smistato)
+      }
       db.transactions[t.id] = t;
     }
     if (pendingList) {
@@ -234,7 +263,7 @@ export async function syncConnection({ client, db, conn, auto = false, now = Dat
       for (const tx of pendingList) {
         const t = mapTransaction(tx, conn, account, { seen: pseen, pending: true, today: isoDay(now) });
         if (!t || t.date < from) continue;
-        if (!db.transactions[t.id] && !hadPending.has(t.id)) (db.unsorted ??= {})[t.id] = true;
+        if (!db.transactions[t.id] && !hadPending.has(t.id) && !inheritChoices(db, t, oldPending)) (db.unsorted ??= {})[t.id] = true; // un sospeso con un nuovo identificativo (cambia ogni giorno se la banca non lo dà) eredita le scelte del precedente
         db.transactions[t.id] = t;
         report.pending++;
       }

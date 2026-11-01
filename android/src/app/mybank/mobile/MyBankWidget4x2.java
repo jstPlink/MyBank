@@ -82,7 +82,7 @@ public class MyBankWidget4x2 extends AppWidgetProvider {
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank_4x2);
         Calendar now = Calendar.getInstance();
-        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH);
+        int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
         v.setImageViewBitmap(R.id.widget_month_bg, MyBankWidget.plainCell(MONTH_W, MONTH_H));
         v.setImageViewBitmap(R.id.widget_weeks, daysStrip());
         v.setViewVisibility(R.id.widget_day_label_29, now.getActualMaximum(Calendar.DAY_OF_MONTH) >= 29 ? View.VISIBLE : View.INVISIBLE); // febbraio non bisestile: niente 29

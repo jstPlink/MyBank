@@ -70,10 +70,11 @@ export function listTransactions(db, { year, month, tag, q, account, ids, sort =
  * e di `GET /api/widget`.
  *
  * Per ogni categoria: `budget`, `spent` (speso nel mese), `left` (budget − speso), `estDaily` (budget ÷ giorni del mese), `realDaily` (speso ÷ giorni
- * passati, oggi compreso), `pace` (quanto avresti speso oggi spendendo in modo uniforme: budget × giorni passati ÷ giorni del mese) e `avg3` (spesa
+ * passati, oggi compreso), `pace` (quanto avresti speso **a fine giornata** spendendo in modo uniforme: budget × giorni passati, oggi compreso, ÷ giorni del mese;
+ * il 1° di un mese di 20 giorni con budget 100 vale 5, quindi il segno sta già su 95) e `avg3` (spesa
  * media mensile degli ultimi 3 mesi completi, contando solo i mesi da quando ci sono dati; `null` se non ce n'è ancora nessuno).
  *
- * Nei `totals`: `budget`, `spent`, `left`, `pace`, `daysLeft`, più i dati del riquadro in cima al Budget:
+ * Nei `totals`: `budget`, `spent`, `left`, `pace`, `daysLeft` (i giorni rimanenti **compreso oggi**: il 31 di un mese di 31 giorni ne resta 1), più i dati del riquadro in cima al Budget:
  *   - `recurring`: i ricorrenti attivi al mese (mensili + annuali ÷ 12), che non sono una categoria con budget;
  *   - `avg3`: la spesa media dei 3 mesi, categorie **più** `recurring` (`null` senza mesi);
  *   - `income3`: le entrate medie dei 3 mesi completi precedenti, senza giroconti (`null` senza mesi);
@@ -114,7 +115,7 @@ export function monthBudget(db, now = new Date()) {
   const recurring = recurringTotals(recurringGroups(db, now)).monthly; // i ricorrenti sono fuori dalle categorie: si sommano alla media
   const avgCats = all.some((c) => c.avg3 != null) ? sum((c) => c.avg3) : null;
   const totals = {
-    budget: sum((c) => c.budget), spent: sum((c) => c.spent), left: sum((c) => c.left), pace: sum((c) => c.pace), daysLeft: p.daysInMonth - p.day,
+    budget: sum((c) => c.budget), spent: sum((c) => c.spent), left: sum((c) => c.left), pace: sum((c) => c.pace), daysLeft: p.daysInMonth - p.day + 1,
     recurring, avg3: avgCats == null ? null : round(avgCats + recurring), income3: past.length ? round(pastIncome / past.length) : null,
   };
   totals.totalSpend = round(recurring + totals.budget); // spesa totale prevista al mese: ricorrenti + budget impostato

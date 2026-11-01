@@ -83,7 +83,9 @@ test('collegamento di UniCredit e Revolut, tag dei pocket, storico, budget e wid
   // i movimenti nuovi restano tutti «Non definito» finché non li smisti tu (le uscite dei pocket non prendono il tag da sole)
   const fresh = (await api('GET', '/api/transactions')).json.transactions;
   assert.ok(fresh.filter((x) => x.amount < 0 && x.tag !== 'giroconto').every((x) => x.tag === 'non_definito'));
-  assert.ok(fresh.some((x) => x.tag === 'entrata') && fresh.some((x) => x.tag === 'giroconto')); // entrate e giroconti restano automatici
+  assert.ok(fresh.some((x) => x.amount > 0 && x.tag === 'non_definito')); // anche le entrate nuove aspettano che le smisti tu
+  assert.ok(fresh.filter((x) => x.amount > 0 && x.tag !== 'giroconto').every((x) => x.tag === 'non_definito'));
+  assert.ok(fresh.some((x) => x.tag === 'giroconto')); // i non contabili restano automatici
   // da smistati (o con i dati di prima) i tag arrivano dal pocket di provenienza
   ctx.db.unsorted = {};
   const all = (await api('GET', '/api/transactions')).json;
@@ -142,7 +144,7 @@ test('collegamento di UniCredit e Revolut, tag dei pocket, storico, budget e wid
   assert.equal(w.cats.spesa.budget, 300.5);
   assert.equal(w.cats.altro.budget, 60);
   assert.equal(w.cats.altro.label, 'Altro');
-  assert.equal(w.totals.daysLeft, w.daysInMonth - w.day);
+  assert.equal(w.totals.daysLeft, w.daysInMonth - w.day + 1); // i giorni rimanenti includono oggi
 });
 
 test('l\'aggiornamento automatico conta a parte e si ferma a 4 al giorno; a mano si può ancora leggere', async (t) => {
@@ -340,8 +342,7 @@ test("ricorrenti: solo quelli creati a mano, movimenti «Ricorrente» da assegna
   assert.ok(net.next >= today);
   assert.deepEqual(made.json.unassigned.map((u) => u.id), [rev]);
   // ogni ricorrente nasce con un promemoria di base: 3 giorni prima del prossimo pagamento, alle 9
-  const before3 = addMonths(today, 1); // la data scelta alla creazione
-  const d3 = new Date(Date.parse(`${before3}T12:00:00Z`) - 3 * 86400000).toISOString().slice(0, 10);
+  const d3 = new Date(Date.parse(`${net.next}T12:00:00Z`) - 3 * 86400000).toISOString().slice(0, 10); // 3 giorni prima del prossimo pagamento
   assert.deepEqual([net.reminder.text, net.reminder.day, net.reminder.month, net.reminder.time], ['Pagamento imminente: Netflix di 12,99 €', Number(d3.slice(8)), undefined, '09:00']);
   // annuale: conta per un dodicesimo; gli attivi vanno dal prossimo pagamento più vicino
   const assMade = (await api('POST', '/api/recurring', { name: 'Assicurazione auto', amount: 999, annual: true, next: addMonths(today, 5) })).json; // l'importo scritto si ignora
@@ -611,6 +612,8 @@ test("importazione da estratto conto: restano anche prima della data di inizio, 
   assert.deepEqual(first, { added: 3, updated: 0, skipped: 1 }); // quello di agosto lo legge la banca
   assert.deepEqual(await (await post(batch)).json(), { added: 0, updated: 3, skipped: 1 }); // di nuovo: nessun duplicato
 
+  assert.ok((await (await fetch(`${base}/api/transactions?year=2026&month=6`, { headers: { Cookie: cookie } })).json()).transactions.filter((x) => x.amount > 0).every((x) => x.tag === "non_definito")); // nuove: da smistare
+  made.db.unsorted = {}; // come se fossero già smistati: qui conta il tag automatico
   const june = (await (await fetch(`${base}/api/transactions?year=2026&month=6`, { headers: { Cookie: cookie } })).json()).transactions;
   assert.equal(june.length, 3);
   const pay = june.find((x) => x.bank === "busta"); // la busta paga è un'entrata con il netto del mese
@@ -725,7 +728,9 @@ test("buste paga: le nuove si leggono da sole (anche nelle sottocartelle) e dive
   assert.equal(reads, 3); // la busta di settembre non si scarica nemmeno
   assert.ok(!sf.downloads.some((p) => p.includes("2026.09")));
 
-  // sono entrate nei movimenti: conto «Busta paga», data nel mese, senza duplicati
+  // sono entrate nei movimenti: conto «Busta paga», data nel mese, senza duplicati (nuove, restano «Non definito» finché non le smisti)
+  assert.equal((await get("/api/transactions")).transactions[0].tag, "non_definito");
+  made.db.unsorted = {};
   const all = await get("/api/transactions");
   assert.equal(all.total, 3);
   const june = all.transactions.find((x) => x.description === "Stipendio Giugno 2026");
@@ -790,6 +795,7 @@ test("estratti UniCredit (conto trimestrale e carta Flexia) nelle sottocartelle:
   assert.deepEqual(list.files.map((f) => [f.path, f.statement?.state, f.statement?.count]), [["2024/Estratto Conto Carte Flexia 2024.12.pdf", "letto", 1], ["2024/Estratto conto 2024.10 - 2024.12.pdf", "letto", 3]]);
   assert.equal(Object.keys(made.db.transactions).length, 4); // 3 del conto + 1 della carta
 
+  made.db.unsorted = {}; // come se i movimenti nuovi fossero già smistati
   const all = await get("/api/transactions");
   const byDesc = Object.fromEntries(all.transactions.map((x) => [x.description, x]));
   assert.equal(byDesc["BONIFICO A VOSTRO FAVORE"].tag, "entrata");

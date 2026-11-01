@@ -105,6 +105,18 @@ test("addebito mensile della carta di credito: giroconto solo se di quel mese c'
   assert.equal(tags.get('c'), 'non_definito'); // l'acquisto con la carta è una spesa
 });
 
+test('budget: i giorni rimanenti includono oggi e il ritmo include la spesa di oggi', () => {
+  const db = dbWith([], { names: { p1: '01 Spesa' } });
+  db.settings = { budgets: { spesa: 300 } };
+  const first = monthBudget(db, new Date('2026-11-01T12:00:00Z')); // 1° novembre: 30 giorni, 10 € al giorno
+  assert.equal(first.totals.daysLeft, 30);             // oggi è ancora da vivere: restano tutti i 30 giorni
+  assert.equal(first.cats.spesa.estDaily, 10);
+  assert.equal(first.cats.spesa.pace, 10);             // si dà per scontato che oggi spendi la stima: il segno sta su 290, non su 300
+  const last = monthBudget(db, new Date('2026-11-30T12:00:00Z'));
+  assert.equal(last.totals.daysLeft, 1);               // l'ultimo giorno ne resta uno (oggi)
+  assert.equal(last.cats.spesa.pace, 300);
+});
+
 test('budget: ritmo (spesa uniforme fino a oggi) e totali del mese', () => {
   const db = dbWith([
     { id: 'o', account: 'p1', date: '2026-10-02', amount: -10, description: 'Esselunga' },
@@ -114,5 +126,5 @@ test('budget: ritmo (spesa uniforme fino a oggi) e totali del mese', () => {
   assert.equal(m.cats.spesa.pace, 140);
   assert.equal(m.cats.svago.pace, 28);
   assert.equal(m.cats.auto?.pace ?? m.cats.carburante.pace, null); // senza budget il ritmo non c'è
-  assert.deepEqual(m.totals, { budget: 372, spent: 10, left: 362, pace: 168, avg3: 0, recurring: 0, income3: 0, totalSpend: 372, daysLeft: 17 });
+  assert.deepEqual(m.totals, { budget: 372, spent: 10, left: 362, pace: 168, avg3: 0, recurring: 0, income3: 0, totalSpend: 372, daysLeft: 18 });
 });
