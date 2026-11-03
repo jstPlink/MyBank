@@ -1,6 +1,8 @@
-// MyBank: interfaccia web (e dell'app Android, che la include nell'APK). Nessuna dipendenza, nessuna logica: ogni cifra arriva dal server (/api/…).
+// MyBank: interfaccia web (e dell'app Android, che la include nell'APK). Nessuna dipendenza. I dati e i tag stanno nel server (/api/…); Storico e cifre del
+// Budget si sommano qui (calc.js) dall'elenco dei movimenti.
 // Struttura del file, in ordine: utilità e icone · rete (api, modalità localhost) · accesso · Opzioni · schede (hash, swipe) · Storico · Movimenti ·
 // aptico · Ricorrenti (elenco, foglio «Assegna», selezione) · Budget · Banche · Documenti · Notifiche · avvio.
+import { yearSummary, monthBudget, reminderMonth } from './calc.js';
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const money = (n) => (n == null ? '–' : new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: 'always' }).format(n));
@@ -58,8 +60,23 @@ const normServer = (raw) => {
 };
 
 class Unauthorized extends Error {}
+// Tutti i movimenti con il loro tag (a pagine da 1000), tenuti per un minuto o fino alla prima modifica.
+let allTx = null;
+async function allTransactions() {
+  if (allTx && Date.now() - allTx.at < 60000) return allTx.list;
+  const list = [];
+  for (;;) {
+    const d = await api('GET', `/api/transactions?year=0&month=0&tag=&q=&limit=1000&offset=${list.length}`);
+    TAGS = d.tags;
+    list.push(...d.transactions);
+    if (!d.transactions.length || list.length >= d.total) break;
+  }
+  allTx = { at: Date.now(), list };
+  return list;
+}
 async function api(method, url, body) {
   const headers = { ...(body ? { 'Content-Type': 'application/json' } : {}), ...(local.on && local.server ? { 'X-MyBank-Server': local.server } : {}) };
+  if (method !== 'GET') allTx = null; // un cambiamento (tag, sincronizzazione…) rende vecchio l'elenco dei movimenti tenuto qui
   const res = await fetch(url, { method, headers, body: body ? JSON.stringify(body) : undefined });
   if (res.status === 401) throw new Unauthorized();
   const data = await res.json().catch(() => ({}));
@@ -222,7 +239,7 @@ const yearOptions = (years, current) => {
 // ------------------------------------------------------------------ storico
 
 async function loadYear() {
-  const d = await api('GET', `/api/summary?year=${state.year}`);
+  const d = yearSummary(await allTransactions(), state.year);
   $('#yearSelect').innerHTML = yearOptions(d.years, state.year);
   const t = d.total;
   const tone = (n) => (n >= 0 ? 'pos' : 'neg');
@@ -233,20 +250,21 @@ async function loadYear() {
   const cell = (n, cls = '') => `<td class="num ${n ? cls : 'zero'}">${n ? money(n) : '–'}</td>`;
   const rows = d.months.map((m) => {
     const open = state.open.has(m.month);
-    const empty = !m.entrate && !m.uscite;
+    const empty = !m.entrate && !m.uscite && !m.undef;
     // le uscite del mese, una categoria per riga dalla più grande: nome, barra bianca larga quanto pesa sulle uscite (importi veri) e importo; un tocco apre i movimenti
     const cats = Object.entries(m.uscite ? { utenze: 0, ...m.tags } : m.tags).sort((a, b) => b[1] - a[1]); // «Utenze» c'è sempre, anche a zero
     // tutte le barre del mese hanno la stessa scala in euro (la più grande tra entrate e uscite = tutta la barra) e una tacca sottile ogni 250 euro
-    const scale = Math.max(m.entrate, m.uscite, 1);
+    const scale = Math.max(m.entrate, m.uscite, m.undef, 1);
     const tick = (250 / scale) * 100; // passo delle tacche, in % della barra (se è troppo fitto non si disegnano)
     const row = (k, name, v, extra = '') => `<button class="chip${extra}" data-see="${k}" data-see-month="${m.month}" title="Vedi i movimenti">
       <span class="cname">${icon(k)}${esc(name)}</span><span class="cbar"${tick >= 1.5 ? ` style="--tick:${tick}%"` : ''}><i style="width:${(v / scale) * 100}%"></i></span><span class="camt">${money(v)}</span></button>`;
     // la riga delle entrate del mese (in verde), poi le categorie delle uscite
     const entrate = m.entrate || m.uscite ? row('entrata', 'Entrate', m.entrate, ' in') : '';
+    const undefIn = m.undef > 0 ? row('non_definito', 'Non definito in entrata', m.undef) : ''; // entrate ancora da smistare: non contano nel totale
     const subs = Object.entries(m.subs ?? {});
     const catRows = cats.map(([k, v]) => row(k, TAGS[k] ?? k, v) + subs.filter(([sk]) => SUB_PARENT[sk] === k).map(([sk, sv]) => row(sk, TAGS[sk] ?? sk, sv, ' sub')).join('')).join('');
-    const tags = entrate || cats.length ? `<div class="legend">${entrate}${catRows}</div>` : '';
-    const undef = (m.tags.non_definito ?? 0) > 0 ? ' undef' : ''; // il mese ha movimenti «Non definito»: la riga si colora di giallo
+    const tags = entrate || undefIn || cats.length ? `<div class="legend">${entrate}${undefIn}${catRows}</div>` : '';
+    const undef = (m.tags.non_definito ?? 0) > 0 || m.undef > 0 ? ' undef' : ''; // il mese ha movimenti «Non definito»: la riga si colora di giallo
     return `<tr class="m${undef}" data-month="${m.month}"><th scope="row">${MONTHS[m.month - 1]}</th>${cell(m.entrate, 'pos')}${cell(m.uscite, 'neg')}${empty ? '<td class="num zero">–</td>' : `<td class="num ${tone(m.bilancio)}"><b>${money(m.bilancio)}</b></td>`}</tr>`
       + (open ? `<tr class="detail"><td colspan="4">${tags || 'Nessun movimento.'}</td></tr>` : '');
   }).join('');
@@ -277,10 +295,8 @@ const filterTagKeys = () => Object.keys(TAGS).filter((k) => !SUB_PARENT[k] || st
 async function loadMoves(keep = false) {
   const { year, month, tags, q } = state.mv;
   const base = `/api/transactions?year=${year}&month=${month}&tag=${encodeURIComponent(tags.join(','))}&q=${encodeURIComponent(q)}&account=${encodeURIComponent(state.mv.account)}&recurring=${encodeURIComponent(state.mv.recurring?.key ?? '')}&sort=${state.mv.sort}&dir=${state.mv.dir}`;
-  const [d, sum] = await Promise.all([
-    api('GET', `${base}&limit=1000&offset=0`),
-    api('GET', `/api/summary?year=${year}`),
-  ]);
+  const [d, all] = await Promise.all([api('GET', `${base}&limit=1000&offset=0`), allTransactions()]);
+  const sum = yearSummary(all, year);
   TAGS = d.tags; // i nomi dei tag li dà il server
   // filtro per conto o pocket (si arriva dalla scheda Banche): si vede e si toglie con un tocco
   const bar = $('#mvAccount');
@@ -288,7 +304,7 @@ async function loadMoves(keep = false) {
   if (state.mv.recurring) bar.innerHTML = `Pagamenti ricorrenti: <b>${esc(state.mv.recurring.name)}</b> <button class="link" data-clearaccount="1">Togli il filtro</button>`;
   else if (d.account) bar.innerHTML = `Conto o pocket: <b>${esc(d.account.name)}</b> <button class="link" data-clearaccount="1">Togli il filtro</button>`;
   // contatore dei filtri: sempre «attivi/totali» sui quattro campi della barra (anno, mese, tag, ricerca)
-  $('#mvFilters').innerHTML = `Filtri <b>${[year, month, tag, q.trim()].filter(Boolean).length}/4</b>`;
+  $('#mvFilters').innerHTML = `Filtri <b>${[year, month, tags.length, q.trim()].filter(Boolean).length}/4</b>`;
   $('#mvYear').innerHTML = `<option value="0">Tutti</option>${yearOptions(sum.years, year)}`;
   $('#mvMonth').innerHTML = `<option value="0">Tutti</option>${MONTHS.map((m, i) => `<option value="${i + 1}" ${i + 1 === month ? 'selected' : ''}>${m}</option>`).join('')}`;
   // il filtro per tag: una casella per ogni categoria principale (il filtro su una categoria include già le sue sotto categorie; una sotto categoria compare solo se è già scelta,
@@ -757,7 +773,8 @@ $('#recForm').addEventListener('submit', async (e) => {
 const BRICK = 75; // euro per mattoncino delle barre del budget
 
 async function loadBudget() {
-  const d = await api('GET', '/api/budgets');
+  const [d, txs, rec] = await Promise.all([api('GET', '/api/budgets'), allTransactions(), api('GET', '/api/recurring').catch(() => null)]);
+  d.month = monthBudget(txs, d.budgets, rec?.totals?.monthly ?? 0, TAGS);
   const t = d.month.totals;
   // In cima il riquadro del mese: residuo e giorni; poi spesa media (con i ricorrenti, grigia) ed entrata media (verde, sopra la spesa totale); poi spesa fissa
   // (i ricorrenti, grigia), budget impostato e spesa totale (la somma dei due, rossa), tutte e tre della stessa dimensione. Le cifre le calcola il server.
@@ -1077,8 +1094,25 @@ const resetNotifyForm = () => {
   $('#nfSave').textContent = 'Aggiungi notifica';
   $('#nfCancel').hidden = true;
 };
+$('#nfMonth').innerHTML += MONTHS.map((m, i) => `<option value="${i + 1}">${m} (ogni anno)</option>`).join('');
+// Il promemoria di un ricorrente segue la sua cadenza: annuale = ha il mese (suona una volta l'anno), mensile = non l'ha. Se i dati del server non
+// combaciano (promemoria vecchi, o server non aggiornato) li si riallinea da qui.
+async function alignReminders(list) {
+  const rec = await api('GET', '/api/recurring').catch(() => null);
+  let changed = false;
+  for (const n of list) {
+    const g = n.recurringKey && rec?.groups.find((x) => x.key === n.recurringKey);
+    if (!g) continue;
+    const month = g.annual ? n.month || reminderMonth(g.next) : 0;
+    if ((n.month || 0) === month) continue;
+    await api('PUT', `/api/notifications/${encodeURIComponent(n.id)}`, { text: n.text, day: n.day, time: n.time, month });
+    changed = true;
+  }
+  return changed;
+}
 async function loadNotifications() {
-  const d = await api('GET', '/api/notifications');
+  let d = await api('GET', '/api/notifications');
+  if (await alignReminders(d.notifications)) d = await api('GET', '/api/notifications');
   $('#notifyList').innerHTML = d.notifications.length
     ? d.notifications.map((n) => `<div class="acct"><div class="n">${esc(n.text)}<div class="s">${n.month ? `Il ${n.day} ${MONTHS[n.month - 1].toLowerCase()} di ogni anno` : `Il ${n.day} di ogni mese`} · ${esc(n.time)}</div></div>
         <button class="link" data-nf-edit="${esc(n.id)}">Modifica</button><button class="link danger" data-nf-del="${esc(n.id)}">Elimina</button></div>`).join('')
@@ -1089,7 +1123,7 @@ async function loadNotifications() {
 }
 $('#notifyForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const body = { text: $('#nfText').value, day: Number($('#nfDay').value), time: $('#nfTime').value };
+  const body = { text: $('#nfText').value, day: Number($('#nfDay').value), month: Number($('#nfMonth').value), time: $('#nfTime').value };
   try {
     await (notify.edit ? api('PUT', `/api/notifications/${encodeURIComponent(notify.edit)}`, body) : api('POST', '/api/notifications', body));
     toast(notify.edit ? 'Notifica salvata.' : 'Notifica aggiunta.');
@@ -1111,7 +1145,7 @@ $('#notifyList').addEventListener('click', async (e) => {
       const n = (notify.list ?? []).find((x) => x.id === b.dataset.nfEdit);
       if (!n) return;
       notify.edit = n.id;
-      $('#nfText').value = n.text; $('#nfDay').value = n.day; $('#nfTime').value = n.time;
+      $('#nfText').value = n.text; $('#nfDay').value = n.day; $('#nfMonth').value = n.month ?? 0; $('#nfTime').value = n.time;
       $('#nfSave').textContent = 'Salva modifiche';
       $('#nfCancel').hidden = false;
       $('#nfText').focus();

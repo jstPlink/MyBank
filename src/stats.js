@@ -10,14 +10,16 @@ const round = (n) => Math.round(n * 100) / 100;
 /** Entrate, uscite e bilancio di ogni mese dell'anno. I giroconti non contano; le uscite sono cifre positive. */
 export function yearSummary(db, year) {
   const tags = classify(db);
-  const months = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, entrate: 0, uscite: 0, bilancio: 0, tags: {}, subs: {} }));
+  const months = Array.from({ length: 12 }, (_, i) => ({ month: i + 1, entrate: 0, uscite: 0, bilancio: 0, undef: 0, tags: {}, subs: {} }));
   for (const t of visibleTransactions(db)) {
     if (Number(t.date.slice(0, 4)) !== year) continue;
     const tag = tags.get(t.id);
     if (tag === 'giroconto') continue;
     const m = months[Number(t.date.slice(5, 7)) - 1];
-    if (t.amount > 0) m.entrate += t.amount;
-    else {
+    if (t.amount > 0) {
+      // un'entrata segnata «Non definito» non è ancora un'entrata: non conta e fa colorare il mese (`undef`)
+      if (tag === 'non_definito') m.undef += t.amount; else m.entrate += t.amount;
+    } else {
       // una sotto categoria conta nella sua categoria (`tags`) e si vede a parte (`subs`)
       m.uscite -= t.amount;
       const p = parentTag(tag);
@@ -27,7 +29,7 @@ export function yearSummary(db, year) {
   }
   const total = { entrate: 0, uscite: 0, bilancio: 0 };
   for (const m of months) {
-    m.entrate = round(m.entrate); m.uscite = round(m.uscite); m.bilancio = round(m.entrate - m.uscite);
+    m.undef = round(m.undef); m.entrate = round(m.entrate); m.uscite = round(m.uscite); m.bilancio = round(m.entrate - m.uscite);
     for (const k of Object.keys(m.tags)) m.tags[k] = round(m.tags[k]);
     for (const k of Object.keys(m.subs)) m.subs[k] = round(m.subs[k]);
     total.entrate += m.entrate; total.uscite += m.uscite;
@@ -78,15 +80,17 @@ export function listTransactions(db, { year, month, tag, q, account, ids, sort =
  *   - `recurring`: i ricorrenti attivi al mese (mensili + annuali ÷ 12), che non sono una categoria con budget;
  *   - `avg3`: la spesa media dei 3 mesi, categorie **più** `recurring` (`null` senza mesi);
  *   - `income3`: le entrate medie dei 3 mesi completi precedenti, senza giroconti (`null` senza mesi);
- *   - `totalSpend`: la spesa totale prevista al mese, `recurring` + `budget`.
+ *   - `totalSpend`: la spesa totale **reale** del mese (tutte le uscite, giroconti esclusi).
  */
 export function monthBudget(db, now = new Date()) {
   const p = localParts(now);
   const tags = classify(db);
   const prefix = p.iso.slice(0, 7);
   const spent = Object.fromEntries(BUDGET_TAGS.map((k) => [k, 0]));
+  let realSpend = 0; // tutte le uscite del mese (giroconti esclusi), anche fuori dalle categorie con budget
   for (const t of visibleTransactions(db)) {
     if (t.amount >= 0 || !t.date.startsWith(prefix)) continue;
+    if (tags.get(t.id) !== 'giroconto') realSpend += -t.amount;
     const tag = parentTag(tags.get(t.id));
     if (tag in spent) spent[tag] += -t.amount;
   }
@@ -97,7 +101,7 @@ export function monthBudget(db, now = new Date()) {
   let pastIncome = 0;
   for (const t of visibleTransactions(db)) {
     if (!past.includes(t.date.slice(0, 7))) continue;
-    if (t.amount > 0) { if (tags.get(t.id) !== 'giroconto') pastIncome += t.amount; continue; }
+    if (t.amount > 0) { if (!['giroconto', 'non_definito'].includes(tags.get(t.id))) pastIncome += t.amount; continue; }
     const tag = parentTag(tags.get(t.id));
     if (tag in pastSpent) pastSpent[tag] += -t.amount;
   }
@@ -118,6 +122,6 @@ export function monthBudget(db, now = new Date()) {
     budget: sum((c) => c.budget), spent: sum((c) => c.spent), left: sum((c) => c.left), pace: sum((c) => c.pace), daysLeft: p.daysInMonth - p.day + 1,
     recurring, avg3: avgCats == null ? null : round(avgCats + recurring), income3: past.length ? round(pastIncome / past.length) : null,
   };
-  totals.totalSpend = round(recurring + totals.budget); // spesa totale prevista al mese: ricorrenti + budget impostato
+  totals.totalSpend = round(realSpend); // spesa totale reale del mese (come le uscite dello Storico), non fissa + budget
   return { year: p.year, month: p.month, day: p.day, daysInMonth: p.daysInMonth, cats, totals };
 }

@@ -5,8 +5,8 @@ Vedi README.md per le schede, i tag, il widget, l'avvio, le API e la struttura. 
 
 ## Architettura (da rispettare)
 
-- **Tutta la logica e tutti i dati stanno nel server** (`src/`): tag, movimenti non contabili, storico, budget e totali del Budget, aggiornamenti. Il **frontend** (`public/`) è solo grafica e chiede tutto a `/api/…`; il localhost (`npm start`) e l'app Android non hanno dati né logica propri.
-- Una funzione nuova = prima l'API nel server (con un test in `test/flow.test.js`), poi la grafica. Un'API nuova richiede il server aggiornato: il frontend mostra «Il server non ha ancora questa funzione» se risponde 404.
+- **I dati stanno nel server** (`src/`): l'elenco completo dei movimenti con tag e parametri, i budget, i ricorrenti, le notifiche, gli aggiornamenti dalle banche. Il **frontend** (`public/`, web e app Android) prende questi dati da `/api/…` e li **organizza e somma da solo** (`public/calc.js`: Storico dell'anno, cifre del Budget come la spesa totale): una cifra che si ricava dai movimenti si calcola nel frontend, così cambia senza aggiornare il server. Il localhost (`npm start`) e l'app non hanno dati propri.
+- Nel server resta solo ciò che serve a chi non ha il frontend (il widget Android usa `/api/widget`) o ciò che è dato, non cifra. Una funzione nuova che richiede dati nuovi = prima l'API (con un test in `test/flow.test.js`), poi la grafica; i calcoli di `public/calc.js` si provano in `test/calc.test.js`. Un'API nuova richiede il server aggiornato: il frontend mostra «Il server non ha ancora questa funzione» se risponde 404.
 - Il frontend è incluso nell'APK (`assets/www`): per portare una modifica grafica sul telefono basta ricostruire l'APK.
 
 ## Tecnologia

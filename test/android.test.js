@@ -68,6 +68,8 @@ test('notifiche: permessi, ricevitore nel manifest, icona e ponte per la pagina'
   for (const f of ['Notifier', 'NotifyReceiver']) assert.ok(fs.existsSync(`android/src/app/mybank/mobile/${f}.java`), f);
   assert.ok(fs.existsSync('android/res/drawable/ic_notify.xml'));
   assert.match(fs.readFileSync('android/src/app/mybank/mobile/MainActivity.java', 'utf8'), /void syncNotifications\(\)/);
+  // ogni script che app.js importa deve essere servito dall'APK (MainActivity li elenca a mano): altrimenti va al server, che può non averlo e la pagina resta vuota
+  for (const [, f] of fs.readFileSync('public/app.js', 'utf8').matchAll(/from '\.\/([\w.-]+\.js)'/g)) assert.ok(fs.readFileSync('android/src/app/mybank/mobile/MainActivity.java', 'utf8').includes(`equals("/${f}")`), f);
   assert.match(fs.readFileSync('public/app.js', 'utf8'), /Native\?\.syncNotifications/);
   assert.match(fs.readFileSync('public/app.js', 'utf8'), /Native\?\.tick/); // tocco aptico sui pulsanti
   assert.match(fs.readFileSync('android/src/app/mybank/mobile/MainActivity.java', 'utf8'), /performHapticFeedback/);

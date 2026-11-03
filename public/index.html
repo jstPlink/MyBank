@@ -116,7 +116,10 @@
           <form id="notifyForm">
             <label>Testo <input id="nfText" maxlength="200" autocomplete="off" required placeholder="Per esempio: paga l'affitto"></label>
             <div class="fields two">
-              <label>Giorno del mese <input id="nfDay" type="number" inputmode="numeric" min="1" max="31" step="1" required placeholder="1-31"></label>
+              <label>Giorno <input id="nfDay" type="number" inputmode="numeric" min="1" max="31" step="1" required placeholder="1-31"></label>
+              <label>Mese <select id="nfMonth"><option value="0">Ogni mese</option></select></label>
+            </div>
+            <div class="fields two">
               <label>Orario <input id="nfTime" type="time" required value="09:00"></label>
             </div>
             <div class="foot"><button class="primary" type="submit" id="nfSave">Aggiungi notifica</button><button class="ghost" type="button" id="nfCancel" hidden>Annulla modifica</button></div>

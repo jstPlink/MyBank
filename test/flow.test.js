@@ -894,7 +894,7 @@ test('budget: la media dei 3 mesi comprende i ricorrenti; entrate medie e ricorr
   assert.equal(t1.income3, 2000); // (1000 + 2000 + 3000) / 3
   assert.equal(t1.recurring, 30);
   assert.equal(t1.budget, 500);
-  assert.equal(t1.totalSpend, 530); // ricorrenti + budget
+  assert.equal(t1.totalSpend, 0); // la spesa totale è quella reale del mese (qui nessun movimento nel mese corrente), non ricorrenti + budget
   assert.ok(t1.avg3 >= t1.recurring); // la media comprende i ricorrenti
 });
 
@@ -938,4 +938,24 @@ test("ricorrenti: l'importo è la media dei totali mensili (i pagamenti dello st
   const ann = await api('POST', '/api/recurring', { name: 'Assicurazione', annual: true, day: 10, month: 3, assign: [a1, a2, a3] });
   const ga = ann.json.groups.find((x) => x.key === ann.json.key);
   assert.deepEqual([ga.amount, ga.periods, ga.monthly], [120, 2, 10]);
+});
+
+test('Storico: un\'entrata «Non definito» non conta come entrata; promemoria annuali sempre con il mese', async (t) => {
+  const { api, db } = await setup(t);
+  await api('POST', '/api/login', { password: 'segreta' });
+  const id = 'z1';
+  db.transactions[id] = { id, bank: 'revolut', account: 'a1', date: '2026-03-05', amount: 500, description: 'Bonifico', party: 'X', currency: 'EUR' };
+  assert.equal((await api('PUT', `/api/transactions/${id}/tag`, { tag: 'non_definito' })).status, 200);
+  const mar = (await api('GET', '/api/summary?year=2026')).json.months[2];
+  assert.equal(mar.entrate, 0);
+  assert.equal(mar.undef, 500);
+  assert.equal((await api('GET', '/api/transactions?year=2026&month=3')).json.totals.entrate, 0);
+  // un ricorrente annuale con un promemoria senza mese lo riceve; passando a mensile lo perde
+  const made = await api('POST', '/api/recurring', { name: 'Assicurazione', annual: true, day: 20, month: 9 });
+  const key = made.json.key;
+  const n = db.notifications.find((x) => x.recurringKey === key);
+  delete n.month; n.auto = false;
+  assert.ok((await api('GET', '/api/notifications')).json.notifications.find((x) => x.recurringKey === key).month > 0);
+  await api('PUT', `/api/recurring/${key}`, { annual: false });
+  assert.equal((await api('GET', '/api/notifications')).json.notifications.find((x) => x.recurringKey === key).month, undefined);
 });

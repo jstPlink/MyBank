@@ -95,7 +95,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     const name = account ? accountNames(db).get(account)?.name : '';
     // entrate e uscite dei movimenti filtrati (tutti, non solo i primi 1000); i giroconti non contano
     const totals = { entrate: 0, uscite: 0 };
-    for (const t of list) if (t.tag !== 'giroconto') { if (t.amount > 0) totals.entrate += t.amount; else totals.uscite -= t.amount; }
+    for (const t of list) if (t.tag !== 'giroconto') { if (t.amount < 0) totals.uscite -= t.amount; else if (t.tag !== 'non_definito') totals.entrate += t.amount; }
     totals.entrate = Math.round(totals.entrate * 100) / 100; totals.uscite = Math.round(totals.uscite * 100) / 100;
     // a pagine: `limit` (al massimo 1000, di base 1000) e `offset`
     const limit = Math.min(1000, Math.max(1, Math.floor(Number(req.query.limit)) || 1000));
@@ -306,7 +306,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
 
   // ---------------------------------------------------------------- notifiche
   // Promemoria con testo, giorno del mese e orario: li salva il server, l'app Android li legge e li programma sul telefono.
-  const listNotifications = () => ({ notifications: db.notifications });
+  const listNotifications = () => { refreshAutoReminders(); return { notifications: db.notifications }; };
   app.get('/api/notifications', (req, res) => res.json(listNotifications()));
   app.post('/api/notifications', wrap(async (req, res) => {
     if (db.notifications.length >= 50) return bad(res, 'Troppe notifiche: toglierne qualcuna.');
@@ -355,11 +355,13 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
   const refreshAutoReminders = () => {
     const groups = recurringGroups(db);
     for (const n of db.notifications) {
-      const g = n.auto && groups.find((x) => x.key === n.recurringKey);
+      const g = n.recurringKey && groups.find((x) => x.key === n.recurringKey);
       if (!g) continue;
       const d = defaultReminder(g);
-      n.text = d.text; n.day = d.day;
-      if (d.month) n.month = d.month; else delete n.month;
+      if (n.auto) { n.text = d.text; n.day = d.day; }
+      // la cadenza segue il ricorrente anche per i promemoria modificati a mano: annuale = ha il mese (una volta l'anno), mensile = non l'ha
+      if (g.annual) n.month = n.month || d.month; else delete n.month;
+      if (n.auto && g.annual) n.month = d.month;
     }
   };
   const dropReminder = (key) => { db.notifications = db.notifications.filter((n) => n.recurringKey !== key); };
@@ -410,6 +412,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
       if (!/^\d{4}-\d{2}-\d{2}$/.test(next) || Number.isNaN(Date.parse(next))) return bad(res, 'Data del prossimo pagamento non valida.');
       m.next = next;
     }
+    refreshAutoReminders(); // cadenza o data cambiate: il promemoria segue
     await store.save();
     res.json(recurringState());
   }));

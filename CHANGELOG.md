@@ -2,6 +2,15 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.41.0
+- **Calcoli nel frontend**: Storico dell'anno e cifre del Budget (spesa totale, medie, residuo) si sommano nella grafica (`public/calc.js`) dall'elenco dei movimenti con tag, quindi web e app mostrano i valori corretti anche con il server non aggiornato. I promemoria dei ricorrenti si riallineano dall'app (annuali col mese). Il server tiene dati e tag.
+- **Notifiche annuali**: il promemoria di un ricorrente annuale ha sempre il mese (suona una volta l'anno), anche se creato prima o modificato a mano; passando a mensile lo perde. Nelle Opzioni il form delle notifiche ha il campo **Mese** («Ogni mese» o un mese).
+- **Storico**: un'entrata segnata «Non definito» non conta più fra le entrate (né nei totali dei Movimenti né nell'entrata media); il mese si colora di giallo, come per le uscite.
+- **Budget, spesa totale**: è la spesa reale del mese (tutte le uscite, giroconti esclusi), non più ricorrenti + budget.
+- **Storico, dettaglio del mese**: le entrate «Non definito» compaiono come riga «Non definito in entrata».
+- **App Android**: lo script `calc.js` è servito dall'APK come gli altri file del frontend (senza, la pagina restava vuota con un server non aggiornato); un test controlla che ogni script importato da `app.js` sia nell'elenco.
+- Test dei ricorrenti indipendente dal giorno del mese; giorni rimanenti compreso oggi anche nei calcoli del frontend.
+
 ## 0.40.0
 - **Giorni rimanenti compreso oggi** (Budget e widget): il 1° di un mese di 30 giorni sono 30, l'ultimo giorno 1. Il segno del ritmo include già la spesa stimata di oggi (il 1° di un mese di 20 giorni con budget 100 sta su 95); ora lo verifica un test.
 - **Le tue scelte non si perdono più quando la banca registra un pagamento in sospeso**: il registrato eredita tag a mano, nome, ricorrente assegnato e lo stato «già smistato» del sospeso (`inheritChoices`: stesso conto, importo e nome, data entro 14 giorni), così non torna «Non definito» dopo un aggiornamento.
