@@ -11,7 +11,16 @@ export const SOURCES = [...Object.keys(BANKS), 'busta'];
 // `settings.importedVisible` (elenco dei mesi «AAAA-MM» da mostrare); senza, o `null`, si mostra tutto.
 export const IMPORTED_VISIBLE = null; // tutti i mesi
 export const importedVisible = (db) => (Array.isArray(db.settings?.importedVisible) ? db.settings.importedVisible : IMPORTED_VISIBLE);
-export const isVisible = (db, t) => { const v = importedVisible(db); return !t.imported || v === null || v.includes(t.date.slice(0, 7)); };
+// Le entrate che vengono da documenti (le buste paga) valgono solo prima di questa data: dal 1 novembre 2026 le entrate sono solo i movimenti del conto.
+// Si può cambiare con `settings.documentIncomeUntil` (AAAA-MM-GG).
+export const DOCUMENT_INCOME_UNTIL = '2026-11-01';
+export const documentIncomeUntil = (db) => (/^\d{4}-\d{2}-\d{2}$/.test(db.settings?.documentIncomeUntil ?? '') ? db.settings.documentIncomeUntil : DOCUMENT_INCOME_UNTIL);
+export const isDocumentIncomeOver = (db, bank, date) => bank === 'busta' && date >= documentIncomeUntil(db);
+export const isVisible = (db, t) => {
+  if (isDocumentIncomeOver(db, t.bank, t.date)) return false; // una busta paga di quei mesi non conta più come entrata
+  const v = importedVisible(db);
+  return !t.imported || v === null || v.includes(t.date.slice(0, 7));
+};
 /** I movimenti che si mostrano: quelli della banca e gli importati dei mesi scelti. */
 export const visibleTransactions = (db) => Object.values(db.transactions).filter((t) => isVisible(db, t));
 
@@ -35,7 +44,7 @@ export function importTransactions(db, items) {
     ready.push({ x, amount, account, key });
   });
   for (const { x, amount, account, key } of ready) {
-    if (x.date >= from) { result.skipped++; continue; } // da questa data in poi i movimenti li legge la banca
+    if (x.date >= from || isDocumentIncomeOver(db, x.bank, x.date)) { result.skipped++; continue; } // da questa data in poi i movimenti li legge la banca
     const id = crypto.createHash('sha1').update(`import|${x.bank}|${account}|${key}`).digest('hex').slice(0, 24);
     const t = { id, bank: x.bank, account, date: x.date, amount, description: text(x.description, 200) || 'Movimento bancario', currency: 'EUR', imported: true };
     const label = text(x.accountLabel, 60), party = text(x.party, 120), remittance = text(x.remittance, 300);

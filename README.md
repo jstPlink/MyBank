@@ -87,6 +87,7 @@ Le buste paga della cartella «Buste paga» (e delle sue sottocartelle) sono **s
 - il **mese e l'anno** si ricavano dal nome del file («Busta Paga … AAAA.MM.pdf»; «Quatt.ma» e «Tredic.ma» per quattordicesima e tredicesima); la **data** del movimento è l'ultimo giorno del mese (30 giugno e 20 dicembre per quattordicesima e tredicesima);
 - il riquadro del netto si sposta un po' da una scansione all'altra: lo script legge una riga di cifre in tante finestre sovrapposte e vale l'importo letto da almeno 3 finestre. Provato sulle 59 buste 2022–2026: tutti gli importi coincidono con quelli letti a occhio. Se una busta non si legge, l'errore resta sotto il file e non si ritenta finché il file non cambia o il lettore non migliora;
 - come per gli estratti conto, dalla data di inizio (agosto 2026) in poi **non si legge nulla**: lo stipendio arriva su un conto che legge la banca e si conterebbe due volte;
+- **da novembre 2026 (1 novembre) le buste paga non contano più come entrate**: non si leggono e quelle già presenti con data da allora in poi non si mostrano né entrano nei totali; le entrate sono solo i movimenti del conto letti dalla banca (la data si cambia con `settings.documentIncomeUntil`, AAAA-MM-GG);
 - importare di nuovo non duplica nulla. Attenzione ai doppi conteggi con il conto su cui lo stipendio viene accreditato, quando quel conto è caricato.
 
 Resta `POST /api/import` per importare a mano un file di movimenti già letti (origine `busta`, `revolut` o `unicredit`), ma non serve più per le buste paga.

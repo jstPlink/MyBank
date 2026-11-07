@@ -611,6 +611,8 @@ test("importazione da estratto conto: restano anche prima della data di inizio, 
   const first = await (await post(batch)).json();
   assert.deepEqual(first, { added: 3, updated: 0, skipped: 1 }); // quello di agosto lo legge la banca
   assert.deepEqual(await (await post(batch)).json(), { added: 0, updated: 3, skipped: 1 }); // di nuovo: nessun duplicato
+  // dal 1 novembre 2026 le buste paga non contano più come entrate (restano i movimenti del conto)
+  assert.deepEqual(await (await post({ transactions: [{ ...busta, key: "2026-11", date: "2026-11-30" }] })).json(), { added: 0, updated: 0, skipped: 1 });
 
   assert.ok((await (await fetch(`${base}/api/transactions?year=2026&month=6`, { headers: { Cookie: cookie } })).json()).transactions.filter((x) => x.amount > 0).every((x) => x.tag === "non_definito")); // nuove: da smistare
   made.db.unsorted = {}; // come se fossero già smistati: qui conta il tag automatico
@@ -763,6 +765,14 @@ test("movimenti: ordinati per data o importo (nei due versi) e con i totali di e
   assert.deepEqual(all.totals, { entrate: 1500, uscite: 235.5 });
   assert.deepEqual((await api("GET", "/api/transactions?tag=entrata")).json.totals, { entrate: 1500, uscite: 0 });
   assert.deepEqual((await api("GET", "/api/transactions?tag=svago")).json.totals, { entrate: 0, uscite: 30 });
+  // un'entrata ancora «Non definito» non conta come entrata né nello Storico né nei Movimenti: le due somme coincidono
+  const income = all.transactions.find((x) => x.amount > 0);
+  db.unsorted[income.id] = true;
+  const year = Number(income.date.slice(0, 4));
+  const filtered = (await api("GET", `/api/transactions?tag=entrata&year=${year}`)).json;
+  assert.ok(!filtered.transactions.some((x) => x.id === income.id));
+  assert.equal(filtered.totals.entrate, (await api("GET", `/api/summary?year=${year}`)).json.total.entrate);
+  assert.equal(filtered.totals.entrate, 1500 - income.amount);
 });
 
 test("movimenti: a pagine (limit e offset), per mostrarne 200 alla volta quando sono più di 1000", async (t) => {

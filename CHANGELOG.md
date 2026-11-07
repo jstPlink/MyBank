@@ -2,6 +2,10 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.41.1
+- **Buste paga**: dal 1 novembre 2026 non contano più come entrate. Non si leggono più (né in automatico né con l'importazione a mano) e quelle già salvate con data da allora in poi non si mostrano e non entrano nei totali: le entrate sono solo i movimenti del conto letti dalla banca. La data si può cambiare con `settings.documentIncomeUntil`.
+- Test: il totale del filtro «Entrata» dei Movimenti coincide con le entrate dello Storico anche con un'entrata «Non definito».
+
 ## 0.41.0
 - **Calcoli nel frontend**: Storico dell'anno e cifre del Budget (spesa totale, medie, residuo) si sommano nella grafica (`public/calc.js`) dall'elenco dei movimenti con tag, quindi web e app mostrano i valori corretti anche con il server non aggiornato. I promemoria dei ricorrenti si riallineano dall'app (annuali col mese). Il server tiene dati e tag.
 - **Notifiche annuali**: il promemoria di un ricorrente annuale ha sempre il mese (suona una volta l'anno), anche se creato prima o modificato a mano; passando a mensile lo perde. Nelle Opzioni il form delle notifiche ha il campo **Mese** («Ogni mese» o un mese).

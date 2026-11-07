@@ -15,7 +15,7 @@ import { DOCUMENTS, cleanFileName, downloadFile, listDocuments, listFolder, norm
 import { PARSER_VERSION, parseStatement } from './estratto.js';
 import { UNICREDIT_PARSER, parseFlexia, parseUnicreditAccount, pdfWords } from './unicredit.js';
 import { PAYSLIP_PARSER, payslipInfo, readPayslipNet } from './busta.js';
-import { importTransactions, importedVisible } from './import.js';
+import { importTransactions, importedVisible, isDocumentIncomeOver } from './import.js';
 import { normalizeNotification } from './notifications.js';
 import { defaultReminder, dueFromDay, groupTransactionIds, recurringGroups, recurringOverview, ricorrenteStatus } from './recurring.js';
 import { openStore } from './store.js';
@@ -208,7 +208,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
 
   // ---------------------------------------------------------------- buste paga: lettura automatica
   // Ogni busta paga nuova nella cartella (e nelle sue sottocartelle) si scarica e se ne legge il «netto a pagare» (sono scansioni: OCR, vedi
-  // busta.js); diventa un movimento di entrata. Come per gli estratti, i mesi da agosto 2026 in poi non si leggono (il conto è letto dalla banca).
+  // busta.js); diventa un movimento di entrata. Come per gli estratti, i mesi da agosto 2026 in poi non si leggono (il conto è letto dalla banca); da novembre 2026 le buste paga non contano più come entrate.
   // La lettura va in sottofondo: l'elenco dei file risponde subito e dice quali buste sono ancora in attesa. L'esito sta in settings.payslipsRead.
   const payslipUrl = () => db.settings.documents?.payslips?.url ?? '';
   let payslipsBusy = null;
@@ -231,7 +231,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
         if (!info || !payslipTodo(f)) continue;
         const sig = `${f.size}|${f.modified}`;
         const at = new Date().toISOString();
-        if (info.date >= from) { rec[f.path] = { sig, at, skipped: true }; continue; }
+        if (info.date >= from || isDocumentIncomeOver(db, 'busta', info.date)) { rec[f.path] = { sig, at, skipped: true }; continue; }
         try {
           const amount = await payslipNet(await downloadFile(payslipUrl(), f.path, fetchImpl));
           importTransactions(db, [{ bank: 'busta', account: 'busta:paga', accountLabel: 'Busta paga', key: info.key, date: info.date, amount, description: info.description }]);
