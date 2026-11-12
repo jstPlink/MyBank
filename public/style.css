@@ -475,7 +475,8 @@ dialog.sheet h2 { font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .04em; t
 .amini .n { font: 600 var(--fs-md) var(--f-serif); white-space: nowrap; }
 .aopts { display: grid; }
 .aopt { display: grid; grid-template-columns: 1fr 22px; gap: 0 10px; align-items: center; padding: 11px 0; border-top: 1px solid var(--hair); cursor: pointer; }
-.aopt:first-child { border-top: 2px solid var(--ink); }
+button.aopt { width: 100%; border-width: 1px 0 0; border-style: solid; border-color: var(--hair); background: none; color: inherit; font: inherit; text-align: left; border-radius: 0; }
+.aopt:first-child, button.aopt:first-child { border-top: 2px solid var(--ink); }
 .aopt b { font: 700 var(--fs-sm) var(--f-mono); letter-spacing: .02em; text-transform: uppercase; }
 .aopt small { display: block; font-size: var(--fs-sm); color: var(--mute); }
 .aopt input { position: absolute; opacity: 0; pointer-events: none; }

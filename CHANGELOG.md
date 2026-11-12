@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.42.0
+- **Sotto categoria subito**: quando assegni a un movimento un tag che ha sotto categorie (oggi Auto), si apre subito un foglio che chiede se è Carburante, Autostrada o «Nessuna». Il tag è già salvato: chiudere il foglio lascia la sola categoria.
+
 ## 0.41.1
 - **Buste paga**: dal 1 novembre 2026 non contano più come entrate. Non si leggono più (né in automatico né con l'importazione a mano) e quelle già salvate con data da allora in poi non si mostrano e non entrano nei totali: le entrate sono solo i movimenti del conto letti dalla banca. La data si può cambiare con `settings.documentIncomeUntil`.
 - Test: il totale del filtro «Entrata» dei Movimenti coincide con le entrate dello Storico anche con un'entrata «Non definito».

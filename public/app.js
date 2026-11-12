@@ -335,6 +335,34 @@ async function loadMoves(keep = false) {
   renderMovesList();
 }
 
+/** Le sotto categorie di un tag (chiavi), solo quelle che il server nomina. */
+const subKeys = (parent) => Object.keys(SUB_PARENT).filter((k) => SUB_PARENT[k] === parent && TAGS[k]);
+
+/** Appena scegli un tag con sotto categorie, un foglio chiede a quale appartiene il movimento (la categoria stessa se nessuna); il tag è già salvato, quindi chiudere il foglio lascia la categoria. */
+function askSub(it) {
+  const dlg = $('#assignDialog');
+  const parent = parentTag(it.tag);
+  dlg.innerHTML = `<form method="dialog" id="subForm">
+    <div class="grab"></div><h2>Sotto categoria di ${esc(TAGS[parent])}</h2>
+    <div class="amini"><div>${esc(it.customName || it.remittance || it.description)}<small>${fmtDate(it.date)} · ${esc(it.accountName)}</small></div><b class="n">${it.amount < 0 ? '−' : ''}${money(Math.abs(it.amount))}</b></div>
+    <div class="aopts">
+      ${subKeys(parent).map((k) => `<button type="button" class="aopt" data-pick="${k}"><span><b>${esc(TAGS[k])}</b></span></button>`).join('')}
+      <button type="button" class="aopt" data-pick=""><span><b class="muted">Nessuna, solo ${esc(TAGS[parent])}</b></span></button>
+    </div>
+    <div class="foot"><button class="ghost" type="button" id="subCancel">Annulla</button></div>
+  </form>`;
+  $('#subCancel').addEventListener('click', () => dlg.close());
+  dlg.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', async () => {
+    const value = b.dataset.pick || parent;
+    try {
+      if (value !== it.tag) { await api('PUT', `/api/transactions/${it.id}/tag`, { tag: value }); it.tag = value; toast(`Tag: ${TAGS[value]}`); }
+      dlg.close();
+      if (state.mv.tags.length) await loadMoves(true); else renderMovesList();
+    } catch (err) { if (err instanceof Unauthorized) { dlg.close(); return fail(err); } toast(err.message); }
+  }));
+  if (!dlg.open) dlg.showModal();
+}
+
 /** Apre il foglio di assegnazione per un movimento dell'elenco e, a cose fatte, ricarica l'elenco. */
 function assignFromMove(t) {
   openAssign({ id: t.id, title: t.customName || t.remittance || t.description, date: t.date, amount: -t.amount, account: t.accountName, current: t.recurring?.key }, { after: () => loadMoves(true).catch(fail) });
@@ -407,6 +435,7 @@ $('#movimenti').addEventListener('change', async (e) => {
       if (it) { it.tag = value; if (value === 'ricorrente') it.recurring = null; else delete it.recurring; }
       toast(`Tag: ${TAGS[value]}`);
       if (value === 'ricorrente' && it) { renderMovesList(); assignFromMove(it); return; }
+      if (el.dataset.tag && it && subKeys(value).length) { renderMovesList(); askSub(it); return; } // un tag con sotto categorie: subito si chiede quale
       if (state.mv.tags.length) { await loadMoves(true); return; }
       renderMovesList();
     } catch (err) { fail(err); }
