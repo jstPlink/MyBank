@@ -25,7 +25,7 @@ import java.util.Calendar;
  * mese → Budget, categoria → Movimenti del mese filtrati, resto → app. Mese, testi di base e dati sono quelli di MyBankWidget e WidgetData.
  */
 public class MyBankWidgetBarre extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF3F0EA, MUTE = 0xFFA8A298, LATE = 0xFFFF5A2E, EMPTY = 0xFF2A2825;
+    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72, EMPTY = 0xFF262A24, ACC = 0xFFC9F36B;
     private static final String[] KEYS = WidgetData.KEYS;
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell, R.id.widget_altro_cell };
     private static final int[] BARS = { R.id.widget_spesa_bar, R.id.widget_svago_bar, R.id.widget_carburante_bar, R.id.widget_altro_bar };
@@ -85,7 +85,7 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
         Paint empty = new Paint(Paint.ANTI_ALIAS_FLAG);
         empty.setColor(EMPTY);
         Paint full = new Paint(Paint.ANTI_ALIAS_FLAG);
-        full.setColor(low ? LATE : PAPER);
+        full.setColor(low ? LATE : ACC);
         if (r <= 0) { g.drawRoundRect(new RectF(0, 0, w, h), BAR_RADIUS, BAR_RADIUS, empty); return b; }
         if (r >= 1) { g.drawRoundRect(new RectF(0, 0, w, h), BAR_RADIUS, BAR_RADIUS, full); return b; }
         float avail = h - BAR_GAP, level = (float) (avail * r);

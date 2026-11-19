@@ -400,7 +400,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
       if (!info && b.due < from) waiting++;
       const paid = db.billPaid[f.path];
       const due = b.due; // il mese lo decide il nome del file (scritto dall'utente), non il PDF
-      items.push({ path: f.path, name: f.name, type: b.type, from: b.from, to: b.to, due, url: f.url, amount: paid?.amount ?? info?.amount ?? null, paid: Boolean(paid?.paid) || due < from });
+      items.push({ path: f.path, name: f.name, folder: f.folder ?? '', type: b.type, from: b.from, to: b.to, due, url: f.url, amount: paid?.amount ?? info?.amount ?? null, paid: Boolean(paid?.paid) || due < from });
     }
     items.sort((a, b) => b.due.localeCompare(a.due) || a.type.localeCompare(b.type));
     await store.save();

@@ -6,10 +6,10 @@ import path from 'node:path';
 import { createApp } from '../src/server.js';
 import { addMonth, billName, normalizeExtra, parseBillText } from '../src/bills.js';
 
-test('bollette: il nome dà tipo e mese, il mese di scadenza è il successivo', () => {
-  assert.deepEqual(billName('Gas 2026.08.pdf'), { type: 'Gas', from: '2026-08', to: '2026-08', due: '2026-09' });
-  assert.deepEqual(billName('2026/Elettricità 2025.12.pdf'), { type: 'Elettricità', from: '2025-12', to: '2025-12', due: '2026-01' });
-  assert.deepEqual(billName('Acqua 2026.02 - 2026.03.pdf'), { type: 'Acqua', from: '2026-02', to: '2026-03', due: '2026-04' });
+test('bollette: il nome dà tipo e mese di appartenenza (per i bimestrali l’ultimo)', () => {
+  assert.deepEqual(billName('Gas 2026.08.pdf'), { type: 'Gas', from: '2026-08', to: '2026-08', due: '2026-08' });
+  assert.deepEqual(billName('2026/Elettricità 2025.12.pdf'), { type: 'Elettricità', from: '2025-12', to: '2025-12', due: '2025-12' });
+  assert.deepEqual(billName('Acqua 2026.02 - 2026.03.pdf'), { type: 'Acqua', from: '2026-02', to: '2026-03', due: '2026-03' });
   assert.equal(billName('hera_bolletta_0000412523003137.pdf'), null);
   assert.equal(addMonth('2026-12', 1), '2027-01');
 });
@@ -31,7 +31,7 @@ test('altre spese: nome, importo, ogni mese o ogni anno con il mese', () => {
 test('bollette e altre spese: arretrati, importi dal PDF, spunte salvate nel server', async (t) => {
   const cur = new Date().toISOString().slice(0, 7);
   const dot = (i) => addMonth(cur, i).replace('-', '.'); // il mese nel nome: AAAA.MM
-  const names = [`Gas ${dot(-1)}.pdf`, `Gas ${dot(-2)}.pdf`, `Elettricità ${dot(-6)}.pdf`, 'hera_bolletta_1.pdf'];
+  const names = [`Gas ${dot(0)}.pdf`, `Gas ${dot(-1)}.pdf`, `Elettricità ${dot(-5)}.pdf`, 'hera_bolletta_1.pdf'];
   const months = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
   const fetchImpl = async (url) => {
     const u = new URL(url);
@@ -52,9 +52,9 @@ test('bollette e altre spese: arretrati, importi dal PDF, spunte salvate nel ser
   const b = (await api('GET', '/api/bills')).json;
   assert.equal(b.from, addMonth(cur, -1)); // si tiene il conto dal mese prima del primo uso
   assert.deepEqual(b.items.map((i) => [i.name, i.due, i.paid, i.amount]), [
-    [`Gas ${dot(-1)}.pdf`, cur, false, 25.18], // scade questo mese
-    [`Gas ${dot(-2)}.pdf`, addMonth(cur, -1), false, 25.18], // arretrato del mese scorso
-    [`Elettricità ${dot(-6)}.pdf`, addMonth(cur, -5), true, 57], // archivio: già pagata, ma l'importo si legge lo stesso
+    [`Gas ${dot(0)}.pdf`, cur, false, 25.18], // appartiene a questo mese
+    [`Gas ${dot(-1)}.pdf`, addMonth(cur, -1), false, 25.18], // arretrato del mese scorso
+    [`Elettricità ${dot(-5)}.pdf`, addMonth(cur, -5), true, 57], // archivio: già pagata, ma l'importo si legge lo stesso
   ]);
   // spunta e importo scritto a mano
   const arrear = b.items[1].path;

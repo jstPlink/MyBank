@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.50.0
+- **Opzioni → Aspetto**: scelta della palette (Grafite, la più neutra e di partenza, Ambra, Salvia, Ghiaccio, Lime, Turchese, Arancio, Smeraldo); si ricorda su ogni dispositivo.
+- **Bollette per appartenenza**: il mese nel nome del file («Gas 2026.08») è il mese a cui la bolletta appartiene, non quello dopo; nei bimestrali conta l'ultimo. Ogni bolletta mostra anche la **cartella** in cui sta il file.
+- **Spunta «pagata» immediata**: si vede subito e il salvataggio va in sottofondo (prima aspettava due letture di Seafile).
+- **Stile**: Movimenti completato (filtri in una scheda, menu della categoria, targhette) e widget con la palette vetro; le liste di Documenti sono più alte del 25%. Mockup delle palette in `design/stile-nuovo-8-mockup.html`.
+
 ## 0.49.0
 - **Stile «vetro» su tutta l'app** (palette nero e lime, carattere Figtree incluso in `public/fonts/` e nell'APK, intensità 1,5): schede di vetro scuro in Storico, Movimenti, Ricorrenti, Budget, Documenti e Opzioni; in Ricorrenti attivi e non più attivi in due contenitori e targhette Mese/Anno a pillola; più spazio sopra «Modifica budget». Palette in variabili in fondo a `style.css`; regole aggiornate in README e CLAUDE.md.
 - **Intestazione**: in alto a sinistra non c'è più il logo con «MyBank» ma il nome della scheda aperta (Storico, Movimenti, Ricorrenti, Budget, Documenti, Opzioni).

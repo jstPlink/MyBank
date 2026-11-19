@@ -192,6 +192,22 @@ function applyHash() {
   show(tab);
 }
 
+// Palette dei colori (Opzioni → Aspetto): si ricorda su questo dispositivo; di partenza la più neutra (grafite)
+const PALETTES = [['grafite', 'Grafite', '#e9ebef', '#0e1012'], ['ambra', 'Ambra', '#f0b45a', '#101010'], ['salvia', 'Salvia', '#9fd8b8', '#0f1211'], ['ghiaccio', 'Ghiaccio', '#a9c8e8', '#0e1114'], ['lime', 'Lime', '#c9f36b', '#0b0c0b'], ['turchese', 'Turchese', '#5ee6d0', '#0b0e0f'], ['arancio', 'Arancio', '#ff8a3d', '#0d0b0a'], ['smeraldo', 'Smeraldo', '#3ddc97', '#08100d']];
+function currentPalette() { let v = ''; try { v = localStorage.getItem('mybank-palette') ?? ''; } catch { /* senza memoria locale resta quella di partenza */ } return PALETTES.some((p) => p[0] === v) ? v : 'grafite'; }
+function applyPalette() {
+  const cur = currentPalette();
+  document.body.dataset.pal = cur;
+  const list = document.getElementById('palList');
+  if (list) list.innerHTML = PALETTES.map(([k, n, acc, bg]) => `<button type="button" class="pal${k === cur ? ' on' : ''}" data-pal="${k}" aria-pressed="${k === cur}"><i style="background:${bg};border-color:${acc}"><b style="background:${acc}"></b></i>${n}</button>`).join('');
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest?.('button[data-pal]');
+  if (!b) return;
+  try { localStorage.setItem('mybank-palette', b.dataset.pal); } catch { /* non si ricorda, ma vale per ora */ }
+  applyPalette();
+});
+
 const TITLES = { storico: 'Storico', movimenti: 'Movimenti', ricorrenti: 'Ricorrenti', budget: 'Budget', documenti: 'Documenti', opzioni: 'Opzioni' };
 function show(tab) {
   if (tab === 'banche') { tab = 'opzioni'; $('#banche').open = true; } // le Banche stanno nelle Opzioni
@@ -201,6 +217,7 @@ function show(tab) {
   history.replaceState(null, '', `#${tab}`);
   for (const t of TABS) $(`#${t}`).hidden = t !== tab;
   document.body.classList.add('glass'); // lo stile vetro vale per tutte le schede (non per la pagina di accesso)
+  applyPalette();
   document.querySelectorAll('.tabs [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('#optionsBtn').setAttribute('aria-pressed', String(tab === 'opzioni'));
   ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, documenti: loadDocuments, opzioni: loadOptions })[tab]().catch(fail);
@@ -984,7 +1001,7 @@ async function loadDocuments() {
 const AMT = (p) => `<button class="amt${p.kind === 'extra' || p.amount == null ? ' edit' : ''}" data-amt="${esc(p.key)}" title="Cambia l'importo">${p.amount == null ? '–' : money(p.amount)}</button>`;
 function payRow(p, late) {
   return `<div class="bill${p.paid ? ' paid' : ''}${late ? ' late' : ''}"><button class="chk${p.paid ? ' on' : ''}" data-pay="${esc(p.key)}" aria-label="${p.paid ? 'Segna da pagare' : 'Segna pagata'}" aria-pressed="${p.paid}"></button>
-    <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.share < 100 && p.full != null ? ` · quota ${p.share}% di ${money(p.full)}` : ''}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
+    <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.folder ? ` · ${esc(p.folder)}` : ''}${p.share < 100 && p.full != null ? ` · quota ${p.share}% di ${money(p.full)}` : ''}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
 }
 const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
 
@@ -1007,7 +1024,7 @@ function renderDocs() {
   const billRow = (b) => {
     if (b.due >= bills.from) return payRow(payables({ from: bills.from, share: bills.share, items: [b] }, null, now)[0]);
     const q = bills.share ?? 100;
-    return `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio · ${esc(b.from.replace('-', '.'))}${q < 100 && b.amount != null ? ` · quota ${q}% di ${money(b.amount)}` : ''}</span></div><span class="amt">${b.amount == null ? '' : money(Math.round(b.amount * q) / 100)}</span></div>`;
+    return `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio${b.folder ? ` · ${esc(b.folder)}` : ''} · ${esc(b.from.replace('-', '.'))}${q < 100 && b.amount != null ? ` · quota ${q}% di ${money(b.amount)}` : ''}</span></div><span class="amt">${b.amount == null ? '' : money(Math.round(b.amount * q) / 100)}</span></div>`;
   };
   const billsBody = !bills?.configured
     ? `<p class="muted">${bills?.error ? esc(bills.error) : 'Inserisci il link della cartella nella sezione Link.'}</p>`
@@ -1156,9 +1173,16 @@ $('#docGroups').addEventListener('click', async (e) => {
     if (b.dataset.pay) { // spunta «pagata» (o toglie la spunta)
       const p = findPayable(b.dataset.pay);
       if (!p) return;
-      if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, paid: !p.paid });
-      else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, paid: !p.paid });
-      return await loadDocuments();
+      // la spunta si vede subito (il server risponde dopo, perché rilegge la cartella su Seafile): se il salvataggio fallisce si ricarica tutto
+      const paid = !p.paid;
+      if (p.kind === 'bill') { const it = state.dp.bills.items.find((x) => x.path === p.ref); if (it) it.paid = paid; }
+      else { const ex = (state.dp.extras.paid ??= {}); ex[`${p.ref}:${p.month}`] = { ...(ex[`${p.ref}:${p.month}`] ?? {}), paid }; }
+      renderDocs();
+      try {
+        if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, paid });
+        else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, paid });
+      } catch (err) { await loadDocuments().catch(() => {}); throw err; }
+      return;
     }
     if (b.dataset.amt) return openAmount(b.dataset.amt);
     if (b.dataset.share) return openShare();

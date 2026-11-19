@@ -19,18 +19,18 @@
     <item android:left="45.91dp" android:right="52.73dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#F1ECE1" /></shape></item>
     <item android:left="48.97dp" android:right="49.67dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
     <item android:left="52.03dp" android:right="46.61dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#D9573A" /></shape></item>
-    <item android:left="55.09dp" android:right="43.55dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="58.15dp" android:right="40.49dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="61.21dp" android:right="37.43dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="64.27dp" android:right="34.37dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="67.33dp" android:right="31.31dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="55.09dp" android:right="43.55dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="58.15dp" android:right="40.49dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="61.21dp" android:right="37.43dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="64.27dp" android:right="34.37dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="67.33dp" android:right="31.31dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
     <item android:left="70.39dp" android:right="28.25dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
     <item android:left="73.45dp" android:right="25.18dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
-    <item android:left="76.52dp" android:right="22.12dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="79.58dp" android:right="19.06dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="82.64dp" android:right="16.00dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="85.70dp" android:right="12.94dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
-    <item android:left="88.76dp" android:right="9.88dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#2A2825" /></shape></item>
+    <item android:left="76.52dp" android:right="22.12dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="79.58dp" android:right="19.06dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="82.64dp" android:right="16.00dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="85.70dp" android:right="12.94dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
+    <item android:left="88.76dp" android:right="9.88dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#262A24" /></shape></item>
     <item android:left="91.82dp" android:right="6.82dp" android:bottom="5dp"><shape android:shape="rectangle"><solid android:color="#3D1710" /></shape></item>
     <item android:left="0.00dp" android:right="100.00dp" android:top="9dp"><shape android:shape="rectangle"><solid android:color="#B3A8A298" /></shape></item>
     <item android:left="21.42dp" android:right="78.58dp" android:top="9dp"><shape android:shape="rectangle"><solid android:color="#B3A8A298" /></shape></item>

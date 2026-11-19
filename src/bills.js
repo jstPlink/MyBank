@@ -1,5 +1,5 @@
-// Bollette: i file della cartella «Bollette» (Seafile) sono chiamati «Tipo AAAA.MM.pdf» (o «Tipo AAAA.MM - AAAA.MM.pdf» se bimestrali): il mese del nome è quello
-// prima della scadenza. Dal PDF si leggono importo («Totale da pagare») e scadenza. Le «altre spese» (affitto, Tari, wifi…) non hanno documenti: le scrive l'utente.
+// Bollette: i file della cartella «Bollette» (Seafile) sono chiamati «Tipo AAAA.MM.pdf» (o «Tipo AAAA.MM - AAAA.MM.pdf» se bimestrali): il mese del nome è il mese a cui la bolletta appartiene (il consumo) e decide dove sta: per i bimestrali conta l'ultimo.
+// Dal PDF si legge l'importo («Totale da pagare»). Le «altre spese» (affitto, Tari, wifi…) non hanno documenti: le scrive l'utente.
 import crypto from 'node:crypto';
 
 const NAME = /^(.+?) (\d{4})\.(\d{2})(?: - (\d{4})\.(\d{2}))?\.pdf$/i;
@@ -8,12 +8,12 @@ const MONTHS = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'l
 /** «2026-08» + n mesi. */
 export const addMonth = (ym, n) => { const [y, m] = ym.split('-').map(Number); return new Date(Date.UTC(y, m - 1 + n, 1)).toISOString().slice(0, 7); };
 
-/** Dal nome di un file: tipo, mese di inizio e di fine (AAAA-MM) e mese di scadenza (il successivo all'ultimo); null se il nome non è quello delle bollette. */
+/** Dal nome di un file: tipo, mese di inizio e di fine (AAAA-MM) e mese di appartenenza (l'ultimo del nome); null se il nome non è quello delle bollette. */
 export function billName(name) {
   const m = NAME.exec(String(name ?? '').split('/').at(-1));
   if (!m) return null;
   const from = `${m[2]}-${m[3]}`, to = m[4] ? `${m[4]}-${m[5]}` : from;
-  return { type: m[1], from, to, due: addMonth(to, 1) };
+  return { type: m[1], from, to, due: to };
 }
 
 /** Importo («Totale da pagare») e data di scadenza (AAAA-MM-GG) dal testo di una bolletta; i campi non trovati sono null. */

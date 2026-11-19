@@ -18,8 +18,8 @@ import java.util.Calendar;
  * resto → app. Testi, immagini e dati sono quelli di MyBankWidget e WidgetData.
  */
 public class MyBankWidget4x2 extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF3F0EA, MUTE = 0xFFA8A298, LATE = 0xFFFF5A2E;
-    private static final int DAY_DONE = 0xFFF1ECE1, DAY_DONE_WE = 0xFFD9573A, DAY_LEFT = 0xFF2A2825, DAY_LEFT_WE = 0xFF3D1710;
+    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72;
+    private static final int DAY_DONE = 0xFFC9F36B, DAY_DONE_WE = 0xFFFF9A72, DAY_LEFT = 0xFF262A24, DAY_LEFT_WE = 0xFF3A2A24;
     private static final String[] KEYS = WidgetData.KEYS; // le prime tre: spesa, svago, carburante (Altro non c'è)
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell };
     private static final int[] BGS = { R.id.widget_spesa_bg, R.id.widget_svago_bg, R.id.widget_carburante_bg };

@@ -29,9 +29,9 @@ import java.util.Locale;
  * Movimenti del mese già filtrati per quella categoria; sul resto apre l'app. Un solo carattere (sans-serif), carta e inchiostro con il rosso come accento.
  */
 public class MyBankWidget extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF3F0EA, MUTE = 0xFFA8A298, LATE = 0xFFFF5A2E;
-    private static final int CELL = 0xFF1C1A18, FILL = 0xFF5B564C, FILL_LATE = 0xFF8A2A17, TICK = 0x40A8A298;
-    private static final int DAY_DONE = 0xFFF1ECE1, DAY_DONE_WE = 0xFFD9573A, DAY_LEFT = 0xFF2A2825, DAY_LEFT_WE = 0xFF3D1710;
+    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72, ACC = 0xFFC9F36B;
+    private static final int CELL = 0xFF181B16, FILL = 0xFF566734, FILL_LATE = 0xFF744E3B, TICK = 0x408C9488;
+    private static final int DAY_DONE = 0xFFC9F36B, DAY_DONE_WE = 0xFFFF9A72, DAY_LEFT = 0xFF262A24, DAY_LEFT_WE = 0xFF3A2A24;
     private static final String[] KEYS = WidgetData.KEYS;
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell, R.id.widget_altro_cell };
     private static final int[] BGS = { R.id.widget_spesa_bg, R.id.widget_svago_bg, R.id.widget_carburante_bg, R.id.widget_altro_bg };
@@ -96,7 +96,7 @@ public class MyBankWidget extends AppWidgetProvider {
     // ------------------------------------------------------------------ immagini
 
     // Le immagini sono bitmap di circa 3 px per dp (una cella è circa 68 × 75 dp).
-    private static final int CELL_W = 204, CELL_H = 225, CELL_RADIUS = 12;
+    private static final int CELL_W = 204, CELL_H = 225, CELL_RADIUS = 24;
     private static final int WEEKS_W = 210, WEEKS_H = 72;
 
     static Paint fill(int color) {
@@ -144,7 +144,7 @@ public class MyBankWidget extends AppWidgetProvider {
         }
         float top = Math.max(0, h - level - 6); // la linea del livello sta sopra il riempimento; a livello zero resta in fondo, rossa
         if (level <= 0) g.drawRect(0, h - 6, w, h, fill(LATE));
-        else g.drawRect(0, top, w, top + 6, fill(low ? LATE : PAPER));
+        else g.drawRect(0, top, w, top + 6, fill(low ? LATE : ACC));
         return rounded(b);
     }
 
