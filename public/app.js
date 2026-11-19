@@ -983,7 +983,7 @@ function payRow(p, late) {
   return `<div class="bill${p.paid ? ' paid' : ''}${late ? ' late' : ''}"><button class="chk${p.paid ? ' on' : ''}" data-pay="${esc(p.key)}" aria-label="${p.paid ? 'Segna da pagare' : 'Segna pagata'}" aria-pressed="${p.paid}"></button>
     <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.share < 100 && p.full != null ? ` · quota ${p.share}% di ${money(p.full)}` : ''}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
 }
-const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] || key === 'pay' ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
+const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
 
 function renderDocs() {
   const { links, bills, extras } = state.dp;
@@ -996,15 +996,14 @@ function renderDocs() {
     ? `${due.groups.map((g) => `<h3 class="sub${g.late ? ' late' : ''}"><span>${monthName(g.month)}${g.late ? ' · arretrato' : ''}</span><span class="cnt${g.late ? ' red' : ''}">${g.items.length} ${g.late ? 'non pagat' + (g.items.length === 1 ? 'a' : 'e') : 'da pagare'}</span></h3>${g.items.map((p) => payRow(p, g.late)).join('')}`).join('')}
        <div class="total"><span class="label">Totale da pagare</span><b>${money(due.total)}</b></div>`
     : `<p class="muted">${bills?.configured || extras?.extras?.length ? 'Non c\'è niente da pagare.' : 'Inserisci il link della cartella delle bollette (sezione Link) o aggiungi una spesa (Altre spese).'}</p>`;
-  const pay = docGroup('pay', 'Da pagare', due.count ? `${money(due.total)} · ${due.count} ${due.count === 1 ? 'voce' : 'voci'}` : 'niente', payBody, due.count ? ' red' : '');
+  const pay = `<section class="paysec"><div class="payhead"><h2 class="section">Da pagare</h2></div><div class="docbody">${payBody}</div></section>`; // sempre visibile, non si chiude
   // --- Bollette: solo lo storico delle pagate (quelle da pagare stanno in «Da pagare»)
   const billItems = all.filter((p) => p.kind === 'bill');
-  const types = [...new Set((bills?.items ?? []).map((b) => b.type))].sort();
-  const shareRow = types.length ? `<div class="shares"><span class="label">Quota che paghi</span>${types.map((t) => `<button class="btn" data-share="${esc(t)}">${esc(t)} ${bills.shares?.[t] ?? 100}%</button>`).join('')}</div>` : '';
+  const shareRow = bills?.configured ? `<div class="shares"><span class="label">Quota che paghi (tutte le forniture)</span><button class="btn" data-share="1">${bills.share ?? 100}%</button></div>` : '';
   const paidBills = (bills?.items ?? []).filter((b) => b.paid);
   const billRow = (b) => {
-    if (b.due >= bills.from) return payRow(payables({ from: bills.from, shares: bills.shares, items: [b] }, null, now)[0]);
-    const q = bills.shares?.[b.type] ?? 100;
+    if (b.due >= bills.from) return payRow(payables({ from: bills.from, share: bills.share, items: [b] }, null, now)[0]);
+    const q = bills.share ?? 100;
     return `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio · ${esc(b.from.replace('-', '.'))}${q < 100 && b.amount != null ? ` · quota ${q}% di ${money(b.amount)}` : ''}</span></div><span class="amt">${b.amount == null ? '' : money(Math.round(b.amount * q) / 100)}</span></div>`;
   };
   const billsBody = !bills?.configured
@@ -1123,7 +1122,6 @@ function renderStaged(key) {
 $('#docGroups').addEventListener('toggle', (e) => {
   const key = e.target.dataset?.doc;
   if (!key) return;
-  if (key === 'pay') { e.target.open = true; return; } // «Da pagare» resta sempre aperta
   state.docOpen[key] = e.target.open;
   if (e.target.open) loadFolder(key).catch(fail);
 }, true);
@@ -1160,7 +1158,7 @@ $('#docGroups').addEventListener('click', async (e) => {
       return await loadDocuments();
     }
     if (b.dataset.amt) return openAmount(b.dataset.amt);
-    if (b.dataset.share) return openShare(b.dataset.share);
+    if (b.dataset.share) return openShare();
     if (b.dataset.more) { state.dp.billsAll = !state.dp.billsAll; return renderDocs(); }
     if (b.dataset.open) return openExternal(b.dataset.open);
     if (b.dataset.extraAdd) return openExtra(null);
@@ -1222,11 +1220,11 @@ $('#docGroups').addEventListener('drop', (e) => {
 // una voce da pagare (bolletta o spesa di un mese), come la vede «Da pagare»
 const findPayable = (key) => payables(state.dp.bills, state.dp.extras, nowMonth()).find((p) => p.key === key);
 let amountFor = null;
-function openShare(type) {
-  amountFor = { kind: 'share', type };
-  $('#amountTitle').textContent = `Quota ${type}`;
+function openShare() {
+  amountFor = { kind: 'share' };
+  $('#amountTitle').textContent = 'Quota delle bollette';
   $('#amountLabel').textContent = 'Percentuale che paghi (%)';
-  $('#amountInput').value = String(state.dp.bills?.shares?.[type] ?? 100).replace('.', ',');
+  $('#amountInput').value = String(state.dp.bills?.share ?? 100).replace('.', ',');
   $('#amountError').textContent = '';
   $('#amountDialog').showModal();
   $('#amountInput').focus();
@@ -1248,7 +1246,7 @@ $('#amountForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const p = amountFor;
   try {
-    if (p.kind === 'share') await api('PUT', '/api/bills/share', { type: p.type, percent: $('#amountInput').value });
+    if (p.kind === 'share') await api('PUT', '/api/bills/share', { percent: $('#amountInput').value });
     else if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, amount: $('#amountInput').value });
     else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, amount: $('#amountInput').value });
     $('#amountDialog').close();

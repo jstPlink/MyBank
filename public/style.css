@@ -349,7 +349,11 @@ details.panel > summary::before, details.panel[open] > summary::before { content
 #budgetForm .foot { margin-top: 6px; }
 
 /* Documenti: tre categorie che si chiudono (titolo con la riga sotto, come nelle Opzioni), elenco dei file, caricamento e link */
-#docGroups > details.group { margin: 0 0 30px; }
+#docGroups > details.group, #docGroups > .paysec { margin: 0 0 30px; }
+.payhead { border-left: 6px solid var(--red); padding: 4px 0 4px 12px; }
+.payhead h2.section { font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; margin: 0; }
+.payhead h2::before { content: none; }
+.paysec > .docbody { margin-top: 14px; }
 #documenti > #docGroups { padding-top: 14px; }
 #documenti > #docGroups > details.group:last-child { margin-bottom: 0; }
 details.group > summary h2.section { margin: 0; }

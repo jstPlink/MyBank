@@ -399,12 +399,12 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
       }
       if (!info && b.due < from) waiting++;
       const paid = db.billPaid[f.path];
-      const due = info?.due ? info.due.slice(0, 7) : b.due; // la scadenza del PDF vince su quella del nome
+      const due = b.due; // il mese lo decide il nome del file (scritto dall'utente), non il PDF
       items.push({ path: f.path, name: f.name, type: b.type, from: b.from, to: b.to, due, url: f.url, amount: paid?.amount ?? info?.amount ?? null, paid: Boolean(paid?.paid) || due < from });
     }
     items.sort((a, b) => b.due.localeCompare(a.due) || a.type.localeCompare(b.type));
     await store.save();
-    return { configured: true, from, items, folderUrl: folder.folderUrl, pending: waiting, shares: db.settings.billShare ?? {} };
+    return { configured: true, from, items, folderUrl: folder.folderUrl, pending: waiting, share: db.settings.billShare ?? 100 };
   };
   const moneyOf = (v) => (v == null || v === '' ? undefined : Number(String(v).replace(',', '.')));
   app.get('/api/bills', wrap(async (req, res) => res.json(await billsState())));
@@ -418,14 +418,11 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     await store.save();
     res.json(await billsState());
   }));
-  // la quota (percentuale) che l'utente paga di ogni tipo di bolletta: 100 se non scritta
+  // la quota (percentuale) che l'utente paga delle bollette: una sola, vale per tutte le forniture (100 se non scritta)
   app.put('/api/bills/share', wrap(async (req, res) => {
-    const type = String(req.body?.type ?? '').trim().slice(0, 40);
     const percent = Number(String(req.body?.percent ?? '').replace(',', '.'));
-    if (!type) return bad(res, 'Tipo di bolletta mancante.');
     if (!Number.isFinite(percent) || percent <= 0 || percent > 100) return bad(res, 'La quota è una percentuale tra 1 e 100.');
-    const shares = (db.settings.billShare ??= {});
-    if (percent === 100) delete shares[type]; else shares[type] = Math.round(percent * 100) / 100;
+    db.settings.billShare = Math.round(percent * 100) / 100;
     await store.save();
     res.json(await billsState());
   }));

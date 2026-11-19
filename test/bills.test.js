@@ -67,12 +67,12 @@ test('bollette e altre spese: arretrati, importi dal PDF, spunte salvate nel ser
   assert.equal((await api('PUT', '/api/bills/paid', { path: 'hera_bolletta_1.pdf', paid: true })).status, 404);
 
   // quota: la percentuale che si paga di un tipo di bolletta
-  r = await api('PUT', '/api/bills/share', { type: 'Gas', percent: '50' });
-  assert.deepEqual(r.json.shares, { Gas: 50 });
-  assert.equal((await api('PUT', '/api/bills/share', { type: 'Gas', percent: 150 })).status, 400);
+  r = await api('PUT', '/api/bills/share', { percent: '50' });
+  assert.deepEqual(r.json.share, 50);
+  assert.equal((await api('PUT', '/api/bills/share', { percent: 150 })).status, 400);
   const { payables } = await import('../public/calc.js');
   assert.deepEqual(payables(r.json, null, cur).filter((p) => p.title === 'Gas').map((p) => [p.full, p.amount]), [[25.18, 12.59], [30.5, 15.25]]);
-  assert.deepEqual((await api('PUT', '/api/bills/share', { type: 'Gas', percent: 100 })).json.shares, {});
+  assert.deepEqual((await api('PUT', '/api/bills/share', { percent: 100 })).json.share, 100);
 
   // altre spese
   const e1 = (await api('POST', '/api/extras', { name: 'Affitto', amount: '650', every: 'month' })).json;
