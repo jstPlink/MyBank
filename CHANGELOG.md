@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.50.2
+- **Altre spese dall'inizio del conto**: affitto, Tari e le altre voci contano dal mese di partenza del conto (il mese prima del primo uso), non dal mese in cui le scrivi; così le voci di ottobre scritte a novembre sono da pagare.
+
 ## 0.50.1
 - **Da pagare a mese finito**: si mostrano le spese e le bollette fino al mese **prima** di quello in corso (a novembre: ottobre, in rosso); novembre compare dal 1° dicembre.
 

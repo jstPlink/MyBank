@@ -76,7 +76,7 @@ test('bollette e altre spese: arretrati, importi dal PDF, spunte salvate nel ser
 
   // altre spese
   const e1 = (await api('POST', '/api/extras', { name: 'Affitto', amount: '650', every: 'month' })).json;
-  assert.deepEqual([e1.from, e1.extras[0].from, e1.extras[0].amount], [addMonth(cur, -1), cur, 650]);
+  assert.deepEqual([e1.from, e1.extras[0].from, e1.extras[0].amount], [addMonth(cur, -1), addMonth(cur, -1), 650]);
   const id = e1.extras[0].id;
   assert.equal((await api('POST', '/api/extras', { name: 'Tari', amount: '112', every: 'year' })).status, 400); // manca il mese
   assert.equal((await api('PUT', `/api/extras/${id}/paid`, { month: cur, paid: true })).json.paid[`${id}:${cur}`].paid, true);

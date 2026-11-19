@@ -430,7 +430,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
   app.get('/api/extras', (req, res) => res.json(extrasState()));
   app.post('/api/extras', wrap(async (req, res) => {
     if (db.extras.length >= 50) return bad(res, 'Troppe voci: toglierne qualcuna.');
-    db.extras.push(normalizeExtra(req.body, undefined, thisMonth()));
+    db.extras.push(normalizeExtra(req.body, undefined, billsFrom()));
     await store.save();
     res.json(extrasState());
   }));

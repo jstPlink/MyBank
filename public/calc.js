@@ -112,7 +112,7 @@ export function payables(bills, extras, nowMonth) {
     out.push({ kind: 'bill', key: `bill:${b.path}`, ref: b.path, month: b.due, title: b.type, folder: b.folder ?? '', sub: 'Bolletta', period: b.from === b.to ? b.from : `${b.from} - ${b.to}`, full: b.amount, share, amount: b.amount == null ? null : round(b.amount * share / 100), paid: b.paid, url: b.url });
   }
   for (const x of extras?.extras ?? []) {
-    for (const m of monthsBetween(x.from > extras.from ? x.from : extras.from, prevMonth(nowMonth))) { // il mese in corso non è finito: si paga da quello dopo
+    for (const m of monthsBetween(extras.from, prevMonth(nowMonth))) { // il mese in corso non è finito: si paga da quello dopo
       if (x.every === 'year' && Number(m.slice(5)) !== x.month) continue;
       const p = extras.paid?.[`${x.id}:${m}`];
       out.push({ kind: 'extra', key: `extra:${x.id}:${m}`, ref: x.id, month: m, title: x.name, sub: x.every === 'year' ? 'Altre spese · annuale' : 'Altre spese', amount: p?.amount ?? x.amount, paid: Boolean(p?.paid) });
