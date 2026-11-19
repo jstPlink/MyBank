@@ -11,7 +11,8 @@ import { AUTO_PER_DAY, BANKS, applyCutoff, purgeOrphans, cutoffOf, startLink, fi
 import { checkKey, createClient, psuHeaders } from './eb.js';
 import { AUTO_HOURS, TZ, nextRun } from './schedule.js';
 import { monthBudget, listTransactions, yearSummary } from './stats.js';
-import { addMonth, billName, normalizeExtra, parseBillText } from './bills.js';
+import { addMonth, billName, mailFileName, monthIn, normalizeExtra, parseBillText, supplierOf } from './bills.js';
+import { fetchMessages } from './mail.js';
 import { DOCUMENTS, cleanFileName, downloadFile, listDocuments, listFolder, normalizeDocuments, uploadFile } from './documents.js';
 import { PARSER_VERSION, parseStatement } from './estratto.js';
 import { UNICREDIT_PARSER, parseFlexia, parseUnicreditAccount, pdfWords } from './unicredit.js';
@@ -37,7 +38,7 @@ async function pdfText(buffer) {
 export const VERSION = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 
 /** Crea l'app: `dir` è la cartella dei dati, `password` la password di accesso (vuota = accesso libero, solo in locale). */
-export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetch, cutoff = '', pdfToText = pdfText, wordsOf = pdfWords, payslipNet = readPayslipNet } = {}) {
+export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetch, cutoff = '', pdfToText = pdfText, wordsOf = pdfWords, payslipNet = readPayslipNet, mailFetch = fetchMessages } = {}) {
   const store = openStore(dir);
   const { db } = store;
   if (cutoff) db.settings.cutoff = cutoff; // di norma i movimenti partono dal 1 agosto 2026 (vedi banks.js)
@@ -293,35 +294,115 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     await uploadFile(url, cleanFileName(req.query.name), req.body, fetchImpl);
     res.json({ ok: true });
   }));
+  // ---------------------------------------------------------------- Gmail: bollette e buste paga arrivano per mail
+  // Per ogni cartella (bollette, buste paga) un account Gmail con la «password per app» di Google: il server legge le mail con un PDF, lo rinomina col modello dell'utente e lo carica su Seafile.
+  const MAIL_KEYS = ['bills', 'payslips'];
+  const MAIL_NAME = { bills: '{fornitore} {AAAA}.{MM}', payslips: 'Busta Paga {AAAA}.{MM}' };
+  const mailKey = (req) => { if (!MAIL_KEYS.includes(req.params.key)) throw new Error('Categoria sconosciuta.'); return req.params.key; };
+  const mailView = (key) => { const c = db.settings.mail?.[key]; return { key, connected: Boolean(c?.password), email: c?.email ?? '', from: c?.from ?? '', name: c?.name || MAIL_NAME[key], last: c?.last ?? null }; };
+  const mailBusy = new Set();
+  async function syncMail(key) {
+    const c = db.settings.mail?.[key];
+    const url = db.settings.documents?.[key]?.url;
+    if (!c?.password) throw new Error('Gmail non collegato.');
+    if (!url) throw new Error('Prima inserisci il link della cartella (Seafile).');
+    if (mailBusy.has(key)) throw new Error('La lettura della posta è già in corso.');
+    mailBusy.add(key);
+    try {
+      const folder = await listFolder(url, fetchImpl);
+      const existing = new Set(folder.files.map((f) => f.name.toLowerCase()));
+      const { messages, total } = await mailFetch({ email: c.email, password: c.password, from: c.from, since: c.since, seen: c.seen ?? [] });
+      const names = [], errors = [];
+      for (const m of messages) {
+        let ok = true;
+        for (const a of m.attachments) {
+          try {
+            const text = await pdfToText(a.data).catch(() => '');
+            const fallback = addMonth((m.date ?? new Date()).toISOString().slice(0, 7), -1); // la mail arriva il mese dopo
+            let fornitore = '', month = '';
+            if (key === 'bills') {
+              fornitore = supplierOf(m.subject, a.filename, text) || 'Bolletta';
+              const due = parseBillText(text).due;
+              month = due ? addMonth(due.slice(0, 7), -1) : (monthIn(`${m.subject} ${a.filename}`) || fallback);
+            } else month = monthIn(`${m.subject} ${a.filename}`) || monthIn(text) || fallback;
+            const name = cleanFileName(mailFileName(c.name || MAIL_NAME[key], { fornitore, month }));
+            if (existing.has(name.toLowerCase())) continue; // già nella cartella
+            await uploadFile(url, name, a.data, fetchImpl);
+            existing.add(name.toLowerCase());
+            names.push(name);
+          } catch (e) { ok = false; errors.push(`${a.filename}: ${e.message}`); }
+        }
+        if (ok) (c.seen ??= []).push(m.id);
+      }
+      c.seen = (c.seen ?? []).slice(-2000);
+      c.last = { at: new Date().toISOString(), imported: names.length, names, errors, pending: Math.max(0, total - messages.length) };
+      await store.save();
+      return c.last;
+    } catch (e) {
+      c.last = { at: new Date().toISOString(), imported: 0, names: [], errors: [e.message], pending: 0 };
+      await store.save();
+      throw e;
+    } finally { mailBusy.delete(key); }
+  }
+  const syncAllMail = async () => { for (const k of MAIL_KEYS) if (db.settings.mail?.[k]?.password && db.settings.documents?.[k]?.url) await syncMail(k).catch((e) => console.error(`Lettura di Gmail (${k}) non riuscita:`, e.message)); };
+  app.get('/api/mail', (req, res) => res.json({ mail: MAIL_KEYS.map(mailView) }));
+  app.put('/api/mail/:key', wrap(async (req, res) => {
+    const key = mailKey(req);
+    const old = db.settings.mail?.[key] ?? {};
+    const email = String(req.body?.email ?? '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return bad(res, 'Scrivi l\'indirizzo Gmail.');
+    const password = String(req.body?.password ?? '').trim() || old.password || '';
+    if (!password) return bad(res, 'Scrivi la password per app di Google.');
+    const name = String(req.body?.name ?? '').trim() || MAIL_NAME[key];
+    cleanFileName(mailFileName(name, { fornitore: 'Gas', month: '2026-01' }));
+    const from = String(req.body?.from ?? '').trim().slice(0, 100);
+    const since = old.since && email === old.email ? old.since : new Date(Date.now() - 35 * 86400000).toISOString().slice(0, 10);
+    await mailFetch({ email, password, from, since, seen: [], limit: 0 }); // prova l'accesso
+    (db.settings.mail ??= {})[key] = { email, password, from, name, since, seen: email === old.email ? (old.seen ?? []) : [], last: old.last ?? null };
+    await store.save();
+    res.json(mailView(key));
+  }));
+  app.delete('/api/mail/:key', wrap(async (req, res) => {
+    const key = mailKey(req);
+    if (db.settings.mail) delete db.settings.mail[key];
+    await store.save();
+    res.json(mailView(key));
+  }));
+  app.post('/api/mail/:key/sync', wrap(async (req, res) => { await syncMail(mailKey(req)); res.json(mailView(req.params.key)); }));
+
   // ---------------------------------------------------------------- bollette e altre spese
   // Si tiene il conto del pagato dal mese `billsFrom` (di base il mese prima del primo uso): le bollette e le spese di prima sono archivio.
   const thisMonth = () => new Date().toISOString().slice(0, 7);
   const billsFrom = () => (db.settings.billsFrom ??= addMonth(thisMonth(), -1));
+  const OLD_READS = 12; // quante bollette vecchie si leggono a ogni richiesta
   const billsState = async () => {
     const url = db.settings.documents?.bills?.url ?? '';
     const from = billsFrom();
     if (!url) return { configured: false, from, items: [] };
     const folder = await listFolder(url, fetchImpl);
     const items = [];
+    let reads = 0, waiting = 0;
     for (const f of folder.files) {
       const b = billName(f.name);
       if (!b) continue;
       const sig = `${f.size}:${f.modified}`;
       let info = db.billInfo[f.path];
       // importo e scadenza si leggono dal PDF solo per le bollette che contano (scadenza dal mese di partenza in poi)
-      if ((!info || info.sig !== sig) && b.due >= from && b.due <= addMonth(thisMonth(), 1)) {
+      if ((!info || info.sig !== sig) && b.due <= addMonth(thisMonth(), 1) && (b.due >= from || reads < OLD_READS)) {
+        if (b.due < from) reads++; // le vecchie (archivio) si leggono a poco a poco, qualche file per volta
         try {
           const read = parseBillText(await pdfToText(await downloadFile(url, f.path, fetchImpl)));
           info = db.billInfo[f.path] = { sig, amount: read.amount, due: read.due };
-        } catch (e) { info = { sig, amount: null, due: null, error: e.message }; }
+        } catch (e) { info = db.billInfo[f.path] = { sig, amount: null, due: null, error: e.message }; }
       }
+      if (!info && b.due < from) waiting++;
       const paid = db.billPaid[f.path];
       const due = info?.due ? info.due.slice(0, 7) : b.due; // la scadenza del PDF vince su quella del nome
       items.push({ path: f.path, name: f.name, type: b.type, from: b.from, to: b.to, due, url: f.url, amount: paid?.amount ?? info?.amount ?? null, paid: Boolean(paid?.paid) || due < from });
     }
     items.sort((a, b) => b.due.localeCompare(a.due) || a.type.localeCompare(b.type));
     await store.save();
-    return { configured: true, from, items, folderUrl: folder.folderUrl };
+    return { configured: true, from, items, folderUrl: folder.folderUrl, pending: waiting };
   };
   const moneyOf = (v) => (v == null || v === '' ? undefined : Number(String(v).replace(',', '.')));
   app.get('/api/bills', wrap(async (req, res) => res.json(await billsState())));
@@ -630,6 +711,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     const when = nextRun(new Date(), hoursNow());
     timer = setTimeout(async () => {
       try { await autoRead(); } catch (e) { console.error('Aggiornamento automatico non riuscito:', e.message); }
+      await syncAllMail();
       scheduleAutoRead();
     }, Math.max(1000, when.getTime() - Date.now()));
     timer.unref?.();

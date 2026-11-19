@@ -2,6 +2,10 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.45.0
+- **Gmail per cartella** (Link → Bollette e Buste paga): indirizzo Gmail e «password per app» di Google (sul server, mai mostrata), mittente facoltativo e **Nome dei file** con `{fornitore}`, `{AAAA}`, `{MM}`. Il server (a ogni aggiornamento automatico e con «Leggi ora») legge via IMAP le mail con un PDF, lo rinomina (fornitore, mese e scadenza dal PDF) e lo carica su Seafile; le mail lette non si rileggono. `src/mail.js`, `/api/mail…`.
+- **Importi delle bollette vecchie**: anche quelle prima del mese di partenza mostrano l'importo (il server le legge a poco a poco, qualche file per volta).
+
 ## 0.44.0
 - **Scheda Documenti** (al posto di Banche, passata nelle Opzioni): **Da pagare** (arretrati sempre visibili, poi il mese; totale), **Bollette** (mese in corso e arretrati, «Mostra gli altri mesi» per lo storico; importo e scadenza letti dal PDF; casella «pagata»), **Altre spese** (affitto, Tari, wifi… con importo, ogni mese o ogni anno), **Buste paga**, **Estratti conto** e **Link** (con caricamento a mano: trascinamento sul computer, pulsante sul telefono). Documenti tolti dalle Opzioni. Server: `src/bills.js`, `GET /api/bills`, `PUT /api/bills/paid`, `/api/extras…`. Richiede il server aggiornato.
 

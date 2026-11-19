@@ -169,6 +169,7 @@ Tutte dietro password (cookie o `Authorization: Bearer`), tranne login, versione
 | `PUT /api/transactions/:id/name` | nome a mano di un movimento (`name` vuoto = nome della banca; al massimo 120 caratteri); `GET /api/transactions` lo dà in `customName` |
 | `GET/PUT /api/documents`, `GET/POST /api/documents/:key/files` | il LINK delle tre cartelle (`payslips`, `statements`, `bills`), l'elenco dei file letto da Seafile e il caricamento di un file (corpo = file, `?name=`) |
 | `GET /api/bills`, `PUT /api/bills/paid` | le bollette della cartella (tipo, mese, scadenza e importo letti dal PDF, `paid`) e la spunta «pagata» (anche l'importo corretto) |
+| `GET /api/mail`, `PUT/DELETE /api/mail/:key`, `POST /api/mail/:key/sync` | Gmail per cartella (`bills`, `payslips`): indirizzo, password per app (mai restituita), mittente, nome dei file; lettura delle mail con PDF e caricamento su Seafile |
 | `GET/POST /api/extras`, `PUT/DELETE /api/extras/:id`, `PUT /api/extras/:id/paid` | altre spese (nome, importo, ogni mese o ogni anno) e la spunta «pagata» di un mese |
 | `POST /api/documents/statements/import?name=` | rilegge a mano un estratto conto mensile (per riprovare dopo un errore); gli estratti nuovi si leggono da soli |
 | `POST /api/import` | importa movimenti già letti (JSON), solo prima della data di inizio |
@@ -216,3 +217,7 @@ Stile tipografico da giornale svizzero: **carta e inchiostro** (chiaro e scuro c
 ## Versioni e rilascio
 
 Ogni commit alza la versione (`package.json`, una sola volta, subito prima del commit) e aggiunge una voce a `CHANGELOG.md`; il tag Git è `mybank-vX.Y.Z` (i tag `vX.Y.Z` sono della vecchia app Bilancio). Dopo un push GitHub costruisce l'immagine Docker; il NAS si aggiorna con `docker compose pull && docker compose up -d`; il telefono con `npm run apk:installa`.
+
+## Gmail (bollette e buste paga)
+
+Nella scheda Documenti → Link, per ogni cartella si può collegare un account Gmail (anche due indirizzi diversi): serve la **password per app** di Google (verifica in due passaggi attiva, poi Sicurezza → Password per le app) e IMAP attivo. Il server legge le mail con un PDF (dalle ultime cinque settimane, solo dal mittente indicato se lo scrivi), le rinomina col **Nome dei file** (`{fornitore}`, `{AAAA}`, `{MM}`; di base «{fornitore} {AAAA}.{MM}» e «Busta Paga {AAAA}.{MM}») e le carica nella cartella Seafile se non c'è già un file con quel nome. Fornitore (Gas, Elettricità, Acqua, Vodafone, Rifiuti) e mese di una bolletta (il mese prima della scadenza) si leggono dal PDF; per le buste paga il mese viene dal PDF o dall'oggetto, se manca dalla data della mail. La lettura è automatica agli orari dell'aggiornamento delle banche e a mano con «Leggi ora». La password sta nel database del server (`data/`), come i collegamenti alle banche.

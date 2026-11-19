@@ -40,3 +40,31 @@ export function normalizeExtra(input, id = crypto.randomUUID().slice(0, 8), from
   if (every === 'year' && (!Number.isInteger(month) || month < 1 || month > 12)) throw new Error('Scegli il mese in cui si paga.');
   return { id, name, amount: Math.round(amount * 100) / 100, every, ...(month ? { month } : {}), from };
 }
+
+// ---------------------------------------------------------------- nomi dei file importati da Gmail
+const SUPPLIERS = [['Elettricità', /elettric|energia|luce/i], ['Gas', /\bgas\b/i], ['Acqua', /acqua|idric/i], ['Vodafone', /vodafone/i], ['Rifiuti', /rifiuti|\btari\b/i]];
+/** Il fornitore (tipo di bolletta) dalle prime parole utili tra i testi dati (oggetto, nome del file, inizio del PDF); '' se non si riconosce. */
+export function supplierOf(...texts) {
+  for (const t of texts) {
+    const s = String(t ?? '').slice(0, 800);
+    const hit = SUPPLIERS.filter(([, re]) => re.test(s)).map(([n, re]) => [n, s.search(re)]).sort((a, b) => a[1] - b[1])[0];
+    if (hit) return hit[0];
+  }
+  return '';
+}
+
+/** Il mese («AAAA-MM») scritto in un testo, come «2026.09», «2026-09» o «settembre 2026»; '' se manca. */
+export function monthIn(text) {
+  const t = String(text ?? '');
+  const a = /(20\d{2})[.\-/_](0[1-9]|1[0-2])(?!\d)/.exec(t);
+  if (a) return `${a[1]}-${a[2]}`;
+  const b = new RegExp(`(${MONTHS.join('|')})\\s+(20\\d{2})`, 'i').exec(t);
+  return b ? `${b[2]}-${String(MONTHS.indexOf(b[1].toLowerCase()) + 1).padStart(2, '0')}` : '';
+}
+
+/** Il nome di un file importato: sostituisce {fornitore}, {AAAA}, {MM} nel modello e aggiunge «.pdf» se manca. */
+export function mailFileName(template, { fornitore, month }) {
+  const [y, m] = month.split('-');
+  const name = String(template ?? '').replaceAll('{fornitore}', fornitore).replaceAll('{AAAA}', y).replaceAll('{MM}', m).replace(/\s+/g, ' ').trim();
+  return /\.pdf$/i.test(name) ? name : `${name}.pdf`;
+}

@@ -54,7 +54,7 @@ test('bollette e altre spese: arretrati, importi dal PDF, spunte salvate nel ser
   assert.deepEqual(b.items.map((i) => [i.name, i.due, i.paid, i.amount]), [
     [`Gas ${dot(-1)}.pdf`, cur, false, 25.18], // scade questo mese
     [`Gas ${dot(-2)}.pdf`, addMonth(cur, -1), false, 25.18], // arretrato del mese scorso
-    [`Elettricità ${dot(-6)}.pdf`, addMonth(cur, -5), true, null], // archivio: già pagata, il PDF non si legge
+    [`Elettricità ${dot(-6)}.pdf`, addMonth(cur, -5), true, 57], // archivio: già pagata, ma l'importo si legge lo stesso
   ]);
   // spunta e importo scritto a mano
   const arrear = b.items[1].path;

@@ -966,9 +966,12 @@ const WHEN = [['0', 'Ogni mese'], ...MONTHS.map((m, i) => [String(i + 1), `${m} 
 $('#exWhen').innerHTML = WHEN.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
 
 async function loadDocuments() {
-  const [d, bills, extras] = await Promise.all([api('GET', '/api/documents'), api('GET', '/api/bills').catch((e) => (e instanceof Unauthorized ? Promise.reject(e) : { configured: false, items: [], from: '', error: e.message })), api('GET', '/api/extras').catch(() => null)]);
+  const [d, bills, extras, mail] = await Promise.all([api('GET', '/api/documents'), api('GET', '/api/bills').catch((e) => (e instanceof Unauthorized ? Promise.reject(e) : { configured: false, items: [], from: '', error: e.message })), api('GET', '/api/extras').catch(() => null), api('GET', '/api/mail').catch(() => null)]);
   state.docs = Object.fromEntries(d.links.map((l) => [l.key, l]));
-  Object.assign(state.dp, { links: d.links, bills, extras });
+  Object.assign(state.dp, { links: d.links, bills, extras, mail: mail?.mail ?? null });
+  clearTimeout(state.billTimer);
+  const more = () => { if (state.tab !== 'documenti' || !state.dp.bills?.pending) return; state.billTimer = setTimeout(async () => { try { state.dp.bills = await api('GET', '/api/bills'); renderDocs(); more(); } catch { /* si riprova al prossimo caricamento */ } }, 3000); };
+  more(); // gli importi delle bollette vecchie il server li legge a poco a poco
   if (state.docOpen.pay === undefined) state.docOpen.pay = true; // «Da pagare» si apre da solo
   renderDocs();
   loadFolder('payslips').catch(() => {});
@@ -1025,7 +1028,7 @@ function renderDocs() {
   // --- Link: per cartella, il link Seafile e il caricamento a mano
   const folderBlock = (k, label) => {
     const l = linkOf(k);
-    return `<div class="folder"><h3>${label}</h3>${linkForm(l)}
+    return `<div class="folder"><h3>${label}${mailOf(k)?.connected ? ' <span class="tag">Gmail collegato</span>' : ''}</h3>${linkForm(l)}${mailForm(k)}
       ${l?.url ? `<span class="label">Carica a mano</span><div class="drop" data-drop="${k}"><span><b>Trascina qui i file</b><br>solo sul computer</span></div>
         <label class="btn filebtn">Scegli dal telefono<input type="file" multiple hidden data-pick="${k}"></label><div class="staged" data-staged="${k}"></div>` : ''}</div>`;
   };
@@ -1034,6 +1037,20 @@ function renderDocs() {
   for (const l of links) renderStaged(l.key);
   const f = state.docFiles?.payslips;
   if (f) fillFolder('payslips', f);
+}
+const mailOf = (k) => state.dp.mail?.find((m) => m.key === k);
+/** Gmail per cartella: l'indirizzo, la password per app di Google (mai mostrata), il mittente e il nome con cui salvare i file. */
+function mailForm(k) {
+  const m = mailOf(k);
+  if (!m) return '';
+  const last = m.last ? `${m.last.errors?.length ? `<span class="error">${esc(m.last.errors[0])}</span> · ` : ''}Ultima lettura ${new Date(m.last.at).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${m.last.imported} nuov${m.last.imported === 1 ? 'o' : 'i'}${m.last.pending ? ` · altri ${m.last.pending} da leggere` : ''}` : '';
+  return `<form data-mail="${k}"><label>Indirizzo Gmail da cui arrivano<input name="email" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome@gmail.com" value="${esc(m.email)}"></label>
+    <label>Password per app di Google<input name="password" type="password" autocomplete="off" placeholder="${m.connected ? '•••• già salvata (lascia vuoto per tenerla)' : '16 lettere, la crei nell’account Google'}"></label>
+    <label>Solo dal mittente (facoltativo)<input name="from" autocapitalize="off" spellcheck="false" placeholder="es. hera" value="${esc(m.from)}"></label>
+    <label>Nome dei file<input name="name" autocapitalize="off" spellcheck="false" value="${esc(m.name)}"></label>
+    <p class="muted">Usa {fornitore}, {AAAA} e {MM}. ${k === 'bills' ? 'Il fornitore (Gas, Elettricità, Acqua…) e il mese si leggono dal PDF.' : 'Il mese si legge dal PDF; se manca, dalla data della mail.'}</p>
+    ${last ? `<p class="docnote">${last}</p>` : ''}<p class="error" data-mailerr="${k}"></p>
+    <div class="foot"><button class="primary" type="submit">Salva Gmail</button>${m.connected ? `<button type="button" data-mailsync="${k}">Leggi ora</button><button type="button" class="link" data-maildel="${k}">Scollega</button>` : ''}</div></form>`;
 }
 const linkForm = (l) => `<form data-links="${esc(l?.key ?? '')}"><label>LINK della cartella (Seafile)<input name="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…" value="${esc(l?.url ?? '')}"></label>
   <div class="foot"><button class="primary" type="submit">Salva LINK</button></div></form>`;
@@ -1256,6 +1273,17 @@ $('#extraForm').addEventListener('submit', async (e) => {
 });
 
 $('#docGroups').addEventListener('submit', async (e) => {
+  const mf = e.target.closest('form[data-mail]');
+  if (mf) {
+    e.preventDefault();
+    const k = mf.dataset.mail;
+    try {
+      await api('PUT', `/api/mail/${k}`, Object.fromEntries(new FormData(mf).entries()));
+      toast('Gmail collegato.');
+      await loadDocuments();
+    } catch (err) { if (err instanceof Unauthorized) return fail(err); mf.querySelector('[data-mailerr]').textContent = err.message; }
+    return;
+  }
   const form = e.target.closest('form[data-links]');
   if (!form) return;
   e.preventDefault();
@@ -1352,3 +1380,14 @@ $('#notifyList').addEventListener('click', async (e) => {
   if (local.on && !local.server) return showLogin(); // prima si sceglie il server
   try { await enter(await api('GET', '/api/session')); } catch (e) { if (e instanceof Unauthorized || local.on) showLogin(); else toast(e.message); }
 })();
+
+$('#docGroups').addEventListener('click', async (e) => {
+  const sync = e.target.closest('[data-mailsync]'), del = e.target.closest('[data-maildel]');
+  if (!sync && !del) return;
+  const k = (sync ?? del).dataset[sync ? 'mailsync' : 'maildel'];
+  try {
+    if (sync) { sync.disabled = true; sync.textContent = 'Leggo…'; await api('POST', `/api/mail/${k}/sync`); toast('Posta letta.'); }
+    else if (confirm('Scollegare Gmail da questa cartella?')) await api('DELETE', `/api/mail/${k}`);
+    await loadDocuments();
+  } catch (err) { if (err instanceof Unauthorized) return fail(err); toast(err.message); await loadDocuments().catch(() => {}); }
+});
