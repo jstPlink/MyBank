@@ -149,10 +149,11 @@ $('#logoutBtn').addEventListener('click', async () => { await api('POST', '/api/
 async function loadOptions() {
   loadNotifications().catch(fail);
   loadDocuments().catch(fail);
+  loadBanks().catch(fail);
   const s = await api('GET', '/api/session');
   $('#logoutBtn').hidden = Boolean(s.open);
   $('#pwCurrent').required = !s.open; // con l'accesso libero non c'è una password attuale
-  $('#serverPanel').hidden = !(window.Native?.changeServer || local.on);
+  $('#changeServerBtn').hidden = !(window.Native?.changeServer || local.on);
 }
 $('#changeServerBtn').addEventListener('click', async () => {
   if (window.Native?.changeServer) return window.Native.changeServer();
@@ -179,8 +180,8 @@ $('#pwForm').addEventListener('submit', async (e) => {
 
 // ------------------------------------------------------------------ schede
 
-const TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'banche', 'opzioni'];
-const SWIPE_TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'banche']; // le schede tra cui si scorre col dito (Opzioni sta a parte)
+const TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'opzioni'];
+const SWIPE_TABS = ['storico', 'movimenti', 'ricorrenti', 'budget']; // le schede tra cui si scorre col dito (Opzioni sta a parte)
 // Indirizzi come «#movimenti:spesa» (li usa il widget): la scheda, e per i Movimenti il tag da filtrare, sul mese in corso.
 function applyHash() {
   const [tab, arg] = (location.hash || '#storico').slice(1).split(':');
@@ -193,13 +194,14 @@ function applyHash() {
 }
 
 function show(tab) {
+  if (tab === 'banche') { tab = 'opzioni'; $('#banche').open = true; } // le Banche stanno nelle Opzioni
   if (!TABS.includes(tab)) tab = 'storico';
   state.tab = tab;
   history.replaceState(null, '', `#${tab}`);
   for (const t of TABS) $(`#${t}`).hidden = t !== tab;
   document.querySelectorAll('.tabs [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('#optionsBtn').setAttribute('aria-pressed', String(tab === 'opzioni'));
-  ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, banche: loadBanks, opzioni: loadOptions })[tab]().catch(fail);
+  ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, opzioni: loadOptions })[tab]().catch(fail);
 }
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; if (b.dataset.tab === 'movimenti') { state.mv.account = ''; state.mv.recurring = null; } show(b.dataset.tab); });
 $('#optionsBtn').addEventListener('click', () => show('opzioni'));

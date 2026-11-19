@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="it">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · intestazioni principali</title>
+<style>
+  /* Intestazione principale (sezioni delle Opzioni e della scheda Documenti) contro sotto sezione e pulsante: quattro proposte, solo tema scuro, dati inventati. */
+  :root {
+    --paper: #121211; --ink: #edeae3; --mute: #9a958b; --hair: #2e2c29; --red: #ff5a2e; --green: #5ccb8a;
+    --f-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --f-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+    --f-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+    --fs-label: 11px; --fs-sm: 13px; --fs-md: 15px; --fs-lg: 22px; --fs-num: 28px; --h: 46px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 20px 60px; background: #0a0a09; color: var(--ink); font: var(--fs-md)/1.5 var(--f-sans); }
+  h1, h2, h3, p { margin: 0; }
+  button { font: inherit; color: inherit; border-radius: 0; cursor: pointer; background: none; border: 0; padding: 0; }
+  .intro { max-width: 1300px; margin: 0 auto 22px; color: var(--mute); font-size: var(--fs-sm); }
+  .intro b { color: var(--ink); }
+  .row { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { width: 393px; padding: 12px 2px 0; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  figcaption b { color: var(--ink); }
+  .phone { width: 393px; background: var(--paper); border: 1px solid var(--hair); padding: 22px 16px 28px; }
+  .btn { border: 1px solid var(--ink); height: var(--h); padding: 0 18px; font-weight: 600; display: inline-flex; align-items: center; }
+  .btn.primary { background: var(--ink); color: var(--paper); }
+  .btn.red { border-color: var(--red); color: var(--red); }
+  .label { display: block; font: 600 var(--fs-label)/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  .muted { color: var(--mute); font-size: var(--fs-sm); }
+  .foot { display: flex; gap: 12px; margin-top: 14px; }
+
+  /* sotto sezione, uguale in tutte le proposte: serif con la riga da 2px sotto */
+  .sub { margin: 20px 0 0; display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid var(--ink); padding-bottom: 5px; font: 700 var(--fs-lg)/1.2 var(--f-serif); }
+  .sub::before { content: "▸"; color: var(--red); font: 700 22px/1 var(--f-sans); width: 1.1em; }
+  .sub span { margin-left: auto; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; border: 1px solid var(--ink); padding: 5px 8px; }
+  .acct { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--hair); }
+  .sec { margin-bottom: 8px; }
+  .sec + .sec { margin-top: 30px; }
+
+  /* A · titolo grande in serif sotto una riga spessa */
+  .A > summary { list-style: none; display: flex; align-items: center; justify-content: space-between; border-top: 4px solid var(--ink); padding-top: 10px; font: 700 var(--fs-num)/1.15 var(--f-serif); letter-spacing: -.01em; }
+  .A > summary::after { content: "▾"; color: var(--red); font: 700 20px/1 var(--f-sans); }
+  .A:not([open]) > summary::after { content: "▸"; }
+  .A .n { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); margin-left: auto; margin-right: 12px; }
+  .A .n.red { color: var(--red); }
+
+  /* B · numero d'ordine rosso e etichetta in monospazio con un filetto che corre fino al bordo */
+  .B > summary { list-style: none; display: flex; align-items: center; gap: 12px; font: 700 var(--fs-sm)/1.2 var(--f-mono); letter-spacing: .12em; text-transform: uppercase; padding: 6px 0; }
+  .B > summary .i { color: var(--red); }
+  .B > summary::after { content: ""; flex: 1; height: 1px; background: var(--ink); order: 2; }
+  .B > summary .n { order: 3; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; color: var(--mute); }
+  .B > summary .n.red { color: var(--red); }
+  .B > summary .c { order: 4; color: var(--red); font: 700 var(--fs-sm) var(--f-sans); }
+
+  /* C · barra rossa a sinistra e titolo in serif, senza righe */
+  .C > summary { list-style: none; display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--red); padding: 4px 0 4px 12px; font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; }
+  .C > summary .n { margin-left: auto; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  .C > summary .n.red { color: var(--red); }
+  .C > summary .c { color: var(--mute); font: 700 20px/1 var(--f-sans); }
+
+  /* D · etichetta in monospazio maiuscolo grande tra due righe, indice a destra */
+  .D > summary { list-style: none; display: flex; align-items: center; gap: 10px; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--ink); padding: 11px 0; font: 700 var(--fs-md)/1 var(--f-mono); letter-spacing: .14em; text-transform: uppercase; }
+  .D > summary .n { margin-left: auto; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; color: var(--mute); }
+  .D > summary .n.red { color: var(--red); }
+  .D > summary .c { color: var(--red); font: 700 var(--fs-sm) var(--f-sans); letter-spacing: 0; }
+  details > summary::-webkit-details-marker { display: none; }
+  .body { padding-top: 14px; }
+</style>
+
+<p class="intro"><b>Intestazioni principali</b>: la fascia piena sembrava un pulsante. Quattro proposte <b>senza riempimento</b>, ognuna con sotto una sotto sezione (UniCredit, in serif con la riga) e un pulsante, per vedere se si distinguono. Dimmi quale (o cosa mischiare) e la applico a Opzioni e Documenti.</p>
+
+<div class="row">
+
+  <figure>
+    <div class="phone">
+      <details class="A sec" open><summary>Banche <span class="n red">1 da rinnovare</span></summary>
+        <div class="body"><p class="muted">Ultimo aggiornamento 19 nov, 10:15</p>
+          <h3 class="sub">UniCredit <span>Collegata</span></h3>
+          <div class="acct"><b>Conto Corrente</b><span class="muted">Rinomina</span></div>
+          <div class="foot"><button class="btn">Rinnova il consenso</button><button class="btn primary">Aggiorna ora</button></div></div></details>
+      <details class="A sec"><summary>Notifiche <span class="n">3 attive</span></summary></details>
+      <details class="A sec"><summary>Account</summary></details>
+    </div>
+    <figcaption><b>A</b> · Serif grande sotto una riga spessa da 4px, il triangolino rosso a destra.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone">
+      <details class="B sec" open><summary><span class="i">01</span>Banche<span class="n red">1 da rinnovare</span><span class="c">▾</span></summary>
+        <div class="body"><p class="muted">Ultimo aggiornamento 19 nov, 10:15</p>
+          <h3 class="sub">UniCredit <span>Collegata</span></h3>
+          <div class="acct"><b>Conto Corrente</b><span class="muted">Rinomina</span></div>
+          <div class="foot"><button class="btn">Rinnova il consenso</button><button class="btn primary">Aggiorna ora</button></div></div></details>
+      <details class="B sec"><summary><span class="i">02</span>Notifiche<span class="n">3 attive</span><span class="c">▸</span></summary></details>
+      <details class="B sec"><summary><span class="i">03</span>Account<span class="c">▸</span></summary></details>
+    </div>
+    <figcaption><b>B</b> · Numero rosso, etichetta in monospazio e un filetto che arriva al bordo.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone">
+      <details class="C sec" open><summary>Banche <span class="n red">1 da rinnovare</span><span class="c">▾</span></summary>
+        <div class="body"><p class="muted">Ultimo aggiornamento 19 nov, 10:15</p>
+          <h3 class="sub">UniCredit <span>Collegata</span></h3>
+          <div class="acct"><b>Conto Corrente</b><span class="muted">Rinomina</span></div>
+          <div class="foot"><button class="btn">Rinnova il consenso</button><button class="btn primary">Aggiorna ora</button></div></div></details>
+      <details class="C sec"><summary>Notifiche <span class="n">3 attive</span><span class="c">▸</span></summary></details>
+      <details class="C sec"><summary>Account<span class="c">▸</span></summary></details>
+    </div>
+    <figcaption><b>C</b> · Barra rossa a sinistra e titolo in serif, senza righe.</figcaption>
+  </figure>
+
+  <figure>
+    <div class="phone">
+      <details class="D sec" open><summary>Banche<span class="n red">1 da rinnovare</span><span class="c">▾</span></summary>
+        <div class="body"><p class="muted">Ultimo aggiornamento 19 nov, 10:15</p>
+          <h3 class="sub">UniCredit <span>Collegata</span></h3>
+          <div class="acct"><b>Conto Corrente</b><span class="muted">Rinomina</span></div>
+          <div class="foot"><button class="btn">Rinnova il consenso</button><button class="btn primary">Aggiorna ora</button></div></div></details>
+      <details class="D sec"><summary>Notifiche<span class="n">3 attive</span><span class="c">▸</span></summary></details>
+      <details class="D sec"><summary>Account<span class="c">▸</span></summary></details>
+    </div>
+    <figcaption><b>D</b> · Monospazio maiuscolo largo tra due righe sottili, come una testata.</figcaption>
+  </figure>
+
+</div>
+</html>

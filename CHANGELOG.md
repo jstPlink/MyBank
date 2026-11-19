@@ -2,6 +2,13 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.43.0
+- **Opzioni, sezione Account**: «Cambia password» e «Cambia server» stanno insieme nella sezione **Account** (si chiude e si apre come le altre).
+- **Intestazioni principali più riconoscibili**: le sezioni delle Opzioni hanno ora una barra rossa a sinistra e il titolo in serif grande (non sembrano più pulsanti); i titoli interni (banche, Enable Banking, categorie dei documenti) restano in serif. Regola aggiunta all'estetica.
+- **Account** è aperto di base e contiene anche **Esci** (la sezione «Sessione» non c'è più): Cambia password, Cambia server ed Esci sono sempre a portata.
+- **Banche nelle Opzioni**: la scheda Banche è diventata una sezione delle Opzioni (stesso contenuto); la barra in basso ha quattro schede, al suo posto arriverà «Documenti» (mockup in `design/documenti-mockup.html`, in attesa di scelta).
+- **Mockup** in `design/`: intestazioni principali (`intestazioni-mockup.html`, scelto lo stile C) e scheda Documenti (`documenti-mockup.html`, ancora da implementare).
+
 ## 0.42.0
 - **Sotto categoria subito**: quando assegni a un movimento un tag che ha sotto categorie (oggi Auto), si apre subito un foglio che chiede se è Carburante, Autostrada o «Nessuna». Il tag è già salvato: chiudere il foglio lascia la sola categoria.
 

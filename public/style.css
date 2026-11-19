@@ -557,3 +557,11 @@ body { touch-action: pan-y; }
 .tagopt input:checked + i::after { content: ""; position: absolute; left: 6px; top: 2px; width: 5px; height: 10px; border: solid var(--paper); border-width: 0 2px 2px 0; transform: rotate(45deg); }
 .tagopt input:focus-visible + i { outline: 2px solid var(--red); outline-offset: 2px; }
 .tagopt .tagname { display: flex; align-items: center; gap: 6px; }
+
+/* Intestazioni principali (le sezioni delle Opzioni): barra rossa a sinistra e titolo in serif, senza righe né riempimento (così non sembrano pulsanti); a destra il triangolino. Le sotto sezioni (banche, Enable Banking, categorie dei documenti) restano titoli in serif più piccoli con la riga da 2px sotto */
+#opzioni > details.group > summary { display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--red); border-bottom: 0; padding: 4px 0 4px 12px; }
+#opzioni > details.group > summary h2.section { font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; margin: 0; }
+#opzioni > details.group > summary h2::before { content: none; }
+#opzioni > details.group > summary::after { content: "▸"; margin-left: auto; color: var(--mute); font: 700 var(--fs-md)/1 var(--f-sans); }
+#opzioni > details.group[open] > summary::after { content: "▾"; }
+#opzioni > details.group > :not(summary) { margin-top: 14px; }

@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="it">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup · tab Documenti</title>
+<style>
+  /* Mockup della tab «Documenti» (al posto di Banche, che passa nelle Opzioni): solo tema scuro, dati inventati (oggi = 19 novembre), 393 px = larghezza del telefono.
+     Sezioni: Da pagare · Link · Bollette · Buste paga · Altre spese. La scadenza è sempre la fine del mese: non si mostra. */
+  :root {
+    --paper: #121211; --ink: #edeae3; --mute: #9a958b; --hair: #2e2c29; --red: #ff5a2e; --green: #5ccb8a;
+    --f-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --f-sans: system-ui, "Segoe UI", Roboto, sans-serif;
+    --f-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
+    --fs-label: 11px; --fs-sm: 13px; --fs-md: 15px; --fs-lg: 22px; --fs-num: 28px; --h: 46px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 20px 60px; background: #0a0a09; color: var(--ink); font: var(--fs-md)/1.5 var(--f-sans); }
+  h1, h2, h3, p { margin: 0; }
+  button { font: inherit; color: inherit; border-radius: 0; cursor: pointer; background: none; border: 0; padding: 0; }
+  .intro { max-width: 1400px; margin: 0 auto 22px; color: var(--mute); font-size: var(--fs-sm); }
+  .intro b { color: var(--ink); }
+  .row { display: flex; gap: 28px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+  figure { margin: 0; }
+  figcaption { width: 393px; padding: 12px 2px 0; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  figcaption b { color: var(--ink); }
+  .phone { width: 393px; background: var(--paper); border: 1px solid var(--hair); display: flex; flex-direction: column; position: relative; padding-bottom: 58px; }
+  .top { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 10px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo { width: 38px; height: 38px; background: var(--red); display: grid; place-items: end center; padding: 8px; gap: 3px; grid-auto-flow: column; }
+  .logo i { display: block; width: 6px; background: var(--paper); align-self: end; }
+  .brand h1 { font: 700 var(--fs-lg)/1 var(--f-serif); }
+  .opt { border: 1px solid var(--ink); height: 38px; padding: 0 14px; font-size: var(--fs-sm); font-weight: 600; }
+  .body { padding: 0 16px 24px; }
+  .tabs { position: absolute; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); background: var(--paper); border-top: 2px solid var(--ink); }
+  .tabs button { height: 58px; font-size: var(--fs-sm); font-weight: 600; color: var(--mute); position: relative; }
+  .tabs button[aria-selected=true] { color: var(--ink); }
+  .tabs button[aria-selected=true]::before { content: ""; position: absolute; left: 0; right: 0; top: -2px; height: 4px; background: var(--red); }
+  .label { display: block; font: 600 var(--fs-label)/1.2 var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+
+  /* intestazione principale (stile C): barra rossa a sinistra e titolo in serif grande */
+  details.main { margin-top: 26px; }
+  details.main > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--red); padding: 4px 0 4px 12px; }
+  details.main > summary::-webkit-details-marker { display: none; }
+  details.main > summary::after { content: "▸"; color: var(--mute); font: 700 var(--fs-md)/1 var(--f-sans); }
+  details.main[open] > summary::after { content: "▾"; }
+  details.main > summary h2 { font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; }
+  details.main > summary .info { margin-left: auto; font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); text-align: right; }
+  details.main > summary .info.red { color: var(--red); }
+  details.main > .in { padding-top: 14px; }
+
+  /* sotto intestazioni: titolo in serif con la riga sotto */
+  .sub { font: 700 var(--fs-md) var(--f-serif); border-bottom: 2px solid var(--ink); padding-bottom: 4px; margin: 16px 0 0; display: flex; justify-content: space-between; align-items: baseline; }
+  .sub:first-child { margin-top: 0; }
+  .sub .cnt { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  .sub .cnt.red { color: var(--red); }
+  .sub.late { border-bottom-color: var(--red); }
+  .sub.late > :first-child { color: var(--red); }
+
+  .chk { width: 26px; height: 26px; border: 2px solid var(--ink); flex: none; display: grid; place-items: center; }
+  .chk.on { background: var(--ink); }
+  .chk.on::after { content: ""; width: 12px; height: 6px; border-left: 3px solid var(--paper); border-bottom: 3px solid var(--paper); transform: rotate(-45deg) translate(1px, -1px); }
+  .bill { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--hair); }
+  .bill .n { flex: 1; min-width: 0; }
+  .bill .n b { display: block; font-weight: 600; }
+  .bill .s { font: 500 var(--fs-label) var(--f-mono); color: var(--mute); letter-spacing: .04em; text-transform: uppercase; }
+  .bill .amt { font: 700 var(--fs-md) var(--f-serif); white-space: nowrap; }
+  .bill .amt.edit { border-bottom: 1px dotted var(--mute); }
+  .bill.paid .n b, .bill.paid .amt { color: var(--mute); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .bill.late .s { color: var(--red); }
+  .bill .go { color: var(--mute); font-size: 20px; line-height: 1; padding: 6px 2px 6px 8px; }
+  .file { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--hair); }
+  .file b { font-weight: 600; overflow-wrap: anywhere; }
+  .file .s { font: 500 var(--fs-label) var(--f-mono); color: var(--mute); white-space: nowrap; letter-spacing: .04em; text-transform: uppercase; }
+  .file.new b::after { content: "ultima"; margin-left: 8px; font: 700 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--red); }
+  .btn { border: 1px solid var(--ink); height: var(--h); padding: 0 18px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; }
+  .btn.primary { background: var(--ink); color: var(--paper); }
+  .btn.wide { width: 100%; margin-top: 12px; }
+  .btn small { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; margin-left: 8px; opacity: .7; }
+  .field { display: grid; gap: 6px; margin: 0 0 14px; }
+  .field .box { border: 1px solid var(--ink); height: var(--h); padding: 0 12px; display: flex; align-items: center; color: var(--mute); font-size: var(--fs-sm); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .field .box.set { color: var(--ink); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .drop { border: 1px solid var(--hair); min-height: 74px; display: grid; place-items: center; text-align: center; color: var(--mute); font-size: var(--fs-sm); padding: 10px; }
+  .drop b { color: var(--ink); }
+  .tag { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+  .folder { border-top: 2px solid var(--ink); padding-top: 12px; margin-top: 18px; }
+  .folder:first-child { margin-top: 0; }
+  .folder h3 { font: 700 var(--fs-md) var(--f-serif); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: baseline; }
+  .folder h3 span { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--green); }
+  .note { margin-top: 12px; color: var(--mute); font-size: var(--fs-sm); }
+  .total { display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid var(--ink); padding: 12px 0 0; margin-top: 14px; }
+  .total b { font: 700 var(--fs-num)/1 var(--f-serif); color: var(--red); }
+  /* storico che si scorre dentro la sezione */
+  .scroller { max-height: 340px; overflow-y: auto; border-bottom: 1px solid var(--ink); margin-top: 4px; scrollbar-width: thin; padding-right: 6px; }
+  .scroller .sub:first-child { margin-top: 4px; }
+  .more { margin-top: 10px; }
+</style>
+
+<p class="intro"><b>Tab «Documenti»</b> (stile C, come le Opzioni). Sezioni in ordine: <b>Da pagare</b> (bollette e altre spese non ancora spuntate: <b>i mesi arretrati restano sempre visibili</b>, in rosso), <b>Bollette</b> (il mese in corso, poi <b>«Mostra gli altri mesi»</b> apre l'intero storico scorribile), <b>Altre spese</b> (affitto, Tari, wifi… con importo che scrivi tu), <b>Buste paga</b> (storico) e <b>Link</b> (Seafile, Gmail e <b>nome dei file</b> per cartella, caricamento a mano). Niente date di scadenza: scade sempre a <b>fine mese</b>. Dati inventati, oggi è il 19 novembre.</p>
+
+<div class="row">
+
+  <!-- 1: Da pagare -->
+  <figure>
+    <div class="phone">
+      <header class="top"><div class="brand"><div class="logo"><i style="height:9px"></i><i style="height:16px"></i><i style="height:22px"></i></div><h1>MyBank</h1></div><button class="opt">Opzioni</button></header>
+      <div class="body">
+        <details class="main" open><summary><h2>Da pagare</h2><span class="info red">985,25 € · 6 voci</span></summary>
+          <div class="in">
+            <h3 class="sub late"><span>Ottobre · arretrato</span><span class="cnt red">1 non pagata</span></h3>
+            <div class="bill late"><button class="chk" aria-label="Pagata"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Bolletta · non pagata</span></div><span class="amt">48,10 €</span></div>
+            <h3 class="sub"><span>Novembre</span><span class="cnt">5 da pagare</span></h3>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Affitto</b><span class="s">Altre spese</span></div><span class="amt edit">650,00 €</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Tari</b><span class="s">Altre spese · annuale</span></div><span class="amt edit">112,00 €</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Bolletta</span></div><span class="amt">84,20 €</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Bolletta</span></div><span class="amt">61,05 €</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Wifi</b><span class="s">Altre spese</span></div><span class="amt edit">29,90 €</span></div>
+            <div class="total"><span class="label">Totale da pagare</span><b>985,25 €</b></div>
+            <p class="note">Si spunta qui o nella sua sezione. Gli importi con la linea punteggiata li scrivi tu (tocca per cambiarli).</p>
+          </div>
+        </details>
+        <details class="main"><summary><h2>Bollette</h2><span class="info red">2 da pagare</span></summary></details>
+        <details class="main"><summary><h2>Altre spese</h2><span class="info">3 voci</span></summary></details>
+        <details class="main"><summary><h2>Buste paga</h2><span class="info">ultima 31 ott 2026</span></summary></details>
+        <details class="main"><summary><h2>Link</h2><span class="info">2 cartelle</span></summary></details>
+      </div>
+      <nav class="tabs"><button>Storico</button><button>Movimenti</button><button>Ricorrenti</button><button>Budget</button><button aria-selected="true">Documenti</button></nav>
+    </div>
+    <figcaption><b>1</b> · Da pagare in cima: arretrati in rosso sempre visibili, poi il mese; totale in fondo.</figcaption>
+  </figure>
+
+  <!-- 2: Bollette chiuso/espandibile -->
+  <figure>
+    <div class="phone">
+      <header class="top"><div class="brand"><div class="logo"><i style="height:9px"></i><i style="height:16px"></i><i style="height:22px"></i></div><h1>MyBank</h1></div><button class="opt">Opzioni</button></header>
+      <div class="body">
+        <details class="main"><summary><h2>Da pagare</h2><span class="info red">985,25 € · 6 voci</span></summary></details>
+        <details class="main" open><summary><h2>Bollette</h2><span class="info red">2 da pagare</span></summary>
+          <div class="in">
+            <h3 class="sub late"><span>Ottobre · arretrato</span><span class="cnt red">1 non pagata</span></h3>
+            <div class="bill late"><button class="chk"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Non pagata</span></div><span class="amt">48,10 €</span><span class="go">›</span></div>
+            <h3 class="sub"><span>Novembre</span><span class="cnt red">2 da pagare</span></h3>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Da pagare</span></div><span class="amt">84,20 €</span><span class="go">›</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Da pagare</span></div><span class="amt">61,05 €</span><span class="go">›</span></div>
+            <div class="bill paid"><button class="chk on"></button><div class="n"><b>Acqua · Hera</b><span class="s">Pagata il 12 nov</span></div><span class="amt">38,40 €</span><span class="go">›</span></div>
+            <button class="btn wide">Mostra gli altri mesi<small>9 mesi</small></button>
+          </div>
+        </details>
+        <details class="main"><summary><h2>Altre spese</h2><span class="info">3 voci</span></summary></details>
+        <details class="main"><summary><h2>Buste paga</h2><span class="info">ultima 31 ott 2026</span></summary></details>
+        <details class="main"><summary><h2>Link</h2><span class="info">2 cartelle</span></summary></details>
+      </div>
+      <nav class="tabs"><button>Storico</button><button>Movimenti</button><button>Ricorrenti</button><button>Budget</button><button aria-selected="true">Documenti</button></nav>
+    </div>
+    <figcaption><b>2</b> · Bollette: l'arretrato non pagato e il mese in corso; il pulsante apre gli altri mesi.</figcaption>
+  </figure>
+
+  <!-- 3: Bollette espanse + Buste paga -->
+  <figure>
+    <div class="phone">
+      <header class="top"><div class="brand"><div class="logo"><i style="height:9px"></i><i style="height:16px"></i><i style="height:22px"></i></div><h1>MyBank</h1></div><button class="opt">Opzioni</button></header>
+      <div class="body">
+        <details class="main" open><summary><h2>Bollette</h2><span class="info red">2 da pagare</span></summary>
+          <div class="in">
+            <h3 class="sub late"><span>Ottobre · arretrato</span><span class="cnt red">1 non pagata</span></h3>
+            <div class="bill late"><button class="chk"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Non pagata</span></div><span class="amt">48,10 €</span><span class="go">›</span></div>
+            <h3 class="sub"><span>Novembre</span><span class="cnt red">2 da pagare</span></h3>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Da pagare</span></div><span class="amt">84,20 €</span><span class="go">›</span></div>
+            <div class="bill"><button class="chk"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Da pagare</span></div><span class="amt">61,05 €</span><span class="go">›</span></div>
+            <button class="btn wide" style="margin-bottom:10px">Nascondi gli altri mesi</button>
+            <span class="label">Storico · scorri</span>
+            <div class="scroller">
+              <h3 class="sub"><span>Ottobre 2026</span><span class="cnt">1 da pagare</span></h3>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Pagata il 23 ott</span></div><span class="amt">79,40 €</span></div>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Acqua · Hera</b><span class="s">Pagata il 9 ott</span></div><span class="amt">41,00 €</span></div>
+              <h3 class="sub"><span>Settembre 2026</span><span class="cnt">tutte pagate</span></h3>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Pagata il 24 set</span></div><span class="amt">72,30 €</span></div>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Gas · Eni Plenitude</b><span class="s">Pagata il 27 set</span></div><span class="amt">39,80 €</span></div>
+              <h3 class="sub"><span>Agosto 2026</span><span class="cnt">tutte pagate</span></h3>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Pagata il 22 ago</span></div><span class="amt">68,15 €</span></div>
+              <h3 class="sub"><span>Luglio 2026</span><span class="cnt">tutte pagate</span></h3>
+              <div class="bill paid"><button class="chk on"></button><div class="n"><b>Enel Energia · luce</b><span class="s">Pagata il 25 lug</span></div><span class="amt">90,60 €</span></div>
+            </div>
+          </div>
+        </details>
+        <details class="main" open><summary><h2>Buste paga</h2><span class="info">ultima 31 ott 2026</span></summary>
+          <div class="in">
+            <h3 class="sub"><span>2026</span><span class="cnt">10 file</span></h3>
+            <div class="file new"><b>Busta paga 2026.10</b><span class="s">31 ott · 2.577 €</span></div>
+            <div class="file"><b>Busta paga 2026.09</b><span class="s">30 set · 2.577 €</span></div>
+            <div class="file"><b>Busta paga 2026.08</b><span class="s">31 ago · 2.140 €</span></div>
+            <button class="btn wide">Mostra gli altri mesi<small>7 mesi</small></button>
+          </div>
+        </details>
+      </div>
+      <nav class="tabs"><button>Storico</button><button>Movimenti</button><button>Ricorrenti</button><button>Budget</button><button aria-selected="true">Documenti</button></nav>
+    </div>
+    <figcaption><b>3</b> · Altri mesi aperti: lo storico intero si scorre dentro la sezione. Buste paga con lo stesso schema.</figcaption>
+  </figure>
+
+  <!-- 4: Altre spese + Link -->
+  <figure>
+    <div class="phone">
+      <header class="top"><div class="brand"><div class="logo"><i style="height:9px"></i><i style="height:16px"></i><i style="height:22px"></i></div><h1>MyBank</h1></div><button class="opt">Opzioni</button></header>
+      <div class="body">
+        <details class="main" open><summary><h2>Altre spese</h2><span class="info">3 voci</span></summary>
+          <div class="in">
+            <div class="bill"><div class="n"><b>Affitto</b><span class="s">Ogni mese</span></div><span class="amt edit">650,00 €</span><span class="go">›</span></div>
+            <div class="bill"><div class="n"><b>Wifi</b><span class="s">Ogni mese</span></div><span class="amt edit">29,90 €</span><span class="go">›</span></div>
+            <div class="bill"><div class="n"><b>Tari</b><span class="s">Ogni anno · novembre</span></div><span class="amt edit">112,00 €</span><span class="go">›</span></div>
+            <h3 class="sub" style="margin-top:20px"><span>Nuova voce</span></h3>
+            <label class="field" style="margin-top:12px"><span class="label">Nome</span><span class="box">Per esempio: palestra</span></label>
+            <div class="two">
+              <label class="field"><span class="label">Importo</span><span class="box">0,00 €</span></label>
+              <label class="field"><span class="label">Quando</span><span class="box set">Ogni mese ▾</span></label>
+            </div>
+            <button class="btn primary wide" style="margin-top:0">Aggiungi</button>
+            <p class="note">L'importo lo scrivi tu e lo puoi cambiare mese per mese (la Tari, per esempio, cambia ogni anno). Ogni mese la voce compare in «Da pagare» fino a quando non la spunti.</p>
+          </div>
+        </details>
+        <details class="main" open><summary><h2>Link</h2><span class="info">2 cartelle</span></summary>
+          <div class="in">
+            <div class="folder">
+              <h3>Bollette <span>Gmail collegato</span></h3>
+              <label class="field"><span class="label">Link cartella (Seafile)</span><span class="box set">https://seafile.esempio.it/d/a1b2c3d4e5/</span></label>
+              <label class="field"><span class="label">Indirizzo Gmail da cui arrivano</span><span class="box set">casa.esempio@gmail.com</span></label>
+              <label class="field"><span class="label">Password per app di Google</span><span class="box set">•••• •••• •••• ••••</span></label>
+              <label class="field"><span class="label">Nome dei file</span><span class="box set">Bolletta {fornitore} {AAAA}.{MM}</span></label>
+              <span class="tag">Ultima lettura 19 nov, 10:15 · 2 nuove</span>
+              <div class="drop" style="margin-top:12px"><span><b>Trascina qui i file</b><br>solo sul computer</span></div>
+              <button class="btn wide" style="margin-top:10px">Scegli dal telefono</button>
+            </div>
+            <div class="folder">
+              <h3>Buste paga <span>Gmail collegato</span></h3>
+              <label class="field"><span class="label">Link cartella (Seafile)</span><span class="box set">https://seafile.esempio.it/d/f6g7h8i9j0/</span></label>
+              <label class="field"><span class="label">Indirizzo Gmail da cui arrivano</span><span class="box set">lavoro.esempio@gmail.com</span></label>
+              <label class="field"><span class="label">Password per app di Google</span><span class="box set">•••• •••• •••• ••••</span></label>
+              <label class="field"><span class="label">Nome dei file</span><span class="box set">Busta paga {AAAA}.{MM}</span></label>
+              <span class="tag">Mese letto dal PDF · se manca, dalla data della mail</span>
+              <div class="drop" style="margin-top:12px"><span><b>Trascina qui i file</b><br>solo sul computer</span></div>
+              <button class="btn wide" style="margin-top:10px">Scegli dal telefono</button>
+            </div>
+            <button class="btn primary wide">Salva</button>
+          </div>
+        </details>
+      </div>
+      <nav class="tabs"><button>Storico</button><button>Movimenti</button><button>Ricorrenti</button><button>Budget</button><button aria-selected="true">Documenti</button></nav>
+    </div>
+    <figcaption><b>4</b> · Altre spese (importo scritto da te, ogni mese o ogni anno) e Link con Gmail e caricamento a mano.</figcaption>
+  </figure>
+
+</div>
+</html>

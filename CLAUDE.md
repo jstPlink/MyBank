@@ -39,7 +39,7 @@ Le proposte grafiche si fanno prima come mockup HTML in `design/` (393 px di lar
 
 ## Estetica (regole uniche, vedi README «Estetica»)
 
-Carta e inchiostro, un solo rosso vermiglio (più un giallo solo per i mesi dello Storico con movimenti «Non definito»), angoli vivi, filetti da 1px (2px a inizio sezione), serif per numeri e titoli, monospazio maiuscolo per le etichette. Scala del testo 11/13/15/22/34. Pulsanti e campi alti `--h`. Il widget usa un solo carattere (sans-serif), fondo inchiostro e testo carta. Nuove schermate e il widget seguono le stesse regole: niente colori o forme nuove senza aggiornare queste righe e il README.
+Carta e inchiostro, un solo rosso vermiglio (più un giallo solo per i mesi dello Storico con movimenti «Non definito»), angoli vivi, filetti da 1px (2px a inizio sezione), serif per numeri e titoli, monospazio maiuscolo per le etichette. Le intestazioni principali delle sezioni hanno una barra rossa a sinistra e il titolo in serif grande (mai a tinta piena: sembrerebbero pulsanti), le sotto sezioni sono titoli in serif più piccoli con la riga sotto. Scala del testo 11/13/15/22/34. Pulsanti e campi alti `--h`. Il widget usa un solo carattere (sans-serif), fondo inchiostro e testo carta. Nuove schermate e il widget seguono le stesse regole: niente colori o forme nuove senza aggiornare queste righe e il README.
 
 ## Prima di fare domande
 
