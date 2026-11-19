@@ -27,7 +27,7 @@ test('calc: spesa totale del Budget = uscite reali del mese corrente', () => {
 
 test('calc: la quota unica dimezza le bollette in Da pagare e nel totale', async () => {
   const { payables, dueGroups } = await import('../public/calc.js');
-  const bills = { from: '2026-10', share: 50, items: [{ path: 'Vodafone 2026.10.pdf', type: 'Vodafone', from: '2026-10', to: '2026-10', due: '2026-11', amount: 28.89, paid: false, url: 'u' }] };
+  const bills = { from: '2026-10', share: 50, items: [{ path: 'Vodafone 2026.10.pdf', type: 'Vodafone', from: '2026-10', to: '2026-10', due: '2026-10', amount: 28.89, paid: false, url: 'u' }] };
   const d = dueGroups(payables(bills, null, '2026-11'), '2026-11');
   assert.deepEqual([d.groups[0].items[0].full, d.groups[0].items[0].amount, d.total], [28.89, 14.45, 14.45]);
 });
@@ -37,21 +37,21 @@ test('calc: il promemoria annuale suona il mese 3 giorni prima del pagamento', (
   assert.equal(reminderMonth('2027-01-02'), 12);
 });
 
-test('calc: Da pagare, arretrati prima e poi il mese in corso; le spese scritte a mano cadono nel loro mese', async () => {
+test('calc: Da pagare arriva fino al mese prima di quello in corso (novembre compare dal 1° dicembre); le spese scritte a mano cadono nel loro mese', async () => {
   const { payables, dueGroups, monthsBetween } = await import('../public/calc.js');
   assert.deepEqual(monthsBetween('2026-11', '2027-02'), ['2026-11', '2026-12', '2027-01', '2027-02']);
-  const bills = { from: '2026-10', items: [
-    { path: 'Gas 2026.10.pdf', type: 'Gas', from: '2026-10', to: '2026-10', due: '2026-11', amount: 61.05, paid: false, url: 'u' },
-    { path: 'Gas 2026.09.pdf', type: 'Gas', from: '2026-09', to: '2026-09', due: '2026-10', amount: 48.1, paid: false, url: 'u' },
-    { path: 'Gas 2026.08.pdf', type: 'Gas', from: '2026-08', to: '2026-08', due: '2026-09', amount: 40, paid: true, url: 'u' }, // archivio
-    { path: 'Gas 2026.11.pdf', type: 'Gas', from: '2026-11', to: '2026-11', due: '2026-12', amount: 70, paid: false, url: 'u' }, // scade il mese prossimo
+  const bills = { from: '2026-09', items: [
+    { path: 'Gas 2026.10.pdf', type: 'Gas', from: '2026-10', to: '2026-10', due: '2026-10', amount: 61.05, paid: false, url: 'u' },
+    { path: 'Gas 2026.09.pdf', type: 'Gas', from: '2026-09', to: '2026-09', due: '2026-09', amount: 48.1, paid: false, url: 'u' },
+    { path: 'Gas 2026.08.pdf', type: 'Gas', from: '2026-08', to: '2026-08', due: '2026-08', amount: 40, paid: true, url: 'u' }, // archivio
+    { path: 'Gas 2026.11.pdf', type: 'Gas', from: '2026-11', to: '2026-11', due: '2026-11', amount: 70, paid: false, url: 'u' }, // il mese non è finito: da dicembre
   ] };
-  const extras = { from: '2026-10', extras: [
-    { id: 'a', name: 'Affitto', amount: 650, every: 'month', from: '2026-10' },
-    { id: 't', name: 'Tari', amount: 112, every: 'year', month: 11, from: '2026-10' },
-  ], paid: { 'a:2026-10': { paid: true }, 'a:2026-11': { amount: 700 } } };
+  const extras = { from: '2026-09', extras: [
+    { id: 'a', name: 'Affitto', amount: 650, every: 'month', from: '2026-09' },
+    { id: 't', name: 'Tari', amount: 112, every: 'year', month: 10, from: '2026-09' },
+  ], paid: { 'a:2026-09': { paid: true }, 'a:2026-10': { amount: 700 } } };
   const d = dueGroups(payables(bills, extras, '2026-11'), '2026-11');
-  assert.deepEqual(d.groups.map((g) => [g.month, g.late, g.items.map((i) => i.title)]), [['2026-10', true, ['Gas']], ['2026-11', false, ['Affitto', 'Tari', 'Gas']]]);
+  assert.deepEqual(d.groups.map((g) => [g.month, g.late, g.items.map((i) => i.title)]), [['2026-09', true, ['Gas']], ['2026-10', false, ['Affitto', 'Tari', 'Gas']]]);
   assert.equal(d.count, 4);
   assert.equal(d.total, 48.1 + 700 + 112 + 61.05); // l'importo del mese scritto a mano vince su quello della voce
 });

@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.50.1
+- **Da pagare a mese finito**: si mostrano le spese e le bollette fino al mese **prima** di quello in corso (a novembre: ottobre, in rosso); novembre compare dal 1° dicembre.
+
 ## 0.50.0
 - **Opzioni → Aspetto**: scelta della palette (Grafite, la più neutra e di partenza, Ambra, Salvia, Ghiaccio, Lime, Turchese, Arancio, Smeraldo); si ricorda su ogni dispositivo.
 - **Bollette per appartenenza**: il mese nel nome del file («Gas 2026.08») è il mese a cui la bolletta appartiene, non quello dopo; nei bimestrali conta l'ultimo. Ogni bolletta mostra anche la **cartella** in cui sta il file.

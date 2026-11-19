@@ -1013,7 +1013,7 @@ function renderDocs() {
   const linkOf = (k) => links.find((l) => l.key === k);
   // --- Da pagare
   const payBody = due.groups.length
-    ? `${due.groups.map((g) => `<h3 class="sub${g.late ? ' late' : ''}"><span>${monthName(g.month)}${g.late ? ' · arretrato' : ''}</span><span class="cnt${g.late ? ' red' : ''}">${g.items.length} ${g.late ? 'non pagat' + (g.items.length === 1 ? 'a' : 'e') : 'da pagare'}</span></h3>${g.items.map((p) => payRow(p, g.late)).join('')}`).join('')}
+    ? `${due.groups.map((g) => `<h3 class="sub late"><span>${monthName(g.month)}${g.late ? ' · arretrato' : ''}</span><span class="cnt red">${g.items.length} ${g.late ? 'non pagat' + (g.items.length === 1 ? 'a' : 'e') : 'da pagare'}</span></h3>${g.items.map((p) => payRow(p, true)).join('')}`).join('')}
        <div class="total"><span class="label">Totale da pagare</span><b>${money(due.total)}</b></div>`
     : `<p class="muted">${bills?.configured || extras?.extras?.length ? 'Non c\'è niente da pagare.' : 'Inserisci il link della cartella delle bollette (sezione Link) o aggiungi una spesa (Altre spese).'}</p>`;
   const pay = `<section class="paysec"><div class="payhead"><h2 class="section">Da pagare</h2></div><div class="docbody">${payBody}</div></section>`; // sempre visibile, non si chiude

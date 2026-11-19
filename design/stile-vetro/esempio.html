@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="it"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Stile vetro · esempio</title>
+<link rel="stylesheet" href="tema.css">
+<body class="vt" data-pal="grafite">
+<div class="vt-page">
+  <h1>Esempio</h1>
+  <div class="vt-card vt-card-big"><span class="vt-label">Speso questo mese</span><div class="vt-hero vt-num">1.284 €</div><div class="vt-bar" style="margin:10px 0"><i style="width:71%"></i></div><span class="vt-muted">Restano <b class="vt-good">516 €</b> su 1.800 €</span></div>
+  <div class="vt-card"><h2 class="vt-title">Categorie</h2>
+    <div class="vt-row"><b>Spesa</b><span class="vt-num">312 € <span class="vt-muted">/ 400</span></span></div>
+    <div class="vt-row"><b>Svago</b><span class="vt-num vt-bad">148 € <span class="vt-muted">/ 150</span></span></div>
+    <div class="vt-row"><b>Auto <span class="vt-pill warn">in sospeso</span></b><span class="vt-num">88 €</span></div></div>
+  <div class="vt-card"><h2 class="vt-title">Campi</h2><div style="display:grid;gap:10px;margin-top:12px"><input class="vt-input" placeholder="Cerca…"><select class="vt-input"><option>Tutti</option></select><div style="display:flex;gap:10px"><button class="vt-btn-primary" style="flex:1">Salva</button><button class="vt-btn">Annulla</button></div></div></div>
+  <div class="vt-card"><h2 class="vt-title">Aspetto</h2><div id="pal" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px"></div></div>
+  <div style="height:70px"></div>
+</div>
+<nav class="vt-tabs"><button aria-selected="true">Storico</button><button>Movimenti</button><button>Budget</button></nav>
+<script type="module">import { palettePicker } from './palette.js'; palettePicker(document.getElementById('pal'));</script>
+</body></html>

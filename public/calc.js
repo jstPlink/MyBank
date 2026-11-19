@@ -97,6 +97,9 @@ export function monthsBetween(from, to) {
   return out;
 }
 
+/** Il mese prima di AAAA-MM. */
+const prevMonth = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(Date.UTC(y, m - 2, 1)).toISOString().slice(0, 7); };
+
 /**
  * Tutto ciò che si paga, bollette e altre spese: una voce per bolletta (mese di scadenza `due`) e una per ogni mese in cui cade una spesa scritta a mano,
  * dal mese in cui si è iniziato a tenere il conto fino a `nowMonth`. `bills` è la risposta di GET /api/bills, `extras` quella di GET /api/extras.
@@ -109,7 +112,7 @@ export function payables(bills, extras, nowMonth) {
     out.push({ kind: 'bill', key: `bill:${b.path}`, ref: b.path, month: b.due, title: b.type, folder: b.folder ?? '', sub: 'Bolletta', period: b.from === b.to ? b.from : `${b.from} - ${b.to}`, full: b.amount, share, amount: b.amount == null ? null : round(b.amount * share / 100), paid: b.paid, url: b.url });
   }
   for (const x of extras?.extras ?? []) {
-    for (const m of monthsBetween(x.from > extras.from ? x.from : extras.from, nowMonth)) {
+    for (const m of monthsBetween(x.from > extras.from ? x.from : extras.from, prevMonth(nowMonth))) { // il mese in corso non è finito: si paga da quello dopo
       if (x.every === 'year' && Number(m.slice(5)) !== x.month) continue;
       const p = extras.paid?.[`${x.id}:${m}`];
       out.push({ kind: 'extra', key: `extra:${x.id}:${m}`, ref: x.id, month: m, title: x.name, sub: x.every === 'year' ? 'Altre spese · annuale' : 'Altre spese', amount: p?.amount ?? x.amount, paid: Boolean(p?.paid) });
@@ -118,10 +121,14 @@ export function payables(bills, extras, nowMonth) {
   return out;
 }
 
-/** Quello che resta da pagare fino a questo mese: i mesi arretrati (`late`) prima, poi il mese in corso; con il totale (le bollette senza importo non contano). */
+/**
+ * Quello che resta da pagare: si paga a mese finito, quindi si mostra fino al mese **prima** di quello in corso (a novembre, ottobre; novembre compare dal 1° dicembre).
+ * Tutto ciò che si vede è da pagare ora; `late` è solo per i mesi più vecchi del precedente (arretrato). Con il totale (le bollette senza importo non contano).
+ */
 export function dueGroups(list, nowMonth) {
-  const open = list.filter((p) => !p.paid && p.month <= nowMonth);
+  const last = prevMonth(nowMonth);
+  const open = list.filter((p) => !p.paid && p.month <= last);
   const months = [...new Set(open.map((p) => p.month))].sort();
-  const groups = months.map((month) => ({ month, late: month < nowMonth, items: open.filter((p) => p.month === month).sort((a, b) => (a.kind === b.kind ? a.title.localeCompare(b.title) : a.kind === 'extra' ? -1 : 1)) }));
+  const groups = months.map((month) => ({ month, late: month < last, items: open.filter((p) => p.month === month).sort((a, b) => (a.kind === b.kind ? a.title.localeCompare(b.title) : a.kind === 'extra' ? -1 : 1)) }));
   return { groups, count: open.length, total: round(open.reduce((a, p) => a + (p.amount ?? 0), 0)) };
 }
