@@ -2,6 +2,12 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.51.0
+- **Intestazioni a fascia**: le sezioni di Documenti e Opzioni hanno la testata a fascia d'accento al posto della barra verticale; aperte, filetto lime da 2px; chiuse, scheda tutta stondata. Quelle **non collassabili** («Da pagare») hanno una fascia più scura e piatta, con filetto sottile e senza chevron, per distinguerle bene dalle collassabili.
+- **Menu a tendina** nello stile vetro: freccia d'accento, bordo acceso da aperto, elenco scuro con la voce scelta in accento.
+- **Schede in basso** sul telefono con testo da 13px.
+- **Kit `design/stile-vetro`**: testate fisse e collassabili, interruttori, menu in vetro, spaziature, palette con ruoli dei colori; mockup riassuntivo `design/stile-riassunto-mockup.html`.
+
 ## 0.50.2
 - **Altre spese dall'inizio del conto**: affitto, Tari e le altre voci contano dal mese di partenza del conto (il mese prima del primo uso), non dal mese in cui le scrivi; così le voci di ottobre scritte a novembre sono da pagare.
 

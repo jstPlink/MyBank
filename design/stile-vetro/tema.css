@@ -45,6 +45,25 @@
 /* titolo di sezione con la barra d'accento a sinistra */
 .vt-title { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; font-size: var(--fs-lg); font-weight: 700; margin: 0; }
 
+/* testata a fascia d'accento per le schede (F1): <div class="vt-card vt-sect"><details open><summary class="vt-head"><h2>Titolo</h2><span class="vt-cnt">3 voci</span><svg class="vt-chev">…</svg></summary>…</details></div>
+   senza <details> è la versione fissa (nessun chevron, filetto sempre visibile); chiusa = scheda tutta stondata, senza filetto */
+.vt-sect { overflow: hidden; }
+.vt-sect:has(details:not([open])) { padding-bottom: 0; }
+.vt-sect details > summary { list-style: none; cursor: pointer; } .vt-sect details > summary::-webkit-details-marker { display: none; }
+.vt-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 16px; border-bottom: 2px solid var(--acc); background: linear-gradient(90deg, rgba(var(--acc-rgb), .28), rgba(var(--acc-rgb), .10)); }
+.vt-head h2 { flex: 1; font-size: var(--fs-md); line-height: 24px; }
+.vt-cnt { font-size: var(--fs-label); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--mute); } .vt-cnt.bad { color: var(--bad); }
+.vt-chev { width: 18px; height: 18px; flex: none; color: var(--acc); stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s; }
+.vt-sect details[open] > summary .vt-chev { transform: rotate(180deg); }
+.vt-sect details:not([open]) > summary.vt-head { border-bottom-color: transparent; }
+.vt-sect .vt-head + :not(.vt-body) { margin-top: 14px; }
+.vt-sect .vt-body { margin-top: 14px; }
+/* testata fissa (non collassabile): fascia scura e piatta, filetto sottile e tenue; la collassabile resta piena e luminosa */
+.vt-head.fix { background: rgba(0, 0, 0, .22); border-bottom: 1px solid rgba(255, 255, 255, .09); }
+.vt-head.fix h2 { color: rgba(242, 244, 247, .92); }
+/* misure delle testate: .lg 22px, normale 15px, .sm etichetta 11px maiuscola */
+.vt-head.lg h2 { font-size: var(--fs-lg); line-height: 28px; } .vt-head.sm h2 { font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase; line-height: 20px; }
+
 /* pulsanti, campi, targhette */
 .vt-btn, .vt-btn-primary { height: 44px; padding: 0 18px; border: var(--edge); border-radius: var(--r-btn); background: var(--chipbg); color: var(--ink); font: 700 var(--fs-md) "Figtree", system-ui, sans-serif; cursor: pointer; }
 .vt-btn:hover { background: rgba(255, 255, 255, .12); }
@@ -58,6 +77,28 @@ select.vt-input, select.vt-input option { background-color: var(--g2); color: va
 .vt-pill.on { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
 .vt-pill.warn { border-color: rgba(var(--bad-rgb), .55); background: rgba(var(--bad-rgb), .08); color: var(--bad); }
 
+/* interruttore: <label class="vt-switch"><input type="checkbox"><i></i></label> */
+.vt-switch { position: relative; display: inline-block; width: 46px; height: 28px; flex: none; }
+.vt-switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+.vt-switch i { position: absolute; inset: 0; border-radius: 999px; border: 1px solid rgba(255, 255, 255, .22); background: var(--chipbg); transition: background .15s, border-color .15s; }
+.vt-switch i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: var(--mute); transition: transform .15s, background .15s; }
+.vt-switch input:checked + i { background: var(--acc); border-color: var(--acc); }
+.vt-switch input:checked + i::after { transform: translateX(18px); background: var(--onacc); }
+.vt-switch input:focus-visible + i { outline: 2px solid rgba(var(--acc-rgb), .6); outline-offset: 2px; }
+
+/* menu a tendina in vetro (al posto del select nativo, che mostra l'elenco con lo stile del sistema):
+   <div class="vt-dd"><button class="vt-input vt-dd-btn">Tutti</button><div class="vt-dd-menu"><button class="on">Tutti</button>…</div></div>; si apre aggiungendo .open a .vt-dd */
+.vt-dd { position: relative; }
+.vt-dd-btn { display: flex; align-items: center; justify-content: space-between; text-align: left; cursor: pointer; font-weight: 600; }
+.vt-dd-btn::after { content: ""; width: 8px; height: 8px; border-right: 2px solid var(--acc); border-bottom: 2px solid var(--acc); transform: translateY(-2px) rotate(45deg); transition: transform .15s; }
+.vt-dd.open .vt-dd-btn { border-color: rgba(var(--acc-rgb), .6); }
+.vt-dd.open .vt-dd-btn::after { transform: translateY(2px) rotate(225deg); }
+.vt-dd-menu { display: none; position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 10; padding: 6px; border: var(--edge); border-radius: var(--r-field); background: color-mix(in srgb, var(--g2) 96%, transparent); box-shadow: 0 16px 36px rgba(0, 0, 0, .5); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
+.vt-dd.open .vt-dd-menu { display: grid; gap: 2px; }
+.vt-dd-menu button { height: 40px; padding: 0 12px; border: 0; border-radius: 10px; background: transparent; color: var(--ink); font: 500 var(--fs-md) "Figtree", system-ui, sans-serif; text-align: left; cursor: pointer; }
+.vt-dd-menu button:hover { background: rgba(255, 255, 255, .08); }
+.vt-dd-menu button.on { background: rgba(var(--acc-rgb), .16); color: var(--acc); font-weight: 700; }
+
 /* barra di avanzamento tonda (.low / .over = avviso) */
 .vt-bar { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, .10); overflow: hidden; }
 .vt-bar > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
@@ -69,7 +110,7 @@ select.vt-input, select.vt-input option { background-color: var(--g2); color: va
 
 /* barra delle schede in basso (sul telefono) */
 .vt-tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; gap: 4px; padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--hair); background: color-mix(in srgb, var(--g0) 82%, transparent); -webkit-backdrop-filter: blur(var(--blur)); backdrop-filter: blur(var(--blur)); }
-.vt-tabs > button { flex: 1; height: 40px; border: 0; border-radius: 14px; background: transparent; color: var(--mute); font: 600 var(--fs-label) "Figtree", system-ui, sans-serif; cursor: pointer; }
+.vt-tabs > button { flex: 1; height: 42px; border: 0; border-radius: 14px; background: transparent; color: var(--mute); font: 600 var(--fs-sm) "Figtree", system-ui, sans-serif; cursor: pointer; }
 .vt-tabs > button[aria-selected="true"] { background: rgba(255, 255, 255, .10); color: var(--acc); }
 
 /* finestre e fogli */

@@ -141,9 +141,13 @@ body.glass #budgetForm .foot { margin-top: 30px; }
 body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; margin: 0 0 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 body.glass #opzioni > details.group, body.glass #docGroups > details.group { margin: 0 0 16px; }
 body.glass #docGroups > details.group:first-child, body.glass #opzioni > :first-child { margin-top: 0; }
-body.glass :is(#opzioni, #docGroups) > details.group > summary { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+/* intestazione a fascia d'accento (variante F1): la fascia riempie il bordo alto della scheda; aperta, filetto lime da 2px; chiusa, scheda tutta stondata */
+body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { overflow: hidden; }
+body.glass :is(#opzioni, #docGroups) > details.group:not([open]) { padding-bottom: 0; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary, body.glass .payhead { margin: -16px -16px 0; padding: 14px 16px; border-radius: 0; border-left: 0; border-bottom: 2px solid transparent; background: linear-gradient(90deg, rgba(var(--acc-rgb), .20), rgba(var(--acc-rgb), .07)); }
+body.glass :is(#opzioni, #docGroups) > details.group[open] > summary, body.glass .payhead { border-bottom-color: var(--acc); }
 body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--acc); }
-body.glass .payhead { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary h2.section, body.glass .payhead h2.section { font-size: var(--fs-md); line-height: 24px; }
 body.glass .docbody .sub { border-bottom: 1px solid var(--hair); }
 body.glass .docbody .sub.late { border-bottom-color: rgba(var(--red-rgb),  .5); }
 body.glass .total { border-top: 1px solid var(--hair); }

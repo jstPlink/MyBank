@@ -649,7 +649,7 @@ body.glass .tabs > button:hover { color: var(--ink); }
 body.glass .tabs > button[aria-selected=true] { background: rgba(255, 255, 255, .10); color: var(--acc); }
 @media (max-width: 720px) {
   body.glass .tabs { border-top: 1px solid var(--hair); background: color-mix(in srgb, var(--g0) 82%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); }
-  body.glass .tabs > button { border-top: 0; margin: 0; height: 40px; padding: 0 2px; font-size: var(--fs-label); letter-spacing: 0; }
+  body.glass .tabs > button { border-top: 0; margin: 0; height: 42px; padding: 0 2px; font-size: var(--fs-sm); letter-spacing: 0; }
 }
 
 /* pulsanti e campi */
@@ -763,9 +763,13 @@ body.glass #budgetForm .foot { margin-top: 30px; }
 body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; margin: 0 0 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 body.glass #opzioni > details.group, body.glass #docGroups > details.group { margin: 0 0 16px; }
 body.glass #docGroups > details.group:first-child, body.glass #opzioni > :first-child { margin-top: 0; }
-body.glass :is(#opzioni, #docGroups) > details.group > summary { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+/* intestazione a fascia d'accento (variante F1): la fascia riempie il bordo alto della scheda; aperta, filetto lime da 2px; chiusa, scheda tutta stondata */
+body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { overflow: hidden; }
+body.glass :is(#opzioni, #docGroups) > details.group:not([open]) { padding-bottom: 0; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary, body.glass .payhead { margin: -16px -16px 0; padding: 14px 16px; border-radius: 0; border-left: 0; border-bottom: 2px solid transparent; background: linear-gradient(90deg, rgba(var(--acc-rgb), .28), rgba(var(--acc-rgb), .10)); }
+body.glass :is(#opzioni, #docGroups) > details.group[open] > summary, body.glass .payhead { border-bottom-color: var(--acc); }
 body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--acc); }
-body.glass .payhead { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary h2.section, body.glass .payhead h2.section { font-size: var(--fs-md); line-height: 24px; }
 body.glass .docbody .sub { border-bottom: 1px solid var(--hair); }
 body.glass .docbody .sub.late { border-bottom-color: rgba(var(--red-rgb),  .5); }
 body.glass .total { border-top: 1px solid var(--hair); }
@@ -826,3 +830,15 @@ body.glass[data-pal="smeraldo"] { --g0: #08100d; --g1: #0e1a15; --g2: #13261d; -
 .pal i { display: grid; place-items: center; width: 26px; height: 26px; border: 2px solid; border-radius: 50%; flex: none; }
 .pal i b { width: 10px; height: 10px; border-radius: 50%; }
 .pal.on { border-color: var(--acc); color: var(--acc); }
+
+/* vetro · testata fissa (non collassabile): fascia scura e piatta, filetto sottile e tenue, nessun chevron */
+body.glass .payhead { background: rgba(0, 0, 0, .22); border-bottom: 1px solid rgba(255, 255, 255, .09); }
+body.glass .payhead h2.section { color: rgba(242, 244, 247, .92); }
+
+/* vetro · menu a tendina: campo con freccia d'accento, elenco scuro con la voce scelta in accento (l'elenco nativo segue questi colori dove il sistema lo permette) */
+body.glass select { -webkit-appearance: none; appearance: none; padding-right: 30px; font-weight: 600; background-image: linear-gradient(45deg, transparent 50%, var(--acc) 50%), linear-gradient(135deg, var(--acc) 50%, transparent 50%); background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }
+body.glass select:focus { outline: 0; border-color: rgba(var(--acc-rgb), .6); }
+body.glass select option { background-color: var(--g2); color: var(--ink); }
+body.glass select option:checked { background-color: rgba(var(--acc-rgb), .3); color: var(--acc); }
+body.glass .hour select, body.glass .tagbox select, body.glass .schip select { background-image: none; padding-right: 6px; }
+body.glass .tagfilter details[open] summary { border-color: rgba(var(--acc-rgb), .6); }
