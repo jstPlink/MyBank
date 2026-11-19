@@ -11,7 +11,7 @@ import { AUTO_PER_DAY, BANKS, applyCutoff, purgeOrphans, cutoffOf, startLink, fi
 import { checkKey, createClient, psuHeaders } from './eb.js';
 import { AUTO_HOURS, TZ, nextRun } from './schedule.js';
 import { monthBudget, listTransactions, yearSummary } from './stats.js';
-import { addMonth, billName, mailFileName, monthIn, normalizeExtra, parseBillText, supplierOf } from './bills.js';
+import { addMonth, billName, normalizeExtra, parseBillText } from './bills.js';
 import { fetchMessages } from './mail.js';
 import { DOCUMENTS, cleanFileName, downloadFile, listDocuments, listFolder, normalizeDocuments, uploadFile } from './documents.js';
 import { PARSER_VERSION, parseStatement } from './estratto.js';
@@ -297,54 +297,58 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
   // ---------------------------------------------------------------- Gmail: bollette e buste paga arrivano per mail
   // Per ogni cartella (bollette, buste paga) un account Gmail con la «password per app» di Google: il server legge le mail con un PDF, lo rinomina col modello dell'utente e lo carica su Seafile.
   const MAIL_KEYS = ['bills', 'payslips'];
-  const MAIL_NAME = { bills: '{fornitore} {AAAA}.{MM}', payslips: 'Busta Paga {AAAA}.{MM}' };
   const mailKey = (req) => { if (!MAIL_KEYS.includes(req.params.key)) throw new Error('Categoria sconosciuta.'); return req.params.key; };
-  const mailView = (key) => { const c = db.settings.mail?.[key]; return { key, connected: Boolean(c?.password), email: c?.email ?? '', from: c?.from ?? '', name: c?.name || MAIL_NAME[key], last: c?.last ?? null }; };
+  const mailView = (key) => { const c = db.settings.mail?.[key]; return { key, connected: Boolean(c?.password), email: c?.email ?? '', from: c?.from ?? '', last: c?.last ?? null, inbox: c?.inbox ?? [] }; };
   const mailBusy = new Set();
+  // I PDF trovati nelle mail non si caricano da soli: restano «da caricare» (su disco, in inbox/) finché l'utente non sceglie il nome e conferma.
+  const inboxDir = (key) => path.join(dir, 'inbox', key);
   async function syncMail(key) {
     const c = db.settings.mail?.[key];
-    const url = db.settings.documents?.[key]?.url;
     if (!c?.password) throw new Error('Gmail non collegato.');
-    if (!url) throw new Error('Prima inserisci il link della cartella (Seafile).');
     if (mailBusy.has(key)) throw new Error('La lettura della posta è già in corso.');
     mailBusy.add(key);
     try {
-      const folder = await listFolder(url, fetchImpl);
-      const existing = new Set(folder.files.map((f) => f.name.toLowerCase()));
       const { messages, total } = await mailFetch({ email: c.email, password: c.password, from: c.from, since: c.since, seen: c.seen ?? [] });
-      const names = [], errors = [];
+      const errors = [];
+      let found = 0;
       for (const m of messages) {
         let ok = true;
-        for (const a of m.attachments) {
+        for (const [n, a] of m.attachments.entries()) {
           try {
-            const text = await pdfToText(a.data).catch(() => '');
-            const fallback = addMonth((m.date ?? new Date()).toISOString().slice(0, 7), -1); // la mail arriva il mese dopo
-            let fornitore = '', month = '';
-            if (key === 'bills') {
-              fornitore = supplierOf(m.subject, a.filename, text) || 'Bolletta';
-              const due = parseBillText(text).due;
-              month = due ? addMonth(due.slice(0, 7), -1) : (monthIn(`${m.subject} ${a.filename}`) || fallback);
-            } else month = monthIn(`${m.subject} ${a.filename}`) || monthIn(text) || fallback;
-            const name = cleanFileName(mailFileName(c.name || MAIL_NAME[key], { fornitore, month }));
-            if (existing.has(name.toLowerCase())) continue; // già nella cartella
-            await uploadFile(url, name, a.data, fetchImpl);
-            existing.add(name.toLowerCase());
-            names.push(name);
+            const id = `${m.id.replace(/[^\w]/g, '_')}_${n}`;
+            fs.mkdirSync(inboxDir(key), { recursive: true });
+            fs.writeFileSync(path.join(inboxDir(key), `${id}.pdf`), a.data);
+            (c.inbox ??= []).push({ id, subject: m.subject, from: m.from, date: m.date ? m.date.toISOString() : '', filename: a.filename, size: a.data.length });
+            found++;
           } catch (e) { ok = false; errors.push(`${a.filename}: ${e.message}`); }
         }
         if (ok) (c.seen ??= []).push(m.id);
       }
       c.seen = (c.seen ?? []).slice(-2000);
-      c.last = { at: new Date().toISOString(), imported: names.length, names, errors, pending: Math.max(0, total - messages.length) };
+      c.last = { at: new Date().toISOString(), imported: found, errors, pending: Math.max(0, total - messages.length) };
       await store.save();
       return c.last;
     } catch (e) {
-      c.last = { at: new Date().toISOString(), imported: 0, names: [], errors: [e.message], pending: 0 };
+      c.last = { at: new Date().toISOString(), imported: 0, errors: [e.message], pending: 0 };
       await store.save();
       throw e;
     } finally { mailBusy.delete(key); }
   }
-  const syncAllMail = async () => { for (const k of MAIL_KEYS) if (db.settings.mail?.[k]?.password && db.settings.documents?.[k]?.url) await syncMail(k).catch((e) => console.error(`Lettura di Gmail (${k}) non riuscita:`, e.message)); };
+  const syncAllMail = async () => { for (const k of MAIL_KEYS) if (db.settings.mail?.[k]?.password) await syncMail(k).catch((e) => console.error(`Lettura di Gmail (${k}) non riuscita:`, e.message)); };
+  const inboxItem = (req) => { const it = db.settings.mail?.[mailKey(req)]?.inbox?.find((x) => x.id === req.params.id); if (!it) throw new Error('Documento non trovato.'); return it; };
+  const dropInbox = async (req, it) => { const c = db.settings.mail[req.params.key]; c.inbox = c.inbox.filter((x) => x !== it); fs.rmSync(path.join(inboxDir(req.params.key), `${it.id}.pdf`), { force: true }); await store.save(); };
+  // Carica nella cartella Seafile un PDF trovato nella posta, col nome scelto dall'utente.
+  app.post('/api/mail/:key/inbox/:id/upload', wrap(async (req, res) => {
+    const it = inboxItem(req);
+    const url = db.settings.documents?.[req.params.key]?.url;
+    if (!url) return bad(res, 'Prima inserisci il link della cartella (Seafile).');
+    const name = cleanFileName(/\.pdf$/i.test(String(req.body?.name ?? '')) ? req.body.name : `${req.body?.name ?? ''}.pdf`);
+    await uploadFile(url, name, fs.readFileSync(path.join(inboxDir(req.params.key), `${it.id}.pdf`)), fetchImpl);
+    await dropInbox(req, it);
+    res.json(mailView(req.params.key));
+  }));
+  app.delete('/api/mail/:key/inbox/:id', wrap(async (req, res) => { await dropInbox(req, inboxItem(req)); res.json(mailView(req.params.key)); }));
+  app.get('/api/mail/:key/inbox/:id/file', wrap(async (req, res) => { const it = inboxItem(req); res.type('pdf').sendFile(path.join(inboxDir(req.params.key), `${it.id}.pdf`)); }));
   app.get('/api/mail', (req, res) => res.json({ mail: MAIL_KEYS.map(mailView) }));
   app.put('/api/mail/:key', wrap(async (req, res) => {
     const key = mailKey(req);
@@ -353,12 +357,10 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return bad(res, 'Scrivi l\'indirizzo Gmail.');
     const password = String(req.body?.password ?? '').trim() || old.password || '';
     if (!password) return bad(res, 'Scrivi la password per app di Google.');
-    const name = String(req.body?.name ?? '').trim() || MAIL_NAME[key];
-    cleanFileName(mailFileName(name, { fornitore: 'Gas', month: '2026-01' }));
     const from = String(req.body?.from ?? '').trim().slice(0, 100);
     const since = old.since && email === old.email ? old.since : new Date(Date.now() - 35 * 86400000).toISOString().slice(0, 10);
     await mailFetch({ email, password, from, since, seen: [], limit: 0 }); // prova l'accesso
-    (db.settings.mail ??= {})[key] = { email, password, from, name, since, seen: email === old.email ? (old.seen ?? []) : [], last: old.last ?? null };
+    (db.settings.mail ??= {})[key] = { email, password, from, since, seen: email === old.email ? (old.seen ?? []) : [], last: old.last ?? null, inbox: old.inbox ?? [] };
     await store.save();
     res.json(mailView(key));
   }));

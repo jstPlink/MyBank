@@ -602,6 +602,9 @@ span.chk.on { opacity: .5; }
 .btn { display: inline-flex; align-items: center; justify-content: center; min-height: var(--h); padding: 0 20px; border: 1px solid var(--ink); background: transparent; font: 600 var(--fs-md)/1 var(--f-sans); }
 .btn:hover { background: var(--ink); color: var(--paper); }
 .btn.wide { width: 100%; }
+.inbox { display: grid; gap: 12px; border-left: 6px solid var(--red); padding-left: 12px; }
+.inb { display: grid; gap: 8px; }
+.inb .s { color: var(--mute); font-size: var(--fs-sm); }
 .shares { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 14px; }
 .shares .label { width: 100%; }
 .btn small { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; margin-left: 8px; opacity: .7; }

@@ -983,7 +983,7 @@ function payRow(p, late) {
   return `<div class="bill${p.paid ? ' paid' : ''}${late ? ' late' : ''}"><button class="chk${p.paid ? ' on' : ''}" data-pay="${esc(p.key)}" aria-label="${p.paid ? 'Segna da pagare' : 'Segna pagata'}" aria-pressed="${p.paid}"></button>
     <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.share < 100 && p.full != null ? ` · quota ${p.share}% di ${money(p.full)}` : ''}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
 }
-const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
+const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] || key === 'pay' ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
 
 function renderDocs() {
   const { links, bills, extras } = state.dp;
@@ -997,26 +997,23 @@ function renderDocs() {
        <div class="total"><span class="label">Totale da pagare</span><b>${money(due.total)}</b></div>`
     : `<p class="muted">${bills?.configured || extras?.extras?.length ? 'Non c\'è niente da pagare.' : 'Inserisci il link della cartella delle bollette (sezione Link) o aggiungi una spesa (Altre spese).'}</p>`;
   const pay = docGroup('pay', 'Da pagare', due.count ? `${money(due.total)} · ${due.count} ${due.count === 1 ? 'voce' : 'voci'}` : 'niente', payBody, due.count ? ' red' : '');
-  // --- Bollette: il mese in corso e gli arretrati non pagati; sotto, il pulsante per tutti gli altri mesi
+  // --- Bollette: solo lo storico delle pagate (quelle da pagare stanno in «Da pagare»)
   const billItems = all.filter((p) => p.kind === 'bill');
-  const shown = billItems.filter((p) => p.month === now || (p.month < now && !p.paid));
-  const others = (bills?.items ?? []).filter((b) => !shown.some((p) => p.ref === b.path));
-  const group = (list, late) => list.map((p) => payRow(p, late && !p.paid)).join('');
-  const byMonth = (list) => [...new Set(list.map((p) => p.month))].sort().reverse();
   const types = [...new Set((bills?.items ?? []).map((b) => b.type))].sort();
   const shareRow = types.length ? `<div class="shares"><span class="label">Quota che paghi</span>${types.map((t) => `<button class="btn" data-share="${esc(t)}">${esc(t)} ${bills.shares?.[t] ?? 100}%</button>`).join('')}</div>` : '';
+  const paidBills = (bills?.items ?? []).filter((b) => b.paid);
+  const billRow = (b) => {
+    if (b.due >= bills.from) return payRow(payables({ from: bills.from, shares: bills.shares, items: [b] }, null, now)[0]);
+    const q = bills.shares?.[b.type] ?? 100;
+    return `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio · ${esc(b.from.replace('-', '.'))}${q < 100 && b.amount != null ? ` · quota ${q}% di ${money(b.amount)}` : ''}</span></div><span class="amt">${b.amount == null ? '' : money(Math.round(b.amount * q) / 100)}</span></div>`;
+  };
   const billsBody = !bills?.configured
     ? `<p class="muted">${bills?.error ? esc(bills.error) : 'Inserisci il link della cartella nella sezione Link.'}</p>`
-    : `${byMonth(shown).map((m) => `<h3 class="sub${m < now ? ' late' : ''}"><span>${monthName(m)}${m < now ? ' · arretrato' : ''}</span></h3>${group(shown.filter((p) => p.month === m), m < now)}`).join('') || '<p class="muted">Nessuna bolletta da pagare questo mese.</p>'}
+    : `${paidBills.length ? `<div class="scroller">${[...new Set(paidBills.map((b) => b.due))].sort().reverse().map((m) => `<h3 class="sub"><span>${monthName(m)}</span></h3>${paidBills.filter((b) => b.due === m).map(billRow).join('')}`).join('')}</div>` : '<p class="muted">Ancora nessuna bolletta pagata.</p>'}
        ${shareRow}
-       ${others.length ? `<button class="btn wide" data-more="bills">${state.dp.billsAll ? 'Nascondi gli altri mesi' : 'Mostra gli altri mesi'} <small>${others.length} file</small></button>` : ''}
-       ${state.dp.billsAll ? `<div class="scroller">${[...new Set(others.map((b) => b.due))].sort().reverse().map((m) => `<h3 class="sub"><span>${monthName(m)}</span></h3>${others.filter((b) => b.due === m).map((b) => {
-         const tracked = b.due >= bills.from;
-         return tracked ? payRow(payables({ from: bills.from, items: [b] }, null, now)[0]) : `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio · ${esc(b.from.replace('-', '.'))}</span></div><span class="amt">${b.amount == null ? '' : money(b.amount)}</span></div>`;
-       }).join('')}`).join('')}</div>` : ''}
        <p class="muted"><button class="link" data-folder="${esc(bills.folderUrl ?? '')}">Apri la cartella su Seafile</button></p>`;
   const nBills = billItems.filter((p) => !p.paid && p.month <= now).length;
-  const billsG = docGroup('billsGroup', 'Bollette', bills?.configured ? (nBills ? `${nBills} da pagare` : 'tutte pagate') : 'nessun link', billsBody, nBills ? ' red' : '');
+  const billsG = docGroup('billsGroup', 'Bollette', bills?.configured ? `${paidBills.length} pagate` : 'nessun link', billsBody);
   // --- Altre spese
   const exList = (extras?.extras ?? []).map((x) => `<div class="bill"><div class="n"><b>${esc(x.name)}</b><span class="s">${x.every === 'year' ? `Ogni anno · ${MONTHS[x.month - 1].toLowerCase()}` : 'Ogni mese'}</span></div><span class="amt">${money(x.amount)}</span><button class="go" data-extra-edit="${esc(x.id)}" aria-label="Modifica ${esc(x.name)}">›</button></div>`).join('');
   const extraBody = `${exList || '<p class="muted">Nessuna voce: aggiungi affitto, wifi, Tari…</p>'}<div class="foot"><button class="primary" data-extra-add="1">Aggiungi voce</button></div>
@@ -1035,7 +1032,8 @@ function renderDocs() {
       ${l?.url ? `<span class="label">Carica a mano</span><div class="drop" data-drop="${k}"><span><b>Trascina qui i file</b><br>solo sul computer</span></div>
         <label class="btn filebtn">Scegli dal telefono<input type="file" multiple hidden data-pick="${k}"></label><div class="staged" data-staged="${k}"></div>` : ''}</div>`;
   };
-  const linksG = docGroup('links', 'Link', `${links.filter((l) => l.url && l.key !== 'statements').length} cartelle`, folderBlock('bills', 'Bollette') + folderBlock('payslips', 'Buste paga'));
+  const toLoad = (state.dp.mail ?? []).reduce((n, m) => n + (m.inbox?.length ?? 0), 0);
+  const linksG = docGroup('links', 'Link', toLoad ? `${toLoad} PDF da caricare` : `${links.filter((l) => l.url && l.key !== 'statements').length} cartelle`, folderBlock('bills', 'Bollette') + folderBlock('payslips', 'Buste paga'), toLoad ? ' red' : '');
   $('#docGroups').innerHTML = pay + billsG + extraG + paysG + stG + linksG;
   for (const l of links) renderStaged(l.key);
   const f = state.docFiles?.payslips;
@@ -1046,12 +1044,11 @@ const mailOf = (k) => state.dp.mail?.find((m) => m.key === k);
 function mailForm(k) {
   const m = mailOf(k);
   if (!m) return '';
-  const last = m.last ? `${m.last.errors?.length ? `<span class="error">${esc(m.last.errors[0])}</span> · ` : ''}Ultima lettura ${new Date(m.last.at).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${m.last.imported} nuov${m.last.imported === 1 ? 'o' : 'i'}${m.last.pending ? ` · altri ${m.last.pending} da leggere` : ''}` : '';
-  return `<form data-mail="${k}"><label>Indirizzo Gmail da cui arrivano<input name="email" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome@gmail.com" value="${esc(m.email)}"></label>
+  const last = m.last ? `${m.last.errors?.length ? `<span class="error">${esc(m.last.errors[0])}</span> · ` : ''}Ultima lettura ${new Date(m.last.at).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })} · ${m.last.imported} PDF trovat${m.last.imported === 1 ? 'o' : 'i'}${m.last.pending ? ` · altri ${m.last.pending} da leggere` : ''}` : '';
+  const box = (m.inbox ?? []).length ? `<div class="inbox"><span class="label">Da caricare · scegli il nome</span>${m.inbox.map((it) => `<div class="inb"><b>${esc(it.subject || it.filename)}</b><span class="s">${esc(it.from)}${it.date ? ` · ${new Date(it.date).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' })}` : ''}</span><input data-inname="${esc(it.id)}" value="${esc(it.filename)}" autocapitalize="off" spellcheck="false"><div class="foot"><button class="primary" data-inup="${k}|${esc(it.id)}">Carica</button><button class="link" data-indel="${k}|${esc(it.id)}">Scarta</button></div></div>`).join('')}</div>` : '';
+  return `${box}<form data-mail="${k}"><label>Indirizzo Gmail da cui arrivano<input name="email" type="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="nome@gmail.com" value="${esc(m.email)}"></label>
     <label>Password per app di Google<input name="password" type="password" autocomplete="off" placeholder="${m.connected ? '•••• già salvata (lascia vuoto per tenerla)' : '16 lettere, la crei nell’account Google'}"></label>
     <label>Solo dal mittente (facoltativo)<input name="from" autocapitalize="off" spellcheck="false" placeholder="es. hera" value="${esc(m.from)}"></label>
-    <label>Nome dei file<input name="name" autocapitalize="off" spellcheck="false" value="${esc(m.name)}"></label>
-    <p class="muted">Usa {fornitore}, {AAAA} e {MM}. ${k === 'bills' ? 'Il fornitore (Gas, Elettricità, Acqua…) e il mese si leggono dal PDF.' : 'Il mese si legge dal PDF; se manca, dalla data della mail.'}</p>
     ${last ? `<p class="docnote">${last}</p>` : ''}<p class="error" data-mailerr="${k}"></p>
     <div class="foot"><button class="primary" type="submit">Salva Gmail</button>${m.connected ? `<button type="button" data-mailsync="${k}">Leggi ora</button><button type="button" class="link" data-maildel="${k}">Scollega</button>` : ''}</div></form>`;
 }
@@ -1126,6 +1123,7 @@ function renderStaged(key) {
 $('#docGroups').addEventListener('toggle', (e) => {
   const key = e.target.dataset?.doc;
   if (!key) return;
+  if (key === 'pay') { e.target.open = true; return; } // «Da pagare» resta sempre aperta
   state.docOpen[key] = e.target.open;
   if (e.target.open) loadFolder(key).catch(fail);
 }, true);
@@ -1398,6 +1396,16 @@ $('#notifyList').addEventListener('click', async (e) => {
 })();
 
 $('#docGroups').addEventListener('click', async (e) => {
+  const up = e.target.closest('[data-inup]'), drop = e.target.closest('[data-indel]');
+  if (up || drop) {
+    const [k, id] = (up ?? drop).dataset[up ? 'inup' : 'indel'].split('|');
+    try {
+      if (up) { up.disabled = true; await api('POST', `/api/mail/${k}/inbox/${id}/upload`, { name: up.closest('.inb').querySelector('input').value }); toast('Caricato su Seafile.'); }
+      else await api('DELETE', `/api/mail/${k}/inbox/${id}`);
+      await loadDocuments();
+    } catch (err) { if (err instanceof Unauthorized) return fail(err); up && (up.disabled = false); toast(err.message); }
+    return;
+  }
   const sync = e.target.closest('[data-mailsync]'), del = e.target.closest('[data-maildel]');
   if (!sync && !del) return;
   const k = (sync ?? del).dataset[sync ? 'mailsync' : 'maildel'];

@@ -2,6 +2,10 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.47.0
+- **Gmail senza rinomina automatica**: i PDF trovati nelle mail restano «Da caricare» sotto la cartella (conteggio nella fascia Link); scegli tu il nome e con un tocco li carichi su Seafile, o li scarti. Tolto il campo «Nome dei file».
+- **Da pagare sempre aperta**, e **Bollette** diventa solo lo storico delle pagate (niente più doppioni con «Da pagare»).
+
 ## 0.46.0
 - **Quota delle bollette**: per ogni tipo (Gas, Elettricità, Acqua…) scrivi la percentuale che paghi (Bollette → «Quota che paghi»). In «Da pagare» e nei totali conta solo la tua parte, la riga mostra «quota 50% di 84,20 €»; l'importo che correggi toccandolo è quello della bolletta intera. `PUT /api/bills/share`, `shares` in `GET /api/bills`.
 
