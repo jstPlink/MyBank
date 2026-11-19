@@ -37,9 +37,9 @@ Node 24 + Express 5, dati in un file JSON (`data/mybank.json`), pagine web in HT
 
 Le proposte grafiche si fanno prima come mockup HTML in `design/` (393 px di larghezza per il telefono), **solo in tema scuro**, con dati inventati e più varianti affiancate; si implementa solo quella scelta dall'utente. L'importo di un ricorrente non si scrive mai: è la media dei movimenti assegnati.
 
-## Estetica (regole uniche, vedi README «Estetica»)
+## Estetica (regole uniche, vedi README «Estetica» e «Stile vetro»)
 
-Carta e inchiostro, un solo rosso vermiglio (più un giallo solo per i mesi dello Storico con movimenti «Non definito»), angoli vivi, filetti da 1px (2px a inizio sezione), serif per numeri e titoli, monospazio maiuscolo per le etichette. Le intestazioni principali delle sezioni hanno una barra rossa a sinistra e il titolo in serif grande (mai a tinta piena: sembrerebbero pulsanti), le sotto sezioni sono titoli in serif più piccoli con la riga sotto. Scala del testo 11/13/15/22/34. Pulsanti e campi alti `--h`. Il widget usa un solo carattere (sans-serif), fondo inchiostro e testo carta. Nuove schermate e il widget seguono le stesse regole: niente colori o forme nuove senza aggiornare queste righe e il README.
+Stile **vetro** su tutte le schede dopo l'accesso (classe `glass` sul body): sfondo quasi nero verdastro con una sfumatura leggerissima, schede di vetro scuro (filetto chiaro, riflesso sul bordo alto, ombra morbida, angoli 22px), un solo accento lime (`--acc`; il corallo `--red` solo per uscite e avvisi), carattere **Figtree** (in `public/fonts/`, incluso nell'APK), barre tonde, targhette a pillola. Le sezioni principali (Documenti, Opzioni) sono schede con una barra lime a sinistra del titolo; il widget resta su fondo inchiostro con un solo carattere sans-serif. Scala del testo 11/13/15/22/34 (il test CSS ammette solo queste misure). La palette sta in variabili in fondo a `style.css`: per cambiarla si ridefiniscono lì. Nuove schermate seguono le stesse regole e i mockup (in `design/`) usano questo stile: niente colori o forme nuove senza aggiornare queste righe e il README.
 
 ## Prima di fare domande
 

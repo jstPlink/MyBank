@@ -192,12 +192,15 @@ function applyHash() {
   show(tab);
 }
 
+const TITLES = { storico: 'Storico', movimenti: 'Movimenti', ricorrenti: 'Ricorrenti', budget: 'Budget', documenti: 'Documenti', opzioni: 'Opzioni' };
 function show(tab) {
   if (tab === 'banche') { tab = 'opzioni'; $('#banche').open = true; } // le Banche stanno nelle Opzioni
   if (!TABS.includes(tab)) tab = 'storico';
   state.tab = tab;
+  $('#pageTitle').textContent = TITLES[tab] ?? 'MyBank'; // in alto a sinistra il nome della scheda aperta
   history.replaceState(null, '', `#${tab}`);
   for (const t of TABS) $(`#${t}`).hidden = t !== tab;
+  document.body.classList.add('glass'); // lo stile vetro vale per tutte le schede (non per la pagina di accesso)
   document.querySelectorAll('.tabs [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('#optionsBtn').setAttribute('aria-pressed', String(tab === 'opzioni'));
   ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, documenti: loadDocuments, opzioni: loadOptions })[tab]().catch(fail);
@@ -570,8 +573,8 @@ function renderRecurring() {
   const { fixed, reserve } = totals;
   $('#recHero').innerHTML = `<div class="bhero"><div class="bheroh"><div><span class="label">Costo fisso mensile</span><div class="big">${money(fixed)}</div></div><div class="bdays"><span class="label">Da mettere da parte al mese</span><div class="big">${money(reserve)}</div></div></div></div>`;
   $('#recList').innerHTML = recInbox(unassigned, groups) + (groups.length
-    ? `<div class="rsec"><span>Attivi · dal più vicino</span><span>${act.length}</span></div>${act.map(recRow).join('') || '<p class="muted">Nessun ricorrente attivo.</p>'}
-       <div class="rsec"><span>Non più attivi</span><span>${off.length}</span></div>${off.map(recRow).join('') || '<p class="muted">Nessuno.</p>'}`
+    ? `<div class="rgroup"><div class="rsec"><span>Attivi · dal più vicino</span><span>${act.length}</span></div>${act.map(recRow).join('') || '<p class="muted">Nessun ricorrente attivo.</p>'}</div>
+       <div class="rgroup off"><div class="rsec"><span>Non più attivi</span><span>${off.length}</span></div>${off.map(recRow).join('') || '<p class="muted">Nessuno.</p>'}</div>`
     : '<p class="muted">Ancora nessun ricorrente: aggiungine uno qui sotto, oppure scegli il tag «Ricorrente» da un movimento e crea il ricorrente da lì.</p>');
 }
 
@@ -999,7 +1002,7 @@ function renderDocs() {
   const pay = `<section class="paysec"><div class="payhead"><h2 class="section">Da pagare</h2></div><div class="docbody">${payBody}</div></section>`; // sempre visibile, non si chiude
   // --- Bollette: solo lo storico delle pagate (quelle da pagare stanno in «Da pagare»)
   const billItems = all.filter((p) => p.kind === 'bill');
-  const shareRow = bills?.configured ? `<div class="shares"><span class="label">Quota che paghi (tutte le forniture)</span><button class="btn" data-share="1">${bills.share ?? 100}%</button></div>` : '';
+  const shareRow = bills?.configured ? `<div class="shares"><span class="label">Quota che paghi (tutte le forniture)</span>${bills.share === undefined ? '<span class="muted">Il server non ha ancora la quota: aggiornalo (docker compose pull && docker compose up -d).</span>' : `<button class="btn" data-share="1">${bills.share}%</button>`}</div>` : '';
   const paidBills = (bills?.items ?? []).filter((b) => b.paid);
   const billRow = (b) => {
     if (b.due >= bills.from) return payRow(payables({ from: bills.from, share: bills.share, items: [b] }, null, now)[0]);
@@ -1246,7 +1249,7 @@ $('#amountForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const p = amountFor;
   try {
-    if (p.kind === 'share') await api('PUT', '/api/bills/share', { percent: $('#amountInput').value });
+    if (p.kind === 'share') { if ((await api('PUT', '/api/bills/share', { percent: $('#amountInput').value })).share === undefined) throw new Error('Il server non ha ancora la quota unica: aggiornalo.'); }
     else if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, amount: $('#amountInput').value });
     else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, amount: $('#amountInput').value });
     $('#amountDialog').close();

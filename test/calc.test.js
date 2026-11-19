@@ -25,6 +25,13 @@ test('calc: spesa totale del Budget = uscite reali del mese corrente', () => {
   assert.equal(m.cats.spesa.label, 'Spesa');
 });
 
+test('calc: la quota unica dimezza le bollette in Da pagare e nel totale', async () => {
+  const { payables, dueGroups } = await import('../public/calc.js');
+  const bills = { from: '2026-10', share: 50, items: [{ path: 'Vodafone 2026.10.pdf', type: 'Vodafone', from: '2026-10', to: '2026-10', due: '2026-11', amount: 28.89, paid: false, url: 'u' }] };
+  const d = dueGroups(payables(bills, null, '2026-11'), '2026-11');
+  assert.deepEqual([d.groups[0].items[0].full, d.groups[0].items[0].amount, d.total], [28.89, 14.45, 14.45]);
+});
+
 test('calc: il promemoria annuale suona il mese 3 giorni prima del pagamento', () => {
   assert.equal(reminderMonth('2026-09-20'), 9);
   assert.equal(reminderMonth('2027-01-02'), 12);

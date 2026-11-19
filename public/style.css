@@ -44,7 +44,7 @@ a { color: var(--ink); text-decoration-color: var(--red); text-underline-offset:
 /* intestazione e schede */
 .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 18px max(16px, calc((100vw - 1040px) / 2)) 10px; padding-top: calc(18px + env(safe-area-inset-top)); }
 .brand { display: flex; align-items: center; gap: 12px; }
-.brand h1 { font: 700 var(--fs-lg)/1 var(--f-serif); letter-spacing: -.02em; }
+.brand h1 { font: 700 var(--fs-num)/1 var(--f-serif); letter-spacing: -.02em; }
 .top-actions { display: flex; align-items: center; gap: 14px; }
 .version { font: 500 var(--fs-label)/1 var(--f-mono); letter-spacing: .04em; color: var(--mute); }
 .top-actions .ghost { height: 36px; min-height: 36px; padding: 0 14px; }
@@ -619,3 +619,178 @@ span.chk.on { opacity: .5; }
 @media (hover: none) { .drop { display: none; } }
 .note { font-size: var(--fs-sm); }
 dialog .fields { margin-bottom: 4px; }
+
+/* ---------------------------------------------------------------------------------------------
+   Stile «vetro» (tutte le schede dopo l'accesso): schede di vetro scuro su sfondo quasi nero, accento lime, carattere Figtree.
+   Intensità 1,5 (tra sottile e media). Si attiva con la classe `glass` sul body (app.js, show()). Per cambiare palette basta
+   ridefinire le variabili --g0..--g2 (sfondo), --acc, --acc2, --onacc, --red, --mute qui sotto.
+   --------------------------------------------------------------------------------------------- */
+@font-face { font-family: "Figtree"; src: url("fonts/figtree-latin.woff2") format("woff2"); font-weight: 500 800; font-style: normal; font-display: swap; }
+body.glass {
+  --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a;
+  --paper: #0b0c0b; --ink: #f2f4f7; --mute: #8c9488; --hair: rgba(255, 255, 255, .08); --red: #ff9a72; --green: #c9f36b; --yellow: #f0c419;
+  --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #f2f4f7; --t-entrata: #c9f36b; --t-giroconto: #6d7a68;
+  --f-serif: "Figtree", system-ui, "Segoe UI", sans-serif; --f-sans: "Figtree", system-ui, "Segoe UI", sans-serif; --f-mono: "Figtree", system-ui, "Segoe UI", sans-serif;
+  --glass: linear-gradient(160deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .05)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .10), rgba(255, 255, 255, .07));
+  --edge: 1px solid rgba(255, 255, 255, .15); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .105), 0 10px 28px rgba(0, 0, 0, .29); --chipbg: rgba(255, 255, 255, .065);
+  color-scheme: dark; color: var(--ink);
+  background: linear-gradient(170deg, var(--g0) 0%, var(--g1) 55%, var(--g2) 100%) fixed;
+}
+body.glass::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background: radial-gradient(240px 240px at 85% 10%, rgba(var(--acc-rgb), .06), transparent 70%), radial-gradient(280px 280px at 5% 55%, rgba(var(--acc2-rgb), .06), transparent 70%), radial-gradient(240px 240px at 90% 88%, rgba(var(--acc-rgb), .06), transparent 70%); }
+body.glass #app { position: relative; z-index: 1; }
+body.glass .brand h1 { font-weight: 700; }
+body.glass .demo { background: var(--red); }
+
+/* barra delle schede: vetro, la scelta è in lime */
+body.glass .tabs { border-bottom: 0; gap: 4px; padding: 6px 12px 10px; }
+body.glass .tabs > button { height: 38px; border: 0; margin: 0; border-radius: 14px; background: transparent; font-weight: 600; color: var(--mute); }
+body.glass .tabs > button:hover { color: var(--ink); }
+body.glass .tabs > button[aria-selected=true] { background: rgba(255, 255, 255, .10); color: var(--acc); }
+@media (max-width: 720px) {
+  body.glass .tabs { border-top: 1px solid var(--hair); background: rgba(11, 12, 11, .82); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); }
+  body.glass .tabs > button { border-top: 0; margin: 0; height: 40px; padding: 0 2px; font-size: var(--fs-label); letter-spacing: 0; }
+}
+
+/* pulsanti e campi */
+body.glass button.primary, body.glass button.ghost { border: var(--edge); border-radius: 16px; font-weight: 700; }
+body.glass button.primary { background: var(--acc); border-color: var(--acc); color: var(--onacc); box-shadow: 0 5px 16px rgba(0, 0, 0, .28); }
+body.glass button.primary:hover { background: var(--acc2); border-color: var(--acc2); color: var(--onacc); }
+body.glass button.ghost { background: var(--chipbg); color: var(--ink); }
+body.glass button.ghost:hover { background: rgba(255, 255, 255, .12); color: var(--ink); }
+body.glass .top-actions .ghost { border-radius: 999px; }
+body.glass input, body.glass select { border: var(--edge); border-radius: 14px; background: var(--chipbg); }
+body.glass select, body.glass option { background-color: #151713; color: var(--ink); }
+
+/* Storico: bilancio in cima (scheda con una tinta lime), entrate e uscite affiancate, tabella in una scheda */
+body.glass #yearCards { grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+body.glass #yearCards .v { font-size: var(--fs-lg); }
+body.glass .card { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+body.glass .card .v { font-weight: 700; }
+body.glass .card:nth-child(3) { order: -1; grid-column: 1 / -1; background: var(--glass-big); }
+body.glass #yearCards .card:nth-child(3) .v { font-size: var(--fs-num); }
+body.glass .tablewrap { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 6px 16px 10px; }
+body.glass thead th { border-bottom: 1px solid var(--hair); }
+body.glass tfoot th, body.glass tfoot td { border-top: 1px solid var(--hair); }
+body.glass tbody tr.m:hover { background: rgba(255, 255, 255, .04); }
+body.glass tbody tr.m.undef { background: rgba(240, 196, 25, .10); }
+body.glass tbody tr.m.undef th { color: var(--yellow); }
+body.glass td.num, body.glass th.num { font-weight: 700; }
+body.glass .chip { border-bottom-color: var(--hair); }
+body.glass .chip:hover { color: var(--acc); border-bottom-color: var(--hair); }
+body.glass .chip .cbar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .10); overflow: hidden; }
+body.glass .chip .cbar i, body.glass .chip:hover .cbar i, body.glass .legend .chip.in .cbar i { border-radius: 999px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+body.glass .chip .cbar[style*="--tick"]::after { display: none; }
+
+/* Budget: riquadro del mese (tinta lime) e una scheda per categoria con barra a segmenti tondi */
+body.glass #budgetCards { display: grid; gap: 14px; }
+body.glass .bhero { border: var(--edge); border-radius: 22px; background: var(--glass-big); box-shadow: var(--glass-sh); padding: 18px; }
+body.glass .bhero .big, body.glass .bhero .n, body.glass .bfix .n { font-weight: 700; }
+body.glass .bstats, body.glass .bfix { border-top-color: var(--hair); }
+body.glass .bstats .dim .n, body.glass .bfix .grey .n { color: var(--mute); }
+body.glass .bcat { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+body.glass .bh .n { font-weight: 700; }
+body.glass .bbar { height: 14px; }
+body.glass .bbar b { border-radius: 999px; background: rgba(255, 255, 255, .10); overflow: hidden; }
+body.glass .bbar i { border-radius: 999px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
+body.glass .bbar.low i { background: var(--red); }
+body.glass .bbar.over b { background: var(--red); }
+body.glass .bbar em { border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px #151713; }
+body.glass #budgetEdit { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; margin-top: 14px; }
+
+/* vetro · Movimenti: filtri, elenco in una scheda, ordinamento */
+body.glass .fcount { color: var(--mute); }
+body.glass .tagfilter summary { border: var(--edge); border-radius: 14px; background: var(--chipbg); font-weight: 600; }
+body.glass .tagfilter summary::after { color: var(--acc); }
+body.glass .tagopts { border: var(--edge); border-radius: 18px; background: #151713; box-shadow: 0 12px 28px rgba(0, 0, 0, .45); }
+body.glass .tagopt, body.glass .pick, body.glass .rinrow, body.glass .rpay { border-top-color: var(--hair); }
+body.glass .tagopt i, body.glass .pick i { border: 1px solid rgba(255, 255, 255, .3); border-radius: 7px; background: var(--chipbg); }
+body.glass .tagopt input:checked + i, body.glass .pick input:checked + i { background: var(--acc); border-color: var(--acc); }
+body.glass .tagopt input:checked + i::after, body.glass .pick input:checked + i::after { border-color: var(--onacc); }
+body.glass .catfilter { color: var(--mute); }
+body.glass .mvlist { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 0 14px 6px; overflow: hidden; }
+body.glass .mvsort { border-bottom-color: var(--hair); }
+body.glass .sortbtn.on { color: var(--acc); text-decoration: none; }
+body.glass .mv { border-bottom-color: var(--hair); }
+body.glass .mv.pending { border-left-color: var(--red); }
+body.glass .mv select { border-radius: 10px; }
+body.glass .mv .amt { font-weight: 700; }
+body.glass .ren:hover, body.glass .ren.on { color: var(--acc); }
+body.glass .mvmore button { border-radius: 16px; }
+
+/* vetro · Ricorrenti: sezioni con filetto leggero, righe, pannello aperto, interruttore, chip */
+body.glass .rsec { border-top: 1px solid var(--hair); }
+body.glass .rrow { border-top-color: var(--hair); }
+body.glass .rrow.open { border-top-color: rgba(var(--acc-rgb), .5); }
+body.glass .rday, body.glass .ramt { font-weight: 700; }
+body.glass .rname svg { color: var(--acc); }
+body.glass .rpanel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .05); margin: 4px 0 8px; }
+body.glass .rsw i { border-color: rgba(255, 255, 255, .35); }
+body.glass .rsw i::after { background: var(--ink); }
+body.glass .rsw.on i { background: var(--acc); border-color: var(--acc); }
+body.glass .rsw.on i::after { background: var(--onacc); }
+body.glass .rsw.off i { border-color: var(--mute); }
+body.glass .rchip { border: var(--edge); border-radius: 999px; background: var(--chipbg); color: var(--ink); }
+body.glass .rchip.fill { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
+body.glass .rchip.todo { border-color: var(--red); color: var(--red); background: transparent; }
+body.glass .rchip.alt { border-color: var(--hair); color: var(--mute); }
+body.glass .rinbox { border: 1px solid rgba(255, 154, 114, .55); border-radius: 18px; background: rgba(255, 154, 114, .06); }
+body.glass .rx { border-radius: 10px; border-color: rgba(255, 255, 255, .2); }
+body.glass .rx:hover { border-color: var(--red); color: var(--red); }
+body.glass .rsticky { background: rgba(11, 12, 11, .88); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-top: 1px solid var(--hair); }
+body.glass #recForm { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; }
+body.glass .aopt { border-color: var(--hair); }
+
+/* vetro · finestre e fogli (stanno sotto il body: ereditano le variabili) */
+body.glass dialog { border: var(--edge); border-radius: 22px; background: rgba(21, 23, 19, .96); color: var(--ink); box-shadow: 0 16px 48px rgba(0, 0, 0, .5); }
+body.glass dialog::backdrop { background: rgba(0, 0, 0, .6); }
+body.glass dialog.sheet { border-radius: 22px 22px 0 0; border-width: 1px 0 0; }
+body.glass dialog.sheet .grab { background: rgba(255, 255, 255, .2); border-radius: 2px; }
+
+/* vetro · Ricorrenti: due contenitori (attivi e non più attivi) e targhette Mese/Anno */
+body.glass .rgroup { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 14px 16px 6px; margin-top: 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+body.glass .rgroup .rsec { margin-top: 0; padding: 0 0 10px; border-top: 0; border-bottom: 1px solid var(--hair); }
+body.glass .rgroup .rsec + .rrow { border-top: 0; }
+body.glass .rgroup.off { background: rgba(255, 255, 255, .03); box-shadow: none; }
+body.glass .rname .tg { width: 52px; height: 22px; border: 1px solid var(--hair); border-radius: 999px; background: rgba(255, 255, 255, .05); color: var(--mute); font-weight: 700; letter-spacing: .04em; }
+body.glass .rname .tg.y { border-color: rgba(var(--acc-rgb), .45); background: rgba(var(--acc-rgb), .14); color: var(--acc); }
+body.glass .rrow.off .tg, body.glass .rrow.off .tg.y { border-color: var(--hair); background: transparent; color: var(--mute); }
+
+/* vetro · Budget: più aria tra i riquadri e il pulsante «Modifica budget» */
+body.glass #budgetForm .foot { margin-top: 30px; }
+
+/* vetro · Documenti e Opzioni: ogni sezione principale è una scheda di vetro */
+body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; margin: 0 0 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+body.glass #opzioni > details.group, body.glass #docGroups > details.group { margin: 0 0 16px; }
+body.glass #docGroups > details.group:first-child, body.glass #opzioni > :first-child { margin-top: 0; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--acc); }
+body.glass .payhead { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; }
+body.glass .docbody .sub { border-bottom: 1px solid var(--hair); }
+body.glass .docbody .sub.late { border-bottom-color: rgba(255, 154, 114, .5); }
+body.glass .total { border-top: 1px solid var(--hair); }
+body.glass .total b { font-weight: 700; }
+body.glass .scroller { border-bottom: 1px solid var(--hair); }
+body.glass .chk { border: 1px solid rgba(255, 255, 255, .3); border-radius: 8px; background: var(--chipbg); }
+body.glass .chk.on { background: var(--acc); border-color: var(--acc); }
+body.glass .chk.on::after { border-color: var(--onacc); }
+body.glass .btn, body.glass .filebtn { border: var(--edge); border-radius: 16px; background: var(--chipbg); color: var(--ink); font-weight: 700; }
+body.glass .btn:hover, body.glass .filebtn:hover { background: rgba(255, 255, 255, .12); color: var(--ink); }
+body.glass .folder { border-top: 1px solid var(--hair); }
+body.glass .drop { border: 1px dashed rgba(255, 255, 255, .25); border-radius: 16px; }
+body.glass .inbox { border-left: 4px solid var(--acc); border-radius: 2px; }
+body.glass .docfile:hover { color: var(--acc); border-bottom-color: var(--hair); }
+body.glass button.amt.edit { border-bottom-color: rgba(255, 255, 255, .35); }
+body.glass .bill .amt { font-weight: 700; }
+
+/* vetro · Opzioni: banche, orari, stati */
+body.glass .panel { border-top: 0; }
+body.glass .bank { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .04); padding: 14px; margin-bottom: 12px; }
+body.glass .bank > summary, body.glass details.panel > summary, body.glass details.group > summary { border-bottom-color: transparent; }
+body.glass details.panel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .04); padding: 14px; }
+body.glass .status { border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; }
+body.glass .status.ok { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
+body.glass .status.late { border-color: var(--red); color: var(--red); background: transparent; }
+body.glass .hour select { border-radius: 10px; }
+body.glass .hour .x, body.glass .stagedrow .x { border-radius: 10px; border-color: rgba(255, 255, 255, .25); }
+body.glass #optionsBtn[aria-pressed=true] { background: var(--acc); border-color: var(--acc); color: var(--onacc); }

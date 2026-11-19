@@ -201,6 +201,9 @@ public class MainActivity extends Activity {
                     if (path.equals("/local-config.json")) { // la modalità «frontend locale» del browser qui non serve
                         return new WebResourceResponse("application/json", "utf-8", 404, "Not Found", headers, new ByteArrayInputStream("{}".getBytes(StandardCharsets.UTF_8)));
                     }
+                    if (path.matches("/fonts/[a-z0-9.-]+\\.woff2")) { // i caratteri dell'app stanno nell'APK
+                        return new WebResourceResponse("font/woff2", null, 200, "OK", headers, getAssets().open("www" + path));
+                    }
                     String file = path.equals("/") || path.equals("/index.html") ? "index.html" : path.equals("/app.js") ? "app.js" : path.equals("/calc.js") ? "calc.js" : path.equals("/style.css") ? "style.css" : path.equals("/icon.svg") ? "icon.svg" : null;
                     if (file == null) return null;
                     byte[] body = Server.readAll(getAssets().open("www/" + file));

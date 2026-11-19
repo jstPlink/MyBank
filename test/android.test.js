@@ -166,3 +166,9 @@ test('stile: il CSS usa solo la scala del testo 11/13/15/22/34 (niente misure in
   const off = sizes.filter((n) => !['11', '13', '15', '16', '22', '28', '34'].includes(n));
   assert.deepEqual(off, []);
 });
+
+test('stile: i caratteri citati dal CSS esistono in public/fonts e l’APK li serve', () => {
+  const css = fs.readFileSync('public/style.css', 'utf8');
+  for (const [, f] of css.matchAll(/url\("(fonts\/[\w.-]+\.woff2)"\)/g)) assert.ok(fs.existsSync(`public/${f}`), f);
+  assert.match(fs.readFileSync('android/src/app/mybank/mobile/MainActivity.java', 'utf8'), /\/fonts\//);
+});

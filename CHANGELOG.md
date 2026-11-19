@@ -2,6 +2,11 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.49.0
+- **Stile «vetro» su tutta l'app** (palette nero e lime, carattere Figtree incluso in `public/fonts/` e nell'APK, intensità 1,5): schede di vetro scuro in Storico, Movimenti, Ricorrenti, Budget, Documenti e Opzioni; in Ricorrenti attivi e non più attivi in due contenitori e targhette Mese/Anno a pillola; più spazio sopra «Modifica budget». Palette in variabili in fondo a `style.css`; regole aggiornate in README e CLAUDE.md.
+- **Intestazione**: in alto a sinistra non c'è più il logo con «MyBank» ma il nome della scheda aperta (Storico, Movimenti, Ricorrenti, Budget, Documenti, Opzioni).
+- **Quota delle bollette**: se il server è vecchio e non risponde con la quota, l'app lo dice invece di mostrare l'importo intero. Mockup dei nuovi stili in `design/stile-nuovo-*-mockup.html`.
+
 ## 0.48.0
 - **Da pagare** senza sunto in fascia (basta il totale in fondo) e **non più cliccabile**: un titolo fisso con la barra rossa, senza freccia.
 - **Mese delle bollette dal nome del file** (quello che scrivi tu: «Gas 2026.08» si paga a settembre), non più dalla scadenza letta nel PDF.
