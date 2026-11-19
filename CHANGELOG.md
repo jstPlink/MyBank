@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.44.0
+- **Scheda Documenti** (al posto di Banche, passata nelle Opzioni): **Da pagare** (arretrati sempre visibili, poi il mese; totale), **Bollette** (mese in corso e arretrati, «Mostra gli altri mesi» per lo storico; importo e scadenza letti dal PDF; casella «pagata»), **Altre spese** (affitto, Tari, wifi… con importo, ogni mese o ogni anno), **Buste paga**, **Estratti conto** e **Link** (con caricamento a mano: trascinamento sul computer, pulsante sul telefono). Documenti tolti dalle Opzioni. Server: `src/bills.js`, `GET /api/bills`, `PUT /api/bills/paid`, `/api/extras…`. Richiede il server aggiornato.
+
 ## 0.43.0
 - **Opzioni, sezione Account**: «Cambia password» e «Cambia server» stanno insieme nella sezione **Account** (si chiude e si apre come le altre).
 - **Intestazioni principali più riconoscibili**: le sezioni delle Opzioni hanno ora una barra rossa a sinistra e il titolo in serif grande (non sembrano più pulsanti); i titoli interni (banche, Enable Banking, categorie dei documenti) restano in serif. Regola aggiunta all'estetica.

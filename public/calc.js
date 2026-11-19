@@ -88,3 +88,39 @@ export function monthBudget(txs, budgets, recurring, labels, now = new Date()) {
 
 /** Il mese (1-12) in cui suona il promemoria di un ricorrente annuale: 3 giorni prima del prossimo pagamento (`next`, AAAA-MM-GG). */
 export const reminderMonth = (next) => new Date(Date.parse(`${next}T12:00:00Z`) - 3 * 86400000).getUTCMonth() + 1;
+
+/** I mesi (AAAA-MM) da `from` a `to`, estremi compresi. */
+export function monthsBetween(from, to) {
+  const out = [];
+  let [y, m] = from.split('-').map(Number);
+  while (`${y}-${String(m).padStart(2, '0')}` <= to && out.length < 120) { out.push(`${y}-${String(m).padStart(2, '0')}`); if (++m > 12) { m = 1; y++; } }
+  return out;
+}
+
+/**
+ * Tutto ciò che si paga, bollette e altre spese: una voce per bolletta (mese di scadenza `due`) e una per ogni mese in cui cade una spesa scritta a mano,
+ * dal mese in cui si è iniziato a tenere il conto fino a `nowMonth`. `bills` è la risposta di GET /api/bills, `extras` quella di GET /api/extras.
+ */
+export function payables(bills, extras, nowMonth) {
+  const out = [];
+  for (const b of bills?.items ?? []) {
+    if (b.due < bills.from) continue; // archivio: già pagate
+    out.push({ kind: 'bill', key: `bill:${b.path}`, ref: b.path, month: b.due, title: b.type, sub: 'Bolletta', period: b.from === b.to ? b.from : `${b.from} - ${b.to}`, amount: b.amount, paid: b.paid, url: b.url });
+  }
+  for (const x of extras?.extras ?? []) {
+    for (const m of monthsBetween(x.from > extras.from ? x.from : extras.from, nowMonth)) {
+      if (x.every === 'year' && Number(m.slice(5)) !== x.month) continue;
+      const p = extras.paid?.[`${x.id}:${m}`];
+      out.push({ kind: 'extra', key: `extra:${x.id}:${m}`, ref: x.id, month: m, title: x.name, sub: x.every === 'year' ? 'Altre spese · annuale' : 'Altre spese', amount: p?.amount ?? x.amount, paid: Boolean(p?.paid) });
+    }
+  }
+  return out;
+}
+
+/** Quello che resta da pagare fino a questo mese: i mesi arretrati (`late`) prima, poi il mese in corso; con il totale (le bollette senza importo non contano). */
+export function dueGroups(list, nowMonth) {
+  const open = list.filter((p) => !p.paid && p.month <= nowMonth);
+  const months = [...new Set(open.map((p) => p.month))].sort();
+  const groups = months.map((month) => ({ month, late: month < nowMonth, items: open.filter((p) => p.month === month).sort((a, b) => (a.kind === b.kind ? a.title.localeCompare(b.title) : a.kind === 'extra' ? -1 : 1)) }));
+  return { groups, count: open.length, total: round(open.reduce((a, p) => a + (p.amount ?? 0), 0)) };
+}

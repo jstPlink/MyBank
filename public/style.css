@@ -558,10 +558,55 @@ body { touch-action: pan-y; }
 .tagopt input:focus-visible + i { outline: 2px solid var(--red); outline-offset: 2px; }
 .tagopt .tagname { display: flex; align-items: center; gap: 6px; }
 
-/* Intestazioni principali (le sezioni delle Opzioni): barra rossa a sinistra e titolo in serif, senza righe né riempimento (così non sembrano pulsanti); a destra il triangolino. Le sotto sezioni (banche, Enable Banking, categorie dei documenti) restano titoli in serif più piccoli con la riga da 2px sotto */
-#opzioni > details.group > summary { display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--red); border-bottom: 0; padding: 4px 0 4px 12px; }
-#opzioni > details.group > summary h2.section { font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; margin: 0; }
-#opzioni > details.group > summary h2::before { content: none; }
-#opzioni > details.group > summary::after { content: "▸"; margin-left: auto; color: var(--mute); font: 700 var(--fs-md)/1 var(--f-sans); }
-#opzioni > details.group[open] > summary::after { content: "▾"; }
-#opzioni > details.group > :not(summary) { margin-top: 14px; }
+/* Intestazioni principali (le sezioni delle Opzioni e della scheda Documenti): barra rossa a sinistra e titolo in serif, senza righe né riempimento (così non sembrano pulsanti); a destra il triangolino. Le sotto sezioni (banche, Enable Banking, categorie dei documenti) restano titoli in serif più piccoli con la riga da 2px sotto */
+:is(#opzioni, #docGroups) > details.group > summary { display: flex; align-items: center; gap: 12px; border-left: 6px solid var(--red); border-bottom: 0; padding: 4px 0 4px 12px; }
+:is(#opzioni, #docGroups) > details.group > summary h2.section { font: 700 var(--fs-num)/1.1 var(--f-serif); letter-spacing: -.01em; margin: 0; }
+:is(#opzioni, #docGroups) > details.group > summary h2::before { content: none; }
+:is(#opzioni, #docGroups) > details.group > summary::after { content: "▸"; margin-left: auto; color: var(--mute); font: 700 var(--fs-md)/1 var(--f-sans); }
+:is(#opzioni, #docGroups) > details.group[open] > summary::after { content: "▾"; }
+:is(#opzioni, #docGroups) > details.group > :not(summary) { margin-top: 14px; }
+
+:is(#opzioni, #docGroups) > details.group > summary h2.section { flex: 1; }
+:is(#opzioni, #docGroups) > details.group > summary::after { margin-left: 0; }
+#docGroups > details.group { margin: 34px 0 0; }
+#docGroups > details.group:first-child { margin-top: 0; }
+#docGroups > details.group > summary .info { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); text-align: right; }
+#docGroups > details.group > summary .info.red { color: var(--red); }
+#docGroups > details.group > summary h2::before { content: none; }
+#docGroups > details.group > summary { border-bottom: 0; }
+
+/* Documenti: righe da pagare (casella, nome, importo), sotto titoli per mese, totale, storico che si scorre */
+.docbody .sub { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 0 0; padding-bottom: 4px; border-bottom: 2px solid var(--ink); font: 700 var(--fs-md) var(--f-serif); }
+.docbody .sub:first-child { margin-top: 0; }
+.docbody .sub .cnt { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--mute); }
+.docbody .sub .cnt.red, .docbody .sub.late > :first-child { color: var(--red); }
+.docbody .sub.late { border-bottom-color: var(--red); }
+.bill { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--hair); }
+.bill .n { flex: 1; min-width: 0; }
+.bill .n b { display: block; font-weight: 600; }
+.bill .n .link { padding: 0; text-decoration: none; text-align: left; }
+.bill .s { display: block; font: 500 var(--fs-label) var(--f-mono); color: var(--mute); letter-spacing: .04em; text-transform: uppercase; }
+.bill .amt { background: none; border: 0; padding: 0; font: 700 var(--fs-md) var(--f-serif); white-space: nowrap; }
+button.amt.edit { border-bottom: 1px dotted var(--mute); }
+.bill .go { background: none; border: 0; color: var(--mute); font-size: var(--fs-lg); line-height: 1; padding: 6px 2px 6px 8px; }
+.bill.paid .n b, .bill.paid .amt { color: var(--mute); text-decoration: line-through; text-decoration-thickness: 1px; }
+.bill.late .s { color: var(--red); }
+.chk { width: 26px; height: 26px; border: 2px solid var(--ink); background: none; padding: 0; flex: none; display: grid; place-items: center; }
+.chk.on { background: var(--ink); }
+.chk.on::after { content: ""; width: 12px; height: 6px; border-left: 3px solid var(--paper); border-bottom: 3px solid var(--paper); transform: rotate(-45deg) translate(1px, -1px); }
+span.chk.on { opacity: .5; }
+.total { display: flex; justify-content: space-between; align-items: baseline; border-top: 2px solid var(--ink); padding-top: 12px; margin-top: 14px; }
+.total b { font: 700 var(--fs-num)/1 var(--f-serif); color: var(--red); }
+.scroller { max-height: 340px; overflow-y: auto; border-bottom: 1px solid var(--ink); padding-right: 6px; scrollbar-width: thin; }
+.doclist { max-height: 420px; overflow-y: auto; padding-right: 6px; scrollbar-width: thin; }
+.btn { display: inline-flex; align-items: center; justify-content: center; min-height: var(--h); padding: 0 20px; border: 1px solid var(--ink); background: transparent; font: 600 var(--fs-md)/1 var(--f-sans); }
+.btn:hover { background: var(--ink); color: var(--paper); }
+.btn.wide { width: 100%; }
+.btn small { font: 600 var(--fs-label) var(--f-mono); letter-spacing: .06em; margin-left: 8px; opacity: .7; }
+.folder { border-top: 2px solid var(--ink); padding-top: 12px; display: grid; gap: 12px; }
+.folder h3 { font: 700 var(--fs-md) var(--f-serif); }
+.drop { border: 1px solid var(--hair); min-height: 74px; display: grid; place-items: center; text-align: center; color: var(--mute); font-size: var(--fs-sm); padding: 10px; }
+.drop b { color: var(--ink); }
+@media (hover: none) { .drop { display: none; } }
+.note { font-size: var(--fs-sm); }
+dialog .fields { margin-bottom: 4px; }

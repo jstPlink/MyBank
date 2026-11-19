@@ -2,7 +2,7 @@
 // Budget si sommano qui (calc.js) dall'elenco dei movimenti.
 // Struttura del file, in ordine: utilità e icone · rete (api, modalità localhost) · accesso · Opzioni · schede (hash, swipe) · Storico · Movimenti ·
 // aptico · Ricorrenti (elenco, foglio «Assegna», selezione) · Budget · Banche · Documenti · Notifiche · avvio.
-import { yearSummary, monthBudget, reminderMonth } from './calc.js';
+import { yearSummary, monthBudget, reminderMonth, payables, dueGroups } from './calc.js';
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const money = (n) => (n == null ? '–' : new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', useGrouping: 'always' }).format(n));
@@ -148,7 +148,6 @@ $('#logoutBtn').addEventListener('click', async () => { await api('POST', '/api/
 
 async function loadOptions() {
   loadNotifications().catch(fail);
-  loadDocuments().catch(fail);
   loadBanks().catch(fail);
   const s = await api('GET', '/api/session');
   $('#logoutBtn').hidden = Boolean(s.open);
@@ -180,8 +179,8 @@ $('#pwForm').addEventListener('submit', async (e) => {
 
 // ------------------------------------------------------------------ schede
 
-const TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'opzioni'];
-const SWIPE_TABS = ['storico', 'movimenti', 'ricorrenti', 'budget']; // le schede tra cui si scorre col dito (Opzioni sta a parte)
+const TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'documenti', 'opzioni'];
+const SWIPE_TABS = ['storico', 'movimenti', 'ricorrenti', 'budget', 'documenti']; // le schede tra cui si scorre col dito (Opzioni sta a parte)
 // Indirizzi come «#movimenti:spesa» (li usa il widget): la scheda, e per i Movimenti il tag da filtrare, sul mese in corso.
 function applyHash() {
   const [tab, arg] = (location.hash || '#storico').slice(1).split(':');
@@ -201,7 +200,7 @@ function show(tab) {
   for (const t of TABS) $(`#${t}`).hidden = t !== tab;
   document.querySelectorAll('.tabs [role=tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
   $('#optionsBtn').setAttribute('aria-pressed', String(tab === 'opzioni'));
-  ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, opzioni: loadOptions })[tab]().catch(fail);
+  ({ storico: loadYear, movimenti: loadMoves, ricorrenti: loadRecurring, budget: loadBudget, documenti: loadDocuments, opzioni: loadOptions })[tab]().catch(fail);
 }
 document.querySelector('.tabs').addEventListener('click', (e) => { const b = e.target.closest('[data-tab]'); if (!b) return; if (b.dataset.tab === 'movimenti') { state.mv.account = ''; state.mv.recurring = null; } show(b.dataset.tab); });
 $('#optionsBtn').addEventListener('click', () => show('opzioni'));
@@ -958,23 +957,87 @@ const openExternal = (url) => {
 state.docOpen = {};
 state.staged = {};
 
+// La scheda Documenti: in cima «Da pagare» (bollette e altre spese non ancora spuntate), poi Bollette, Altre spese, Buste paga, Estratti conto e Link.
+// I dati (file delle cartelle, spunte, altre spese) stanno nel server; qui si organizzano (calc.js).
+state.dp = { links: [], bills: null, extras: null, billsAll: false };
+const monthName = (ym) => `${MONTHS[Number(ym.slice(5)) - 1]} ${ym.slice(0, 4)}`;
+const nowMonth = () => new Date().toISOString().slice(0, 7);
+const WHEN = [['0', 'Ogni mese'], ...MONTHS.map((m, i) => [String(i + 1), `${m} (ogni anno)`])];
+$('#exWhen').innerHTML = WHEN.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+
 async function loadDocuments() {
-  const d = await api('GET', '/api/documents');
+  const [d, bills, extras] = await Promise.all([api('GET', '/api/documents'), api('GET', '/api/bills').catch((e) => (e instanceof Unauthorized ? Promise.reject(e) : { configured: false, items: [], from: '', error: e.message })), api('GET', '/api/extras').catch(() => null)]);
   state.docs = Object.fromEntries(d.links.map((l) => [l.key, l]));
-  $('#docGroups').innerHTML = d.links.map((l) => `<details class="group doc" data-doc="${esc(l.key)}" ${state.docOpen[l.key] ? 'open' : ''}>
-    <summary><h2 class="section">${esc(l.label)}</h2></summary>
-    <div class="docbody">
-      <div class="doclist" data-list="${esc(l.key)}"><p class="muted">${l.url ? 'Leggo la cartella…' : 'Inserisci qui sotto il link della cartella per vedere i documenti.'}</p></div>
-      ${l.url ? `<div class="docupload"><label class="ghost filebtn">Carica documenti<input type="file" multiple hidden data-pick="${esc(l.key)}"></label><div class="staged" data-staged="${esc(l.key)}"></div></div>` : ''}
-      <details class="docset" ${l.url ? '' : 'open'}><summary>LINK</summary>
-        <form data-links="${esc(l.key)}">
-          <label>LINK della cartella (Seafile)<input name="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…" value="${esc(l.url)}"></label>
-          <div class="foot"><button class="primary" type="submit">Salva LINK</button></div>
-        </form>
-      </details>
-    </div></details>`).join('');
-  for (const l of d.links) { renderStaged(l.key); if (state.docOpen[l.key]) loadFolder(l.key).catch(() => {}); }
+  Object.assign(state.dp, { links: d.links, bills, extras });
+  if (state.docOpen.pay === undefined) state.docOpen.pay = true; // «Da pagare» si apre da solo
+  renderDocs();
+  loadFolder('payslips').catch(() => {});
+  if (state.docOpen.statements) loadFolder('statements').catch(() => {});
 }
+
+const AMT = (p) => `<button class="amt${p.kind === 'extra' || p.amount == null ? ' edit' : ''}" data-amt="${esc(p.key)}" title="Cambia l'importo">${p.amount == null ? '–' : money(p.amount)}</button>`;
+function payRow(p, late) {
+  return `<div class="bill${p.paid ? ' paid' : ''}${late ? ' late' : ''}"><button class="chk${p.paid ? ' on' : ''}" data-pay="${esc(p.key)}" aria-label="${p.paid ? 'Segna da pagare' : 'Segna pagata'}" aria-pressed="${p.paid}"></button>
+    <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
+}
+const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
+
+function renderDocs() {
+  const { links, bills, extras } = state.dp;
+  const now = nowMonth();
+  const all = payables(bills, extras, now);
+  const due = dueGroups(all, now);
+  const linkOf = (k) => links.find((l) => l.key === k);
+  // --- Da pagare
+  const payBody = due.groups.length
+    ? `${due.groups.map((g) => `<h3 class="sub${g.late ? ' late' : ''}"><span>${monthName(g.month)}${g.late ? ' · arretrato' : ''}</span><span class="cnt${g.late ? ' red' : ''}">${g.items.length} ${g.late ? 'non pagat' + (g.items.length === 1 ? 'a' : 'e') : 'da pagare'}</span></h3>${g.items.map((p) => payRow(p, g.late)).join('')}`).join('')}
+       <div class="total"><span class="label">Totale da pagare</span><b>${money(due.total)}</b></div>`
+    : `<p class="muted">${bills?.configured || extras?.extras?.length ? 'Non c\'è niente da pagare.' : 'Inserisci il link della cartella delle bollette (sezione Link) o aggiungi una spesa (Altre spese).'}</p>`;
+  const pay = docGroup('pay', 'Da pagare', due.count ? `${money(due.total)} · ${due.count} ${due.count === 1 ? 'voce' : 'voci'}` : 'niente', payBody, due.count ? ' red' : '');
+  // --- Bollette: il mese in corso e gli arretrati non pagati; sotto, il pulsante per tutti gli altri mesi
+  const billItems = all.filter((p) => p.kind === 'bill');
+  const shown = billItems.filter((p) => p.month === now || (p.month < now && !p.paid));
+  const others = (bills?.items ?? []).filter((b) => !shown.some((p) => p.ref === b.path));
+  const group = (list, late) => list.map((p) => payRow(p, late && !p.paid)).join('');
+  const byMonth = (list) => [...new Set(list.map((p) => p.month))].sort().reverse();
+  const billsBody = !bills?.configured
+    ? `<p class="muted">${bills?.error ? esc(bills.error) : 'Inserisci il link della cartella nella sezione Link.'}</p>`
+    : `${byMonth(shown).map((m) => `<h3 class="sub${m < now ? ' late' : ''}"><span>${monthName(m)}${m < now ? ' · arretrato' : ''}</span></h3>${group(shown.filter((p) => p.month === m), m < now)}`).join('') || '<p class="muted">Nessuna bolletta da pagare questo mese.</p>'}
+       ${others.length ? `<button class="btn wide" data-more="bills">${state.dp.billsAll ? 'Nascondi gli altri mesi' : 'Mostra gli altri mesi'} <small>${others.length} file</small></button>` : ''}
+       ${state.dp.billsAll ? `<div class="scroller">${[...new Set(others.map((b) => b.due))].sort().reverse().map((m) => `<h3 class="sub"><span>${monthName(m)}</span></h3>${others.filter((b) => b.due === m).map((b) => {
+         const tracked = b.due >= bills.from;
+         return tracked ? payRow(payables({ from: bills.from, items: [b] }, null, now)[0]) : `<div class="bill paid"><span class="chk on" aria-hidden="true"></span><div class="n"><button class="link" data-open="${esc(b.url)}"><b>${esc(b.type)}</b></button><span class="s">Archivio · ${esc(b.from.replace('-', '.'))}</span></div><span class="amt">${b.amount == null ? '' : money(b.amount)}</span></div>`;
+       }).join('')}`).join('')}</div>` : ''}
+       <p class="muted"><button class="link" data-folder="${esc(bills.folderUrl ?? '')}">Apri la cartella su Seafile</button></p>`;
+  const nBills = billItems.filter((p) => !p.paid && p.month <= now).length;
+  const billsG = docGroup('billsGroup', 'Bollette', bills?.configured ? (nBills ? `${nBills} da pagare` : 'tutte pagate') : 'nessun link', billsBody, nBills ? ' red' : '');
+  // --- Altre spese
+  const exList = (extras?.extras ?? []).map((x) => `<div class="bill"><div class="n"><b>${esc(x.name)}</b><span class="s">${x.every === 'year' ? `Ogni anno · ${MONTHS[x.month - 1].toLowerCase()}` : 'Ogni mese'}</span></div><span class="amt">${money(x.amount)}</span><button class="go" data-extra-edit="${esc(x.id)}" aria-label="Modifica ${esc(x.name)}">›</button></div>`).join('');
+  const extraBody = `${exList || '<p class="muted">Nessuna voce: aggiungi affitto, wifi, Tari…</p>'}<div class="foot"><button class="primary" data-extra-add="1">Aggiungi voce</button></div>
+    <p class="note muted">Ogni mese la voce compare in «Da pagare» finché non la spunti. L'importo del singolo mese si cambia toccandolo.</p>`;
+  const extraG = docGroup('extras', 'Altre spese', extras ? `${extras.extras.length} ${extras.extras.length === 1 ? 'voce' : 'voci'}` : 'non disponibili', extras ? extraBody : '<p class="muted">Il server non ha ancora questa funzione: aggiornalo.</p>');
+  // --- Buste paga, Estratti conto
+  const folderBody = (k, hint) => `<div class="doclist" data-list="${k}"><p class="muted">${linkOf(k)?.url ? 'Leggo la cartella…' : hint}</p></div>`;
+  const paysG = docGroup('payslips', 'Buste paga', linkOf('payslips')?.url ? '…' : 'nessun link', folderBody('payslips', 'Inserisci il link della cartella nella sezione Link.'));
+  const stLink = linkOf('statements');
+  const stG = docGroup('statements', 'Estratti conto', stLink?.url ? '' : 'nessun link', `${folderBody('statements', 'Inserisci qui sotto il link della cartella per vedere i documenti.')}
+    <details class="docset" ${stLink?.url ? '' : 'open'}><summary>LINK</summary>${linkForm(stLink)}</details>`);
+  // --- Link: per cartella, il link Seafile e il caricamento a mano
+  const folderBlock = (k, label) => {
+    const l = linkOf(k);
+    return `<div class="folder"><h3>${label}</h3>${linkForm(l)}
+      ${l?.url ? `<span class="label">Carica a mano</span><div class="drop" data-drop="${k}"><span><b>Trascina qui i file</b><br>solo sul computer</span></div>
+        <label class="btn filebtn">Scegli dal telefono<input type="file" multiple hidden data-pick="${k}"></label><div class="staged" data-staged="${k}"></div>` : ''}</div>`;
+  };
+  const linksG = docGroup('links', 'Link', `${links.filter((l) => l.url && l.key !== 'statements').length} cartelle`, folderBlock('bills', 'Bollette') + folderBlock('payslips', 'Buste paga'));
+  $('#docGroups').innerHTML = pay + billsG + extraG + paysG + stG + linksG;
+  for (const l of links) renderStaged(l.key);
+  const f = state.docFiles?.payslips;
+  if (f) fillFolder('payslips', f);
+}
+const linkForm = (l) => `<form data-links="${esc(l?.key ?? '')}"><label>LINK della cartella (Seafile)<input name="url" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="https://…" value="${esc(l?.url ?? '')}"></label>
+  <div class="foot"><button class="primary" type="submit">Salva LINK</button></div></form>`;
+
 
 /** Sotto un estratto mensile: com'è andata la lettura automatica dei suoi movimenti. */
 function statementNote(f, i) {
@@ -1004,17 +1067,29 @@ async function loadFolder(key) {
     state.docFiles = { ...(state.docFiles ?? {}), [key]: d };
     // il server sta leggendo le buste paga in sottofondo: si ricarica l'elenco finché ha finito (si ferma se si cambia scheda o si chiude la categoria)
     clearTimeout(state.docTimer);
-    if (d.busy && state.tab === 'opzioni' && state.docOpen[key]) state.docTimer = setTimeout(() => loadFolder(key).catch(() => {}), 6000);
+    if (d.busy && state.tab === 'documenti' && state.docOpen[key]) state.docTimer = setTimeout(() => loadFolder(key).catch(() => {}), 6000);
     // gli estratti nuovi li ha appena letti il server: si dice quanti
     if (d.read?.length) toast(`Letti ${d.read.length} estratti conto nuovi${d.read.some((r) => r.error) ? ' (alcuni con errori)' : ''}.`);
+    fillFolder(key, d);
+  } catch (err) {
+    if (err instanceof Unauthorized) throw err;
+    box.innerHTML = `<p class="error">${esc(err.message)}</p>`;
+  }
+}
+
+function fillFolder(key, d) {
+  const box = document.querySelector(`[data-list="${key}"]`);
+  if (!box) return;
+  // nella fascia delle buste paga: l'ultima (il primo file per nome, più recente)
+  const last = key === 'payslips' ? /(\d{4})\.(\d{2})/.exec(d.files[0]?.name ?? '') : null;
+  const info = document.querySelector(`[data-info="${key}"]`);
+  if (info && key === 'payslips') info.textContent = last ? `ultima ${MONTHS[Number(last[2]) - 1].toLowerCase()} ${last[1]}` : (d.files.length ? `${d.total} file` : 'vuota');
+  {
     box.innerHTML = d.files.length
       ? `${d.files.map((f, i, all) => `${f.folder !== (all[i - 1]?.folder ?? '') && f.folder ? `<p class="docgroup">${esc(f.folder)}</p>` : ''}<div class="docitem"><button class="docfile" data-file="${key}:${i}"><span class="n">${esc(f.name)}</span><span class="s">${fmtSize(f.size)}${f.modified ? ` · ${esc(new Date(f.modified).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }))}` : ''}</span></button>${statementNote(f, i)}${payslipNote(f)}</div>`).join('')}
         ${d.total > d.files.length ? `<p class="muted">Mostro i primi ${d.files.length} di ${d.total}.</p>` : ''}
         <p class="muted"><button class="link" data-folder="${esc(d.folderUrl)}">Apri la cartella su Seafile</button></p>`
       : '<p class="muted">La cartella è vuota.</p>';
-  } catch (err) {
-    if (err instanceof Unauthorized) throw err;
-    box.innerHTML = `<p class="error">${esc(err.message)}</p>`;
   }
 }
 
@@ -1059,6 +1134,18 @@ $('#docGroups').addEventListener('click', async (e) => {
   const b = e.target.closest('button');
   if (!b) return;
   try {
+    if (b.dataset.pay) { // spunta «pagata» (o toglie la spunta)
+      const p = findPayable(b.dataset.pay);
+      if (!p) return;
+      if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, paid: !p.paid });
+      else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, paid: !p.paid });
+      return await loadDocuments();
+    }
+    if (b.dataset.amt) return openAmount(b.dataset.amt);
+    if (b.dataset.more) { state.dp.billsAll = !state.dp.billsAll; return renderDocs(); }
+    if (b.dataset.open) return openExternal(b.dataset.open);
+    if (b.dataset.extraAdd) return openExtra(null);
+    if (b.dataset.extraEdit) return openExtra(b.dataset.extraEdit);
     if (b.dataset.file) { // un documento rilevato: si apre su Seafile
       const [key, i] = b.dataset.file.split(':');
       const f = state.docFiles?.[key]?.files?.[Number(i)];
@@ -1097,9 +1184,75 @@ $('#docGroups').addEventListener('click', async (e) => {
         renderStaged(key);
       }
       toast(done === 1 ? 'File caricato.' : `${done} file caricati.`);
-      await loadFolder(key);
+      await (key === 'bills' ? loadDocuments() : loadFolder(key));
     }
   } catch (err) { fail(err); }
+});
+
+// trascinando dei file sulla zona della cartella (sul computer) si preparano al caricamento come con il pulsante
+$('#docGroups').addEventListener('dragover', (e) => { if (e.target.closest('[data-drop]')) e.preventDefault(); });
+$('#docGroups').addEventListener('drop', (e) => {
+  const zone = e.target.closest('[data-drop]');
+  if (!zone) return;
+  e.preventDefault();
+  const key = zone.dataset.drop;
+  state.staged[key] = [...(state.staged[key] ?? []), ...[...e.dataTransfer.files].map((file) => ({ file, name: file.name }))];
+  renderStaged(key);
+});
+
+// una voce da pagare (bolletta o spesa di un mese), come la vede «Da pagare»
+const findPayable = (key) => payables(state.dp.bills, state.dp.extras, nowMonth()).find((p) => p.key === key);
+let amountFor = null;
+function openAmount(key) {
+  const p = findPayable(key);
+  if (!p) return;
+  amountFor = p;
+  $('#amountTitle').textContent = `${p.title} · ${monthName(p.month)}`;
+  $('#amountInput').value = p.amount == null ? '' : String(p.amount).replace('.', ',');
+  $('#amountError').textContent = '';
+  $('#amountDialog').showModal();
+  $('#amountInput').focus();
+}
+$('#amountCancel').addEventListener('click', () => $('#amountDialog').close());
+$('#amountForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const p = amountFor;
+  try {
+    if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, amount: $('#amountInput').value });
+    else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, amount: $('#amountInput').value });
+    $('#amountDialog').close();
+    await loadDocuments();
+  } catch (err) { if (err instanceof Unauthorized) return fail(err); $('#amountError').textContent = err.message; }
+});
+
+// altre spese: aggiungere e modificare una voce (nome, importo, ogni mese o ogni anno)
+let extraEdit = '';
+function openExtra(id) {
+  const x = id ? state.dp.extras?.extras.find((v) => v.id === id) : null;
+  extraEdit = x?.id ?? '';
+  $('#extraTitle').textContent = x ? 'Modifica la voce' : 'Nuova voce';
+  $('#exName').value = x?.name ?? '';
+  $('#exAmount').value = x ? String(x.amount).replace('.', ',') : '';
+  $('#exWhen').value = x?.every === 'year' ? String(x.month) : '0';
+  $('#extraDelete').hidden = !x;
+  $('#extraError').textContent = '';
+  $('#extraDialog').showModal();
+  $('#exName').focus();
+}
+$('#extraCancel').addEventListener('click', () => $('#extraDialog').close());
+$('#extraDelete').addEventListener('click', async () => {
+  if (!confirm('Eliminare la voce?')) return;
+  try { await api('DELETE', `/api/extras/${encodeURIComponent(extraEdit)}`); $('#extraDialog').close(); await loadDocuments(); } catch (err) { fail(err); }
+});
+$('#extraForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const month = Number($('#exWhen').value);
+  const body = { name: $('#exName').value, amount: $('#exAmount').value, every: month ? 'year' : 'month', ...(month ? { month } : {}) };
+  try {
+    await (extraEdit ? api('PUT', `/api/extras/${encodeURIComponent(extraEdit)}`, body) : api('POST', '/api/extras', body));
+    $('#extraDialog').close();
+    await loadDocuments();
+  } catch (err) { if (err instanceof Unauthorized) return fail(err); $('#extraError').textContent = err.message; }
 });
 
 $('#docGroups').addEventListener('submit', async (e) => {
@@ -1111,7 +1264,6 @@ $('#docGroups').addEventListener('submit', async (e) => {
   try {
     await api('PUT', '/api/documents', { [key]: { url: fd.url } });
     toast('LINK salvato.');
-    state.docOpen[key] = true;
     await loadDocuments();
   } catch (err) { fail(err); }
 });

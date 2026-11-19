@@ -34,6 +34,7 @@
       <button role="tab" data-tab="movimenti" aria-selected="false">Movimenti</button>
       <button role="tab" data-tab="ricorrenti" aria-selected="false">Ricorrenti</button>
       <button role="tab" data-tab="budget" aria-selected="false">Budget</button>
+      <button role="tab" data-tab="documenti" aria-selected="false">Documenti</button>
     </nav>
 
     <main>
@@ -90,6 +91,10 @@
         </form>
       </section>
 
+      <section id="documenti" hidden>
+        <div id="docGroups"></div>
+      </section>
+
       <section id="opzioni" hidden>
         <details id="notifiche" class="group" open>
           <summary><h2 class="section">Notifiche</h2></summary>
@@ -108,10 +113,6 @@
             <div class="foot"><button class="primary" type="submit" id="nfSave">Aggiungi notifica</button><button class="ghost" type="button" id="nfCancel" hidden>Annulla modifica</button></div>
           </form>
         </div>
-        </details>
-        <details id="documenti" class="group">
-          <summary><h2 class="section">Documenti</h2></summary>
-          <div id="docGroups"></div>
         </details>
         <details id="banche" class="group">
           <summary><h2 class="section">Banche</h2></summary>
@@ -140,6 +141,28 @@
   </div>
 
   <dialog id="assignDialog" class="sheet" aria-label="Assegna a un ricorrente"></dialog>
+
+  <dialog id="amountDialog">
+    <form id="amountForm">
+      <h2 id="amountTitle">Importo</h2>
+      <label>Importo (€) <input id="amountInput" inputmode="decimal" autocomplete="off" required placeholder="0,00"></label>
+      <p class="error" id="amountError" role="alert"></p>
+      <div class="foot"><button class="primary" type="submit">Salva</button><button class="ghost" type="button" id="amountCancel">Annulla</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="extraDialog">
+    <form id="extraForm">
+      <h2 id="extraTitle">Nuova voce</h2>
+      <label>Nome <input id="exName" maxlength="80" autocomplete="off" required placeholder="Per esempio: affitto"></label>
+      <div class="fields two">
+        <label>Importo (€) <input id="exAmount" inputmode="decimal" autocomplete="off" required placeholder="0,00"></label>
+        <label>Quando <select id="exWhen"></select></label>
+      </div>
+      <p class="error" id="extraError" role="alert"></p>
+      <div class="foot"><button class="primary" type="submit">Salva</button><button class="ghost" type="button" id="extraCancel">Annulla</button><button class="ghost danger" type="button" id="extraDelete" hidden>Elimina</button></div>
+    </form>
+  </dialog>
 
   <dialog id="pwDialog">
     <form id="pwForm">

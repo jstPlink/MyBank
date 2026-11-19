@@ -11,6 +11,7 @@ import { AUTO_PER_DAY, BANKS, applyCutoff, purgeOrphans, cutoffOf, startLink, fi
 import { checkKey, createClient, psuHeaders } from './eb.js';
 import { AUTO_HOURS, TZ, nextRun } from './schedule.js';
 import { monthBudget, listTransactions, yearSummary } from './stats.js';
+import { addMonth, billName, normalizeExtra, parseBillText } from './bills.js';
 import { DOCUMENTS, cleanFileName, downloadFile, listDocuments, listFolder, normalizeDocuments, uploadFile } from './documents.js';
 import { PARSER_VERSION, parseStatement } from './estratto.js';
 import { UNICREDIT_PARSER, parseFlexia, parseUnicreditAccount, pdfWords } from './unicredit.js';
@@ -291,6 +292,84 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     if (!Buffer.isBuffer(req.body) || !req.body.length) return bad(res, 'Il file è vuoto.');
     await uploadFile(url, cleanFileName(req.query.name), req.body, fetchImpl);
     res.json({ ok: true });
+  }));
+  // ---------------------------------------------------------------- bollette e altre spese
+  // Si tiene il conto del pagato dal mese `billsFrom` (di base il mese prima del primo uso): le bollette e le spese di prima sono archivio.
+  const thisMonth = () => new Date().toISOString().slice(0, 7);
+  const billsFrom = () => (db.settings.billsFrom ??= addMonth(thisMonth(), -1));
+  const billsState = async () => {
+    const url = db.settings.documents?.bills?.url ?? '';
+    const from = billsFrom();
+    if (!url) return { configured: false, from, items: [] };
+    const folder = await listFolder(url, fetchImpl);
+    const items = [];
+    for (const f of folder.files) {
+      const b = billName(f.name);
+      if (!b) continue;
+      const sig = `${f.size}:${f.modified}`;
+      let info = db.billInfo[f.path];
+      // importo e scadenza si leggono dal PDF solo per le bollette che contano (scadenza dal mese di partenza in poi)
+      if ((!info || info.sig !== sig) && b.due >= from && b.due <= addMonth(thisMonth(), 1)) {
+        try {
+          const read = parseBillText(await pdfToText(await downloadFile(url, f.path, fetchImpl)));
+          info = db.billInfo[f.path] = { sig, amount: read.amount, due: read.due };
+        } catch (e) { info = { sig, amount: null, due: null, error: e.message }; }
+      }
+      const paid = db.billPaid[f.path];
+      const due = info?.due ? info.due.slice(0, 7) : b.due; // la scadenza del PDF vince su quella del nome
+      items.push({ path: f.path, name: f.name, type: b.type, from: b.from, to: b.to, due, url: f.url, amount: paid?.amount ?? info?.amount ?? null, paid: Boolean(paid?.paid) || due < from });
+    }
+    items.sort((a, b) => b.due.localeCompare(a.due) || a.type.localeCompare(b.type));
+    await store.save();
+    return { configured: true, from, items, folderUrl: folder.folderUrl };
+  };
+  const moneyOf = (v) => (v == null || v === '' ? undefined : Number(String(v).replace(',', '.')));
+  app.get('/api/bills', wrap(async (req, res) => res.json(await billsState())));
+  app.put('/api/bills/paid', wrap(async (req, res) => {
+    const p = String(req.body?.path ?? '');
+    if (!billName(p)) return bad(res, 'Bolletta sconosciuta.', 404);
+    const amount = moneyOf(req.body?.amount);
+    if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) return bad(res, 'Importo non valido.');
+    const next = { ...(db.billPaid[p] ?? {}), ...(req.body?.paid == null ? {} : { paid: Boolean(req.body.paid), at: new Date().toISOString() }), ...(amount === undefined ? {} : { amount }) };
+    if (!next.paid && next.amount === undefined) delete db.billPaid[p]; else db.billPaid[p] = next;
+    await store.save();
+    res.json(await billsState());
+  }));
+  const extrasState = () => ({ from: billsFrom(), extras: db.extras, paid: db.extrasPaid });
+  app.get('/api/extras', (req, res) => res.json(extrasState()));
+  app.post('/api/extras', wrap(async (req, res) => {
+    if (db.extras.length >= 50) return bad(res, 'Troppe voci: toglierne qualcuna.');
+    db.extras.push(normalizeExtra(req.body, undefined, thisMonth()));
+    await store.save();
+    res.json(extrasState());
+  }));
+  app.put('/api/extras/:id', wrap(async (req, res) => {
+    const i = db.extras.findIndex((x) => x.id === req.params.id);
+    if (i < 0) return bad(res, 'Voce sconosciuta.', 404);
+    db.extras[i] = normalizeExtra({ ...db.extras[i], ...req.body }, req.params.id, db.extras[i].from);
+    await store.save();
+    res.json(extrasState());
+  }));
+  app.delete('/api/extras/:id', wrap(async (req, res) => {
+    const i = db.extras.findIndex((x) => x.id === req.params.id);
+    if (i < 0) return bad(res, 'Voce sconosciuta.', 404);
+    db.extras.splice(i, 1);
+    for (const k of Object.keys(db.extrasPaid)) if (k.startsWith(`${req.params.id}:`)) delete db.extrasPaid[k];
+    await store.save();
+    res.json(extrasState());
+  }));
+  // «pagata» (o no) per un mese, con l'importo di quel mese se diverso da quello della voce
+  app.put('/api/extras/:id/paid', wrap(async (req, res) => {
+    if (!db.extras.some((x) => x.id === req.params.id)) return bad(res, 'Voce sconosciuta.', 404);
+    const month = String(req.body?.month ?? '');
+    if (!/^\d{4}-\d{2}$/.test(month)) return bad(res, 'Mese non valido.');
+    const amount = moneyOf(req.body?.amount);
+    if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) return bad(res, 'Importo non valido.');
+    const key = `${req.params.id}:${month}`;
+    const next = { ...(db.extrasPaid[key] ?? {}), ...(req.body?.paid == null ? {} : { paid: Boolean(req.body.paid), at: new Date().toISOString() }), ...(amount === undefined ? {} : { amount }) };
+    if (!next.paid && next.amount === undefined) delete db.extrasPaid[key]; else db.extrasPaid[key] = next;
+    await store.save();
+    res.json(extrasState());
   }));
   // Rilegge a mano un estratto conto (per riprovare dopo un errore).
   app.post('/api/documents/statements/import', wrap(async (req, res) => {
