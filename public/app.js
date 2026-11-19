@@ -192,19 +192,24 @@ function applyHash() {
   show(tab);
 }
 
-// Palette dei colori (Opzioni → Aspetto): si ricorda su questo dispositivo; di partenza la più neutra (grafite)
-const PALETTES = [['grafite', 'Grafite', '#e9ebef', '#0e1012'], ['ambra', 'Ambra', '#f0b45a', '#101010'], ['salvia', 'Salvia', '#9fd8b8', '#0f1211'], ['ghiaccio', 'Ghiaccio', '#a9c8e8', '#0e1114'], ['lime', 'Lime', '#c9f36b', '#0b0c0b'], ['turchese', 'Turchese', '#5ee6d0', '#0b0e0f'], ['arancio', 'Arancio', '#ff8a3d', '#0d0b0a'], ['smeraldo', 'Smeraldo', '#3ddc97', '#08100d']];
-function currentPalette() { let v = ''; try { v = localStorage.getItem('mybank-palette') ?? ''; } catch { /* senza memoria locale resta quella di partenza */ } return PALETTES.some((p) => p[0] === v) ? v : 'grafite'; }
+// Aspetto (Opzioni → Aspetto): modalità scuro/chiaro e palette dei colori, in ordine cromatico; si ricordano su questo dispositivo (di partenza: scuro, grafite)
+const PALETTES = [['grafite', 'Grafite', '#e9ebef', '#0e1012', '#2b3038', '#f4f5f7'], ['ghiaccio', 'Ghiaccio', '#a9c8e8', '#0e1114', '#2f6fb0', '#f3f7fb'], ['salvia', 'Salvia', '#9fd8b8', '#0f1211', '#3f8f68', '#f4f7f4'], ['turchese', 'Turchese', '#5ee6d0', '#0b0e0f', '#12968a', '#f2f8f8'], ['smeraldo', 'Smeraldo', '#3ddc97', '#08100d', '#17894f', '#f2f8f4'], ['lime', 'Lime', '#c9f36b', '#0b0c0b', '#5f8f0e', '#f7f8f0'], ['ambra', 'Ambra', '#f0b45a', '#101010', '#b9771a', '#faf6ee'], ['arancio', 'Arancio', '#ff8a3d', '#0d0b0a', '#d1561a', '#faf4f0']];
+const stored = (k) => { try { return localStorage.getItem(k) ?? ''; } catch { return ''; /* senza memoria locale resta quello di partenza */ } };
+const currentPalette = () => { const v = stored('mybank-palette'); return PALETTES.some((p) => p[0] === v) ? v : 'grafite'; };
+const currentMode = () => (stored('mybank-mode') === 'light' ? 'light' : 'dark');
 function applyPalette() {
-  const cur = currentPalette();
+  const cur = currentPalette(), mode = currentMode();
   document.body.dataset.pal = cur;
+  document.body.classList.toggle('light', mode === 'light');
+  const modes = document.getElementById('modeList');
+  if (modes) modes.innerHTML = [['dark', 'Scuro'], ['light', 'Chiaro']].map(([k, n]) => `<button type="button" class="pal${k === mode ? ' on' : ''}" data-mode="${k}" aria-pressed="${k === mode}">${n}</button>`).join('');
   const list = document.getElementById('palList');
-  if (list) list.innerHTML = PALETTES.map(([k, n, acc, bg]) => `<button type="button" class="pal${k === cur ? ' on' : ''}" data-pal="${k}" aria-pressed="${k === cur}"><i style="background:${bg};border-color:${acc}"><b style="background:${acc}"></b></i>${n}</button>`).join('');
+  if (list) list.innerHTML = PALETTES.map(([k, n, acc, bg, accL, bgL]) => { const a = mode === 'light' ? accL : acc, b = mode === 'light' ? bgL : bg; return `<button type="button" class="pal${k === cur ? ' on' : ''}" data-pal="${k}" aria-pressed="${k === cur}"><i style="background:${b};border-color:${a}"><b style="background:${a}"></b></i>${n}</button>`; }).join('');
 }
 document.addEventListener('click', (e) => {
-  const b = e.target.closest?.('button[data-pal]');
+  const b = e.target.closest?.('button[data-pal], button[data-mode]');
   if (!b) return;
-  try { localStorage.setItem('mybank-palette', b.dataset.pal); } catch { /* non si ricorda, ma vale per ora */ }
+  try { localStorage.setItem(b.dataset.mode ? 'mybank-mode' : 'mybank-palette', b.dataset.mode ?? b.dataset.pal); } catch { /* non si ricorda, ma vale per ora */ }
   applyPalette();
 });
 

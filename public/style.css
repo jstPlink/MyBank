@@ -628,11 +628,11 @@ dialog .fields { margin-bottom: 4px; }
 @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin.woff2") format("woff2"); font-weight: 500 800; font-style: normal; font-display: swap; }
 body.glass {
   --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a;
-  --paper: #0b0c0b; --ink: #f2f4f7; --mute: #8c9488; --hair: rgba(255, 255, 255, .08); --red: #ff9a72; --red-rgb: 255, 154, 114; --green: #c9f36b; --yellow: #f0c419;
+  --w: 255, 255, 255; --k: 0, 0, 0; --paper: #0b0c0b; --ink: #f2f4f7; --mute: #8c9488; --hair: rgba(var(--w), .08); --red: #ff9a72; --red-rgb: 255, 154, 114; --green: #c9f36b; --yellow: #f0c419;
   --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #f2f4f7; --t-entrata: #c9f36b; --t-giroconto: #6d7a68;
   --f-serif: "Figtree", system-ui, "Segoe UI", sans-serif; --f-sans: "Figtree", system-ui, "Segoe UI", sans-serif; --f-mono: "Figtree", system-ui, "Segoe UI", sans-serif;
-  --glass: linear-gradient(160deg, rgba(255, 255, 255, .075), rgba(255, 255, 255, .05)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .10), rgba(255, 255, 255, .07));
-  --edge: 1px solid rgba(255, 255, 255, .15); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .105), 0 10px 28px rgba(0, 0, 0, .29); --chipbg: rgba(255, 255, 255, .065);
+  --glass: linear-gradient(160deg, rgba(var(--w), .075), rgba(var(--w), .05)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .10), rgba(var(--w), .07));
+  --edge: 1px solid rgba(var(--w), .15); --glass-sh: inset 0 1px 0 rgba(var(--w), .105), 0 10px 28px rgba(var(--k), .29); --chipbg: rgba(var(--w), .065);
   color-scheme: dark; color: var(--ink);
   background: linear-gradient(170deg, var(--g0) 0%, var(--g1) 55%, var(--g2) 100%) fixed;
 }
@@ -646,7 +646,7 @@ body.glass .demo { background: var(--red); }
 body.glass .tabs { border-bottom: 0; gap: 4px; padding: 6px 12px 10px; }
 body.glass .tabs > button { height: 38px; border: 0; margin: 0; border-radius: 14px; background: transparent; font-weight: 600; color: var(--mute); }
 body.glass .tabs > button:hover { color: var(--ink); }
-body.glass .tabs > button[aria-selected=true] { background: rgba(255, 255, 255, .10); color: var(--acc); }
+body.glass .tabs > button[aria-selected=true] { background: rgba(var(--w), .10); color: var(--acc); }
 @media (max-width: 720px) {
   body.glass .tabs { border-top: 1px solid var(--hair); background: color-mix(in srgb, var(--g0) 82%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); padding: 8px 8px calc(10px + env(safe-area-inset-bottom)); }
   body.glass .tabs > button { border-top: 0; margin: 0; height: 42px; padding: 0 2px; font-size: var(--fs-sm); letter-spacing: 0; }
@@ -654,10 +654,10 @@ body.glass .tabs > button[aria-selected=true] { background: rgba(255, 255, 255, 
 
 /* pulsanti e campi */
 body.glass button.primary, body.glass button.ghost { border: var(--edge); border-radius: 16px; font-weight: 700; }
-body.glass button.primary { background: var(--acc); border-color: var(--acc); color: var(--onacc); box-shadow: 0 5px 16px rgba(0, 0, 0, .28); }
+body.glass button.primary { background: var(--acc); border-color: var(--acc); color: var(--onacc); box-shadow: 0 5px 16px rgba(var(--k), .28); }
 body.glass button.primary:hover { background: var(--acc2); border-color: var(--acc2); color: var(--onacc); }
 body.glass button.ghost { background: var(--chipbg); color: var(--ink); }
-body.glass button.ghost:hover { background: rgba(255, 255, 255, .12); color: var(--ink); }
+body.glass button.ghost:hover { background: rgba(var(--w), .12); color: var(--ink); }
 body.glass .top-actions .ghost { border-radius: 999px; }
 body.glass input, body.glass select { border: var(--edge); border-radius: 14px; background: var(--chipbg); }
 body.glass select, body.glass option { background-color: var(--g2); color: var(--ink); }
@@ -672,13 +672,13 @@ body.glass #yearCards .card:nth-child(3) .v { font-size: var(--fs-num); }
 body.glass .tablewrap { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 6px 16px 10px; }
 body.glass thead th { border-bottom: 1px solid var(--hair); }
 body.glass tfoot th, body.glass tfoot td { border-top: 1px solid var(--hair); }
-body.glass tbody tr.m:hover { background: rgba(255, 255, 255, .04); }
+body.glass tbody tr.m:hover { background: rgba(var(--w), .04); }
 body.glass tbody tr.m.undef { background: rgba(240, 196, 25, .10); }
 body.glass tbody tr.m.undef th { color: var(--yellow); }
 body.glass td.num, body.glass th.num { font-weight: 700; }
 body.glass .chip { border-bottom-color: var(--hair); }
 body.glass .chip:hover { color: var(--acc); border-bottom-color: var(--hair); }
-body.glass .chip .cbar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .10); overflow: hidden; }
+body.glass .chip .cbar { height: 8px; border-radius: 999px; background: rgba(var(--w), .10); overflow: hidden; }
 body.glass .chip .cbar i, body.glass .chip:hover .cbar i, body.glass .legend .chip.in .cbar i { border-radius: 999px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
 body.glass .chip .cbar[style*="--tick"]::after { display: none; }
 
@@ -691,7 +691,7 @@ body.glass .bstats .dim .n, body.glass .bfix .grey .n { color: var(--mute); }
 body.glass .bcat { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 body.glass .bh .n { font-weight: 700; }
 body.glass .bbar { height: 14px; }
-body.glass .bbar b { border-radius: 999px; background: rgba(255, 255, 255, .10); overflow: hidden; }
+body.glass .bbar b { border-radius: 999px; background: rgba(var(--w), .10); overflow: hidden; }
 body.glass .bbar i { border-radius: 999px; background: linear-gradient(90deg, var(--acc), var(--acc2)); }
 body.glass .bbar.low i { background: var(--red); }
 body.glass .bbar.over b { background: var(--red); }
@@ -702,9 +702,9 @@ body.glass #budgetEdit { border: var(--edge); border-radius: 22px; background: v
 body.glass .fcount { color: var(--mute); }
 body.glass .tagfilter summary { border: var(--edge); border-radius: 14px; background: var(--chipbg); font-weight: 600; }
 body.glass .tagfilter summary::after { color: var(--acc); }
-body.glass .tagopts { border: var(--edge); border-radius: 18px; background: var(--g2); box-shadow: 0 12px 28px rgba(0, 0, 0, .45); }
+body.glass .tagopts { border: var(--edge); border-radius: 18px; background: var(--g2); box-shadow: 0 12px 28px rgba(var(--k), .45); }
 body.glass .tagopt, body.glass .pick, body.glass .rinrow, body.glass .rpay { border-top-color: var(--hair); }
-body.glass .tagopt i, body.glass .pick i { border: 1px solid rgba(255, 255, 255, .3); border-radius: 7px; background: var(--chipbg); }
+body.glass .tagopt i, body.glass .pick i { border: 1px solid rgba(var(--w), .3); border-radius: 7px; background: var(--chipbg); }
 body.glass .tagopt input:checked + i, body.glass .pick input:checked + i { background: var(--acc); border-color: var(--acc); }
 body.glass .tagopt input:checked + i::after, body.glass .pick input:checked + i::after { border-color: var(--onacc); }
 body.glass .catfilter { color: var(--mute); }
@@ -724,8 +724,8 @@ body.glass .rrow { border-top-color: var(--hair); }
 body.glass .rrow.open { border-top-color: rgba(var(--acc-rgb), .5); }
 body.glass .rday, body.glass .ramt { font-weight: 700; }
 body.glass .rname svg { color: var(--acc); }
-body.glass .rpanel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .05); margin: 4px 0 8px; }
-body.glass .rsw i { border-color: rgba(255, 255, 255, .35); }
+body.glass .rpanel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(var(--w), .05); margin: 4px 0 8px; }
+body.glass .rsw i { border-color: rgba(var(--w), .35); }
 body.glass .rsw i::after { background: var(--ink); }
 body.glass .rsw.on i { background: var(--acc); border-color: var(--acc); }
 body.glass .rsw.on i::after { background: var(--onacc); }
@@ -735,24 +735,24 @@ body.glass .rchip.fill { background: var(--acc); border-color: var(--acc); color
 body.glass .rchip.todo { border-color: var(--red); color: var(--red); background: transparent; }
 body.glass .rchip.alt { border-color: var(--hair); color: var(--mute); }
 body.glass .rinbox { border: 1px solid rgba(var(--red-rgb),  .55); border-radius: 18px; background: rgba(var(--red-rgb),  .06); }
-body.glass .rx { border-radius: 10px; border-color: rgba(255, 255, 255, .2); }
+body.glass .rx { border-radius: 10px; border-color: rgba(var(--w), .2); }
 body.glass .rx:hover { border-color: var(--red); color: var(--red); }
 body.glass .rsticky { background: color-mix(in srgb, var(--g0) 88%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-top: 1px solid var(--hair); }
 body.glass #recForm { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 16px; }
 body.glass .aopt { border-color: var(--hair); }
 
 /* vetro · finestre e fogli (stanno sotto il body: ereditano le variabili) */
-body.glass dialog { border: var(--edge); border-radius: 22px; background: color-mix(in srgb, var(--g2) 96%, transparent); color: var(--ink); box-shadow: 0 16px 48px rgba(0, 0, 0, .5); }
-body.glass dialog::backdrop { background: rgba(0, 0, 0, .6); }
+body.glass dialog { border: var(--edge); border-radius: 22px; background: color-mix(in srgb, var(--g2) 96%, transparent); color: var(--ink); box-shadow: 0 16px 48px rgba(var(--k), .5); }
+body.glass dialog::backdrop { background: rgba(var(--k), .6); }
 body.glass dialog.sheet { border-radius: 22px 22px 0 0; border-width: 1px 0 0; }
-body.glass dialog.sheet .grab { background: rgba(255, 255, 255, .2); border-radius: 2px; }
+body.glass dialog.sheet .grab { background: rgba(var(--w), .2); border-radius: 2px; }
 
 /* vetro · Ricorrenti: due contenitori (attivi e non più attivi) e targhette Mese/Anno */
 body.glass .rgroup { border: var(--edge); border-radius: 22px; background: var(--glass); box-shadow: var(--glass-sh); padding: 14px 16px 6px; margin-top: 16px; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 body.glass .rgroup .rsec { margin-top: 0; padding: 0 0 10px; border-top: 0; border-bottom: 1px solid var(--hair); }
 body.glass .rgroup .rsec + .rrow { border-top: 0; }
-body.glass .rgroup.off { background: rgba(255, 255, 255, .03); box-shadow: none; }
-body.glass .rname .tg { width: 52px; height: 22px; border: 1px solid var(--hair); border-radius: 999px; background: rgba(255, 255, 255, .05); color: var(--mute); font-weight: 700; letter-spacing: .04em; }
+body.glass .rgroup.off { background: rgba(var(--w), .03); box-shadow: none; }
+body.glass .rname .tg { width: 52px; height: 22px; border: 1px solid var(--hair); border-radius: 999px; background: rgba(var(--w), .05); color: var(--mute); font-weight: 700; letter-spacing: .04em; }
 body.glass .rname .tg.y { border-color: rgba(var(--acc-rgb), .45); background: rgba(var(--acc-rgb), .14); color: var(--acc); }
 body.glass .rrow.off .tg, body.glass .rrow.off .tg.y { border-color: var(--hair); background: transparent; color: var(--mute); }
 
@@ -766,37 +766,41 @@ body.glass #docGroups > details.group:first-child, body.glass #opzioni > :first-
 /* intestazione a fascia d'accento (variante F1): la fascia riempie il bordo alto della scheda; aperta, filetto lime da 2px; chiusa, scheda tutta stondata */
 body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .paysec { overflow: hidden; }
 body.glass :is(#opzioni, #docGroups) > details.group:not([open]) { padding-bottom: 0; }
-body.glass :is(#opzioni, #docGroups) > details.group > summary, body.glass .payhead { margin: -16px -16px 0; padding: 14px 16px; border-radius: 0; border-left: 0; border-bottom: 2px solid transparent; background: linear-gradient(90deg, rgba(var(--acc-rgb), .28), rgba(var(--acc-rgb), .10)); }
-body.glass :is(#opzioni, #docGroups) > details.group[open] > summary, body.glass .payhead { border-bottom-color: var(--acc); }
-body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--acc); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary, body.glass .payhead { margin: -16px -16px 0; padding: 14px 16px; border-radius: 0; border-left: 0; border-bottom: 0; }
+/* collassabile: fascia piena d'accento, titolo, dato e chevron nel colore «testo su accento»; fissa: solo una sfumatura d'accento con filetto sottile */
+body.glass :is(#opzioni, #docGroups) > details.group > summary { background: var(--acc); color: var(--onacc); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary h2, body.glass :is(#opzioni, #docGroups) > details.group > summary .info, body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--onacc); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary .info { opacity: .72; }
+body.glass .payhead { background: linear-gradient(90deg, rgba(var(--acc-rgb), .14), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .30); }
+body.glass .payhead h2.section { color: var(--ink); }
 body.glass :is(#opzioni, #docGroups) > details.group > summary h2.section, body.glass .payhead h2.section { font-size: var(--fs-md); line-height: 24px; }
 body.glass .docbody .sub { border-bottom: 1px solid var(--hair); }
 body.glass .docbody .sub.late { border-bottom-color: rgba(var(--red-rgb),  .5); }
 body.glass .total { border-top: 1px solid var(--hair); }
 body.glass .total b { font-weight: 700; }
 body.glass .scroller { border-bottom: 1px solid var(--hair); }
-body.glass .chk { border: 1px solid rgba(255, 255, 255, .3); border-radius: 8px; background: var(--chipbg); }
+body.glass .chk { border: 1px solid rgba(var(--w), .3); border-radius: 8px; background: var(--chipbg); }
 body.glass .chk.on { background: var(--acc); border-color: var(--acc); }
 body.glass .chk.on::after { border-color: var(--onacc); }
 body.glass .btn, body.glass .filebtn { border: var(--edge); border-radius: 16px; background: var(--chipbg); color: var(--ink); font-weight: 700; }
-body.glass .btn:hover, body.glass .filebtn:hover { background: rgba(255, 255, 255, .12); color: var(--ink); }
+body.glass .btn:hover, body.glass .filebtn:hover { background: rgba(var(--w), .12); color: var(--ink); }
 body.glass .folder { border-top: 1px solid var(--hair); }
-body.glass .drop { border: 1px dashed rgba(255, 255, 255, .25); border-radius: 16px; }
+body.glass .drop { border: 1px dashed rgba(var(--w), .25); border-radius: 16px; }
 body.glass .inbox { border-left: 4px solid var(--acc); border-radius: 2px; }
 body.glass .docfile:hover { color: var(--acc); border-bottom-color: var(--hair); }
-body.glass button.amt.edit { border-bottom-color: rgba(255, 255, 255, .35); }
+body.glass button.amt.edit { border-bottom-color: rgba(var(--w), .35); }
 body.glass .bill .amt { font-weight: 700; }
 
 /* vetro · Opzioni: banche, orari, stati */
 body.glass .panel { border-top: 0; }
-body.glass .bank { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .04); padding: 14px; margin-bottom: 12px; }
+body.glass .bank { border: 1px solid var(--hair); border-radius: 18px; background: rgba(var(--w), .04); padding: 14px; margin-bottom: 12px; }
 body.glass .bank > summary, body.glass details.panel > summary, body.glass details.group > summary { border-bottom-color: transparent; }
-body.glass details.panel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(255, 255, 255, .04); padding: 14px; }
-body.glass .status { border: 1px solid rgba(255, 255, 255, .25); border-radius: 999px; }
+body.glass details.panel { border: 1px solid var(--hair); border-radius: 18px; background: rgba(var(--w), .04); padding: 14px; }
+body.glass .status { border: 1px solid rgba(var(--w), .25); border-radius: 999px; }
 body.glass .status.ok { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
 body.glass .status.late { border-color: var(--red); color: var(--red); background: transparent; }
 body.glass .hour select { border-radius: 10px; }
-body.glass .hour .x, body.glass .stagedrow .x { border-radius: 10px; border-color: rgba(255, 255, 255, .25); }
+body.glass .hour .x, body.glass .stagedrow .x { border-radius: 10px; border-color: rgba(var(--w), .25); }
 body.glass #optionsBtn[aria-pressed=true] { background: var(--acc); border-color: var(--acc); color: var(--onacc); }
 
 /* vetro · Movimenti: menu della categoria, targhetta «in sospeso», matita e riga di riepilogo */
@@ -816,15 +820,33 @@ body.glass #mvBar { border: var(--edge); border-radius: 22px; background: var(--
 
 /* vetro · palette scelte da Opzioni → Aspetto (body[data-pal]); grafite è quella di partenza */
 body.glass[data-pal="grafite"] { --g0: #0e1012; --g1: #171a1e; --g2: #1c2025; --acc: #e9ebef; --acc2: #ffffff; --acc-rgb: 233, 235, 239; --acc2-rgb: 255, 255, 255; --onacc: #0e1012; --green: #8fe0b0; --t-entrata: #8fe0b0; --red: #ff8f8f; --red-rgb: 255, 143, 143; --mute: #8d94a0; --paper: #0e1012; }
-body.glass[data-pal="ambra"] { --g0: #101010; --g1: #1a1713; --g2: #201b15; --acc: #f0b45a; --acc2: #ffd9a0; --acc-rgb: 240, 180, 90; --acc2-rgb: 255, 217, 160; --onacc: #2a1a05; --green: #a8d98a; --t-entrata: #a8d98a; --red: #ff8a6b; --red-rgb: 255, 138, 107; --mute: #9a9385; --paper: #101010; }
-body.glass[data-pal="salvia"] { --g0: #0f1211; --g1: #161b19; --g2: #1b221f; --acc: #9fd8b8; --acc2: #cdeedc; --acc-rgb: 159, 216, 184; --acc2-rgb: 205, 238, 220; --onacc: #06241a; --green: #9fd8b8; --t-entrata: #9fd8b8; --red: #f29a8a; --red-rgb: 242, 154, 138; --mute: #8a9892; --paper: #0f1211; }
 body.glass[data-pal="ghiaccio"] { --g0: #0e1114; --g1: #151a20; --g2: #1a212a; --acc: #a9c8e8; --acc2: #d6e6f7; --acc-rgb: 169, 200, 232; --acc2-rgb: 214, 230, 247; --onacc: #0a2036; --green: #8fe0c8; --t-entrata: #8fe0c8; --red: #ff9aa8; --red-rgb: 255, 154, 168; --mute: #8a97a8; --paper: #0e1114; }
-body.glass[data-pal="lime"] { --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a; --green: #c9f36b; --t-entrata: #c9f36b; --red: #ff9a72; --red-rgb: 255, 154, 114; --mute: #8c9488; --paper: #0b0c0b; }
+body.glass[data-pal="salvia"] { --g0: #0f1211; --g1: #161b19; --g2: #1b221f; --acc: #9fd8b8; --acc2: #cdeedc; --acc-rgb: 159, 216, 184; --acc2-rgb: 205, 238, 220; --onacc: #06241a; --green: #9fd8b8; --t-entrata: #9fd8b8; --red: #f29a8a; --red-rgb: 242, 154, 138; --mute: #8a9892; --paper: #0f1211; }
 body.glass[data-pal="turchese"] { --g0: #0b0e0f; --g1: #111718; --g2: #162022; --acc: #5ee6d0; --acc2: #a8f5ea; --acc-rgb: 94, 230, 208; --acc2-rgb: 168, 245, 234; --onacc: #05241f; --green: #5ee6d0; --t-entrata: #5ee6d0; --red: #ff9a8a; --red-rgb: 255, 154, 138; --mute: #86978f; --paper: #0b0e0f; }
-body.glass[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --acc: #ff8a3d; --acc2: #ffc08a; --acc-rgb: 255, 138, 61; --acc2-rgb: 255, 192, 138; --onacc: #2e1100; --green: #b5e08a; --t-entrata: #b5e08a; --red: #ff6b6b; --red-rgb: 255, 107, 107; --mute: #9c9088; --paper: #0d0b0a; }
 body.glass[data-pal="smeraldo"] { --g0: #08100d; --g1: #0e1a15; --g2: #13261d; --acc: #3ddc97; --acc2: #9af0c8; --acc-rgb: 61, 220, 151; --acc2-rgb: 154, 240, 200; --onacc: #04281a; --green: #3ddc97; --t-entrata: #3ddc97; --red: #ff9a8a; --red-rgb: 255, 154, 138; --mute: #84a094; --paper: #08100d; }
+body.glass[data-pal="lime"] { --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a; --green: #c9f36b; --t-entrata: #c9f36b; --red: #ff9a72; --red-rgb: 255, 154, 114; --mute: #8c9488; --paper: #0b0c0b; }
+body.glass[data-pal="ambra"] { --g0: #101010; --g1: #1a1713; --g2: #201b15; --acc: #f0b45a; --acc2: #ffd9a0; --acc-rgb: 240, 180, 90; --acc2-rgb: 255, 217, 160; --onacc: #2a1a05; --green: #a8d98a; --t-entrata: #a8d98a; --red: #ff8a6b; --red-rgb: 255, 138, 107; --mute: #9a9385; --paper: #101010; }
+body.glass[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --acc: #ff8a3d; --acc2: #ffc08a; --acc-rgb: 255, 138, 61; --acc2-rgb: 255, 192, 138; --onacc: #2e1100; --green: #b5e08a; --t-entrata: #b5e08a; --red: #ff6b6b; --red-rgb: 255, 107, 107; --mute: #9c9088; --paper: #0d0b0a; }
 
 /* vetro · Opzioni → Aspetto: una targhetta per palette (pallino col colore d'accento su fondo della palette) */
+/* ---- vetro · modalità chiara (Opzioni → Aspetto → Chiaro): stesse forme, variabili diverse; --w è il colore dei veli sul vetro (bianco nello scuro, inchiostro nel chiaro) ---- */
+body.glass.light { --w: 27, 31, 36; --k: 40, 50, 70; --ink: #1b1f24; --hair: rgba(0, 0, 0, .10); --yellow: #a97c00; color-scheme: light;
+  --t-spesa: #3b5fd9; --t-svago: #c4328f; --t-carburante: #a87a0e; --t-altro: #7660c4; --t-utenze: #1c8aa0; --t-ricorrente: #a8662a; --t-non_definito: #1b1f24; --t-giroconto: #7a8576;
+  --glass: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .72)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .16), rgba(255, 255, 255, .80));
+  --edge: 1px solid rgba(0, 0, 0, .10); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .95), 0 8px 22px rgba(40, 50, 70, .10); --chipbg: rgba(0, 0, 0, .045); }
+body.glass.light .payhead { background: linear-gradient(90deg, rgba(var(--acc-rgb), .12), rgba(var(--acc-rgb), .03)); border-bottom-color: rgba(var(--acc-rgb), .40); }
+body.glass.light select option { background-color: #fff; }
+body.glass.light input, body.glass.light select { background-color: rgba(255, 255, 255, .7); border: 1px solid rgba(0, 0, 0, .14); }
+body.glass.light .demo { color: #fff; }
+body.glass.light[data-pal="grafite"] { --g0: #f4f5f7; --g1: #eceef1; --g2: #e3e6ea; --acc: #2b3038; --acc2: #4a525e; --acc-rgb: 43, 48, 56; --acc2-rgb: 74, 82, 94; --onacc: #ffffff; --green: #1f8a56; --t-entrata: #1f8a56; --red: #c93a3a; --red-rgb: 201, 58, 58; --mute: #6b7380; --paper: #f4f5f7; }
+body.glass.light[data-pal="ghiaccio"] { --g0: #f3f7fb; --g1: #e9f0f8; --g2: #dfe9f5; --acc: #2f6fb0; --acc2: #5a93cf; --acc-rgb: 47, 111, 176; --acc2-rgb: 90, 147, 207; --onacc: #ffffff; --green: #1f8a6a; --t-entrata: #1f8a6a; --red: #c4455a; --red-rgb: 196, 69, 90; --mute: #66758a; --paper: #f3f7fb; }
+body.glass.light[data-pal="salvia"] { --g0: #f4f7f4; --g1: #eaf0eb; --g2: #dfe8e1; --acc: #3f8f68; --acc2: #6bb08a; --acc-rgb: 63, 143, 104; --acc2-rgb: 107, 176, 138; --onacc: #ffffff; --green: #3f8f68; --t-entrata: #3f8f68; --red: #c4503f; --red-rgb: 196, 80, 63; --mute: #6a7a70; --paper: #f4f7f4; }
+body.glass.light[data-pal="turchese"] { --g0: #f2f8f8; --g1: #e6f1f1; --g2: #daeaea; --acc: #12968a; --acc2: #3fbfb2; --acc-rgb: 18, 150, 138; --acc2-rgb: 63, 191, 178; --onacc: #ffffff; --green: #12968a; --t-entrata: #12968a; --red: #c8473f; --red-rgb: 200, 71, 63; --mute: #62807d; --paper: #f2f8f8; }
+body.glass.light[data-pal="smeraldo"] { --g0: #f2f8f4; --g1: #e5f1e9; --g2: #d8eadf; --acc: #17894f; --acc2: #3fb377; --acc-rgb: 23, 137, 79; --acc2-rgb: 63, 179, 119; --onacc: #ffffff; --green: #17894f; --t-entrata: #17894f; --red: #c4493f; --red-rgb: 196, 73, 63; --mute: #61806f; --paper: #f2f8f4; }
+body.glass.light[data-pal="lime"] { --g0: #f7f8f0; --g1: #eff1e2; --g2: #e6eace; --acc: #5f8f0e; --acc2: #8fc22a; --acc-rgb: 95, 143, 14; --acc2-rgb: 143, 194, 42; --onacc: #ffffff; --green: #5f8f0e; --t-entrata: #5f8f0e; --red: #c8512f; --red-rgb: 200, 81, 47; --mute: #767c64; --paper: #f7f8f0; }
+body.glass.light[data-pal="ambra"] { --g0: #faf6ee; --g1: #f4ecdc; --g2: #ecdfc6; --acc: #b9771a; --acc2: #dc9a3c; --acc-rgb: 185, 119, 26; --acc2-rgb: 220, 154, 60; --onacc: #ffffff; --green: #4f8a2c; --t-entrata: #4f8a2c; --red: #c8442f; --red-rgb: 200, 68, 47; --mute: #85796a; --paper: #faf6ee; }
+body.glass.light[data-pal="arancio"] { --g0: #faf4f0; --g1: #f5e9e1; --g2: #efdccf; --acc: #d1561a; --acc2: #f08040; --acc-rgb: 209, 86, 26; --acc2-rgb: 240, 128, 64; --onacc: #ffffff; --green: #4f8a2c; --t-entrata: #4f8a2c; --red: #b8322e; --red-rgb: 184, 50, 46; --mute: #8a786c; --paper: #faf4f0; }
+
 .pals { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-top: 12px; }
 .pal { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; border: var(--edge, 1px solid var(--hair)); border-radius: 14px; background: var(--chipbg, transparent); color: var(--ink); font: 600 var(--fs-sm) var(--f-sans); cursor: pointer; }
 .pal i { display: grid; place-items: center; width: 26px; height: 26px; border: 2px solid; border-radius: 50%; flex: none; }
@@ -832,8 +854,6 @@ body.glass[data-pal="smeraldo"] { --g0: #08100d; --g1: #0e1a15; --g2: #13261d; -
 .pal.on { border-color: var(--acc); color: var(--acc); }
 
 /* vetro · testata fissa (non collassabile): fascia scura e piatta, filetto sottile e tenue, nessun chevron */
-body.glass .payhead { background: rgba(0, 0, 0, .22); border-bottom: 1px solid rgba(255, 255, 255, .09); }
-body.glass .payhead h2.section { color: rgba(242, 244, 247, .92); }
 
 /* vetro · menu a tendina: campo con freccia d'accento, elenco scuro con la voce scelta in accento (l'elenco nativo segue questi colori dove il sistema lo permette) */
 body.glass select { -webkit-appearance: none; appearance: none; padding-right: 30px; font-weight: 600; background-image: linear-gradient(45deg, transparent 50%, var(--acc) 50%), linear-gradient(135deg, var(--acc) 50%, transparent 50%); background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%; background-size: 5px 5px, 5px 5px; background-repeat: no-repeat; }

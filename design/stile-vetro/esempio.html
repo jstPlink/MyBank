@@ -3,7 +3,7 @@
 <link rel="stylesheet" href="tema.css">
 <body class="vt" data-pal="grafite">
 <div class="vt-page">
-  <h1>Esempio</h1>
+  <h1>Esempio</h1><div style="display:flex;gap:8px"><button class="vt-btn" onclick="import('./palette.js').then(m=>m.applyPalette(undefined,'dark'))">Scuro</button><button class="vt-btn" onclick="import('./palette.js').then(m=>m.applyPalette(undefined,'light'))">Chiaro</button></div>
   <div class="vt-card vt-card-big"><span class="vt-label">Speso questo mese</span><div class="vt-hero vt-num">1.284 €</div><div class="vt-bar" style="margin:10px 0"><i style="width:71%"></i></div><span class="vt-muted">Restano <b class="vt-good">516 €</b> su 1.800 €</span></div>
   <div class="vt-card vt-sect"><div class="vt-head"><h2>Da pagare</h2><span class="vt-cnt bad">2 voci</span></div><div class="vt-body"><div class="vt-row"><b>Affitto</b><span class="vt-num">450 €</span></div><div class="vt-row"><b>Tari</b><span class="vt-num">62 €</span></div></div></div>
   <div class="vt-card vt-sect"><details open><summary class="vt-head"><h2>Categorie</h2><span class="vt-cnt">3 voci</span><svg class="vt-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></summary><div class="vt-body">

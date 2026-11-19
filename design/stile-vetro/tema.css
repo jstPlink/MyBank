@@ -1,18 +1,18 @@
 /* Stile «vetro» di MyBank, estratto per altre app.
-   Uso: <link rel="stylesheet" href="tema.css">, poi <body class="vt" data-pal="grafite"> (palette: grafite, ambra, salvia, ghiaccio, lime, turchese, arancio, smeraldo).
+   Uso: <link rel="stylesheet" href="tema.css">, poi <body class="vt" data-pal="grafite"> (palette in ordine cromatico: grafite, ghiaccio, salvia, turchese, smeraldo, lime, ambra, arancio).
    Tutto sta in variabili: per cambiare i colori basta cambiare quelle della palette. Classi pronte: vt-page, vt-card, vt-card-big, vt-title, vt-btn,
    vt-btn-primary, vt-input, vt-pill, vt-tabs, vt-bar, vt-row, vt-num, vt-sheet. Scala del testo: 11 / 13 / 15 / 22 / 34 px (non usarne altre). */
 @font-face { font-family: "Figtree"; src: url("fonts/figtree-latin.woff2") format("woff2"); font-weight: 500 800; font-style: normal; font-display: swap; }
 
 /* ---- palette (la prima è la predefinita) ---- */
 .vt, .vt[data-pal="grafite"] { --g0: #0e1012; --g1: #171a1e; --g2: #1c2025; --acc: #e9ebef; --acc2: #ffffff; --acc-rgb: 233, 235, 239; --acc2-rgb: 255, 255, 255; --onacc: #0e1012; --good: #8fe0b0; --bad: #ff8f8f; --bad-rgb: 255, 143, 143; --mute: #8d94a0; }
-.vt[data-pal="ambra"] { --g0: #101010; --g1: #1a1713; --g2: #201b15; --acc: #f0b45a; --acc2: #ffd9a0; --acc-rgb: 240, 180, 90; --acc2-rgb: 255, 217, 160; --onacc: #2a1a05; --good: #a8d98a; --bad: #ff8a6b; --bad-rgb: 255, 138, 107; --mute: #9a9385; }
-.vt[data-pal="salvia"] { --g0: #0f1211; --g1: #161b19; --g2: #1b221f; --acc: #9fd8b8; --acc2: #cdeedc; --acc-rgb: 159, 216, 184; --acc2-rgb: 205, 238, 220; --onacc: #06241a; --good: #9fd8b8; --bad: #f29a8a; --bad-rgb: 242, 154, 138; --mute: #8a9892; }
 .vt[data-pal="ghiaccio"] { --g0: #0e1114; --g1: #151a20; --g2: #1a212a; --acc: #a9c8e8; --acc2: #d6e6f7; --acc-rgb: 169, 200, 232; --acc2-rgb: 214, 230, 247; --onacc: #0a2036; --good: #8fe0c8; --bad: #ff9aa8; --bad-rgb: 255, 154, 168; --mute: #8a97a8; }
-.vt[data-pal="lime"] { --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a; --good: #c9f36b; --bad: #ff9a72; --bad-rgb: 255, 154, 114; --mute: #8c9488; }
+.vt[data-pal="salvia"] { --g0: #0f1211; --g1: #161b19; --g2: #1b221f; --acc: #9fd8b8; --acc2: #cdeedc; --acc-rgb: 159, 216, 184; --acc2-rgb: 205, 238, 220; --onacc: #06241a; --good: #9fd8b8; --bad: #f29a8a; --bad-rgb: 242, 154, 138; --mute: #8a9892; }
 .vt[data-pal="turchese"] { --g0: #0b0e0f; --g1: #111718; --g2: #162022; --acc: #5ee6d0; --acc2: #a8f5ea; --acc-rgb: 94, 230, 208; --acc2-rgb: 168, 245, 234; --onacc: #05241f; --good: #5ee6d0; --bad: #ff9a8a; --bad-rgb: 255, 154, 138; --mute: #86978f; }
-.vt[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --acc: #ff8a3d; --acc2: #ffc08a; --acc-rgb: 255, 138, 61; --acc2-rgb: 255, 192, 138; --onacc: #2e1100; --good: #b5e08a; --bad: #ff6b6b; --bad-rgb: 255, 107, 107; --mute: #9c9088; }
 .vt[data-pal="smeraldo"] { --g0: #08100d; --g1: #0e1a15; --g2: #13261d; --acc: #3ddc97; --acc2: #9af0c8; --acc-rgb: 61, 220, 151; --acc2-rgb: 154, 240, 200; --onacc: #04281a; --good: #3ddc97; --bad: #ff9a8a; --bad-rgb: 255, 154, 138; --mute: #84a094; }
+.vt[data-pal="lime"] { --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a; --good: #c9f36b; --bad: #ff9a72; --bad-rgb: 255, 154, 114; --mute: #8c9488; }
+.vt[data-pal="ambra"] { --g0: #101010; --g1: #1a1713; --g2: #201b15; --acc: #f0b45a; --acc2: #ffd9a0; --acc-rgb: 240, 180, 90; --acc2-rgb: 255, 217, 160; --onacc: #2a1a05; --good: #a8d98a; --bad: #ff8a6b; --bad-rgb: 255, 138, 107; --mute: #9a9385; }
+.vt[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --acc: #ff8a3d; --acc2: #ffc08a; --acc-rgb: 255, 138, 61; --acc2-rgb: 255, 192, 138; --onacc: #2e1100; --good: #b5e08a; --bad: #ff6b6b; --bad-rgb: 255, 107, 107; --mute: #9c9088; }
 
 /* ---- base: forme, vetro, testo ---- */
 .vt {
@@ -50,17 +50,18 @@
 .vt-sect { overflow: hidden; }
 .vt-sect:has(details:not([open])) { padding-bottom: 0; }
 .vt-sect details > summary { list-style: none; cursor: pointer; } .vt-sect details > summary::-webkit-details-marker { display: none; }
-.vt-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 16px; border-bottom: 2px solid var(--acc); background: linear-gradient(90deg, rgba(var(--acc-rgb), .28), rgba(var(--acc-rgb), .10)); }
-.vt-head h2 { flex: 1; font-size: var(--fs-md); line-height: 24px; }
+.vt-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 16px; border-bottom: 0; background: var(--acc); color: var(--onacc); }
+.vt-head h2 { flex: 1; font-size: var(--fs-md); line-height: 24px; color: var(--onacc); font-weight: 800; }
 .vt-cnt { font-size: var(--fs-label); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--mute); } .vt-cnt.bad { color: var(--bad); }
-.vt-chev { width: 18px; height: 18px; flex: none; color: var(--acc); stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s; }
+.vt-head .vt-cnt { color: var(--onacc); opacity: .72; }
+.vt-chev { width: 18px; height: 18px; flex: none; color: var(--onacc); stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s; }
 .vt-sect details[open] > summary .vt-chev { transform: rotate(180deg); }
-.vt-sect details:not([open]) > summary.vt-head { border-bottom-color: transparent; }
 .vt-sect .vt-head + :not(.vt-body) { margin-top: 14px; }
 .vt-sect .vt-body { margin-top: 14px; }
-/* testata fissa (non collassabile): fascia scura e piatta, filetto sottile e tenue; la collassabile resta piena e luminosa */
-.vt-head.fix { background: rgba(0, 0, 0, .22); border-bottom: 1px solid rgba(255, 255, 255, .09); }
-.vt-head.fix h2 { color: rgba(242, 244, 247, .92); }
+/* testata fissa (non collassabile): solo una sfumatura d'accento con filetto sottile; la collassabile è una fascia piena d'accento con testo e chevron sul colore */
+.vt-head.fix { background: linear-gradient(90deg, rgba(var(--acc-rgb), .14), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .30); color: var(--ink); }
+.vt-head.fix h2 { color: var(--ink); }
+.vt-head.fix .vt-cnt { color: var(--mute); opacity: 1; } .vt-head.fix .vt-cnt.bad { color: var(--bad); }
 /* misure delle testate: .lg 22px, normale 15px, .sm etichetta 11px maiuscola */
 .vt-head.lg h2 { font-size: var(--fs-lg); line-height: 28px; } .vt-head.sm h2 { font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase; line-height: 20px; }
 
@@ -116,3 +117,28 @@ select.vt-input, select.vt-input option { background-color: var(--g2); color: va
 /* finestre e fogli */
 .vt dialog, dialog.vt-sheet { border: var(--edge); border-radius: var(--r-card); background: color-mix(in srgb, var(--g2) 96%, transparent); color: var(--ink); box-shadow: 0 16px 48px rgba(0, 0, 0, .5); }
 dialog.vt-sheet::backdrop { background: rgba(0, 0, 0, .6); }
+
+/* ---- modalità chiara: aggiungi la classe «light» al body (<body class="vt light" data-pal="salvia">); stesse forme, variabili e veli diversi ---- */
+.vt.light { --ink: #1b1f24; --hair: rgba(0, 0, 0, .10); --chipbg: rgba(0, 0, 0, .045);
+  --glass: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .72)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .16), rgba(255, 255, 255, .80));
+  --edge: 1px solid rgba(0, 0, 0, .10); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .95), 0 8px 22px rgba(40, 50, 70, .10); color-scheme: light; }
+.vt.light::before { opacity: .7; }
+.vt.light .vt-btn:hover { background: rgba(0, 0, 0, .08); }
+.vt.light .vt-bar { background: rgba(0, 0, 0, .09); }
+.vt.light .vt-input { border: 1px solid rgba(0, 0, 0, .14); background: rgba(255, 255, 255, .7); }
+.vt.light select.vt-input, .vt.light select.vt-input option { background-color: #fff; }
+.vt.light .vt-btn-primary { box-shadow: 0 5px 14px rgba(40, 50, 70, .18); }
+.vt.light .vt-switch i { border-color: rgba(0, 0, 0, .22); background: rgba(0, 0, 0, .06); }
+.vt.light .vt-tabs > button[aria-selected="true"] { background: rgba(0, 0, 0, .07); }
+.vt.light .vt-dd-menu { background: #fff; box-shadow: 0 12px 28px rgba(40, 50, 70, .18); }
+.vt.light .vt-dd-menu button:hover { background: rgba(0, 0, 0, .05); }
+.vt.light .vt-head.fix { background: linear-gradient(90deg, rgba(var(--acc-rgb), .12), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .40); }
+.vt.light .vt-card-big .vt-hero { color: var(--ink); }
+.vt.light[data-pal="grafite"] { --g0: #f4f5f7; --g1: #eceef1; --g2: #e3e6ea; --acc: #2b3038; --acc2: #4a525e; --acc-rgb: 43, 48, 56; --acc2-rgb: 74, 82, 94; --onacc: #ffffff; --good: #1f8a56; --bad: #c93a3a; --bad-rgb: 201, 58, 58; --mute: #6b7380; }
+.vt.light[data-pal="ghiaccio"] { --g0: #f3f7fb; --g1: #e9f0f8; --g2: #dfe9f5; --acc: #2f6fb0; --acc2: #5a93cf; --acc-rgb: 47, 111, 176; --acc2-rgb: 90, 147, 207; --onacc: #ffffff; --good: #1f8a6a; --bad: #c4455a; --bad-rgb: 196, 69, 90; --mute: #66758a; }
+.vt.light[data-pal="salvia"] { --g0: #f4f7f4; --g1: #eaf0eb; --g2: #dfe8e1; --acc: #3f8f68; --acc2: #6bb08a; --acc-rgb: 63, 143, 104; --acc2-rgb: 107, 176, 138; --onacc: #ffffff; --good: #3f8f68; --bad: #c4503f; --bad-rgb: 196, 80, 63; --mute: #6a7a70; }
+.vt.light[data-pal="turchese"] { --g0: #f2f8f8; --g1: #e6f1f1; --g2: #daeaea; --acc: #12968a; --acc2: #3fbfb2; --acc-rgb: 18, 150, 138; --acc2-rgb: 63, 191, 178; --onacc: #ffffff; --good: #12968a; --bad: #c8473f; --bad-rgb: 200, 71, 63; --mute: #62807d; }
+.vt.light[data-pal="smeraldo"] { --g0: #f2f8f4; --g1: #e5f1e9; --g2: #d8eadf; --acc: #17894f; --acc2: #3fb377; --acc-rgb: 23, 137, 79; --acc2-rgb: 63, 179, 119; --onacc: #ffffff; --good: #17894f; --bad: #c4493f; --bad-rgb: 196, 73, 63; --mute: #61806f; }
+.vt.light[data-pal="lime"] { --g0: #f7f8f0; --g1: #eff1e2; --g2: #e6eace; --acc: #5f8f0e; --acc2: #8fc22a; --acc-rgb: 95, 143, 14; --acc2-rgb: 143, 194, 42; --onacc: #ffffff; --good: #5f8f0e; --bad: #c8512f; --bad-rgb: 200, 81, 47; --mute: #767c64; }
+.vt.light[data-pal="ambra"] { --g0: #faf6ee; --g1: #f4ecdc; --g2: #ecdfc6; --acc: #b9771a; --acc2: #dc9a3c; --acc-rgb: 185, 119, 26; --acc2-rgb: 220, 154, 60; --onacc: #ffffff; --good: #4f8a2c; --bad: #c8442f; --bad-rgb: 200, 68, 47; --mute: #85796a; }
+.vt.light[data-pal="arancio"] { --g0: #faf4f0; --g1: #f5e9e1; --g2: #efdccf; --acc: #d1561a; --acc2: #f08040; --acc-rgb: 209, 86, 26; --acc2-rgb: 240, 128, 64; --onacc: #ffffff; --good: #4f8a2c; --bad: #b8322e; --bad-rgb: 184, 50, 46; --mute: #8a786c; }
