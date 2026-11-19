@@ -105,7 +105,8 @@ export function payables(bills, extras, nowMonth) {
   const out = [];
   for (const b of bills?.items ?? []) {
     if (b.due < bills.from) continue; // archivio: già pagate
-    out.push({ kind: 'bill', key: `bill:${b.path}`, ref: b.path, month: b.due, title: b.type, sub: 'Bolletta', period: b.from === b.to ? b.from : `${b.from} - ${b.to}`, amount: b.amount, paid: b.paid, url: b.url });
+    const share = bills.shares?.[b.type] ?? 100; // la percentuale che si paga di questo tipo di bolletta
+    out.push({ kind: 'bill', key: `bill:${b.path}`, ref: b.path, month: b.due, title: b.type, sub: 'Bolletta', period: b.from === b.to ? b.from : `${b.from} - ${b.to}`, full: b.amount, share, amount: b.amount == null ? null : round(b.amount * share / 100), paid: b.paid, url: b.url });
   }
   for (const x of extras?.extras ?? []) {
     for (const m of monthsBetween(x.from > extras.from ? x.from : extras.from, nowMonth)) {

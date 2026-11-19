@@ -170,6 +170,7 @@ Tutte dietro password (cookie o `Authorization: Bearer`), tranne login, versione
 | `GET/PUT /api/documents`, `GET/POST /api/documents/:key/files` | il LINK delle tre cartelle (`payslips`, `statements`, `bills`), l'elenco dei file letto da Seafile e il caricamento di un file (corpo = file, `?name=`) |
 | `GET /api/bills`, `PUT /api/bills/paid` | le bollette della cartella (tipo, mese, scadenza e importo letti dal PDF, `paid`) e la spunta «pagata» (anche l'importo corretto) |
 | `GET /api/mail`, `PUT/DELETE /api/mail/:key`, `POST /api/mail/:key/sync` | Gmail per cartella (`bills`, `payslips`): indirizzo, password per app (mai restituita), mittente, nome dei file; lettura delle mail con PDF e caricamento su Seafile |
+| `PUT /api/bills/share` | la quota (percentuale 1-100) che si paga di un tipo di bolletta; le quote stanno in `shares` di `GET /api/bills` |
 | `GET/POST /api/extras`, `PUT/DELETE /api/extras/:id`, `PUT /api/extras/:id/paid` | altre spese (nome, importo, ogni mese o ogni anno) e la spunta «pagata» di un mese |
 | `POST /api/documents/statements/import?name=` | rilegge a mano un estratto conto mensile (per riprovare dopo un errore); gli estratti nuovi si leggono da soli |
 | `POST /api/import` | importa movimenti già letti (JSON), solo prima della data di inizio |

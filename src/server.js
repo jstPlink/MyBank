@@ -402,7 +402,7 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     }
     items.sort((a, b) => b.due.localeCompare(a.due) || a.type.localeCompare(b.type));
     await store.save();
-    return { configured: true, from, items, folderUrl: folder.folderUrl, pending: waiting };
+    return { configured: true, from, items, folderUrl: folder.folderUrl, pending: waiting, shares: db.settings.billShare ?? {} };
   };
   const moneyOf = (v) => (v == null || v === '' ? undefined : Number(String(v).replace(',', '.')));
   app.get('/api/bills', wrap(async (req, res) => res.json(await billsState())));
@@ -413,6 +413,17 @@ export function createApp({ dir, password = '', publicUrl = '', fetchImpl = fetc
     if (amount !== undefined && (!Number.isFinite(amount) || amount < 0)) return bad(res, 'Importo non valido.');
     const next = { ...(db.billPaid[p] ?? {}), ...(req.body?.paid == null ? {} : { paid: Boolean(req.body.paid), at: new Date().toISOString() }), ...(amount === undefined ? {} : { amount }) };
     if (!next.paid && next.amount === undefined) delete db.billPaid[p]; else db.billPaid[p] = next;
+    await store.save();
+    res.json(await billsState());
+  }));
+  // la quota (percentuale) che l'utente paga di ogni tipo di bolletta: 100 se non scritta
+  app.put('/api/bills/share', wrap(async (req, res) => {
+    const type = String(req.body?.type ?? '').trim().slice(0, 40);
+    const percent = Number(String(req.body?.percent ?? '').replace(',', '.'));
+    if (!type) return bad(res, 'Tipo di bolletta mancante.');
+    if (!Number.isFinite(percent) || percent <= 0 || percent > 100) return bad(res, 'La quota è una percentuale tra 1 e 100.');
+    const shares = (db.settings.billShare ??= {});
+    if (percent === 100) delete shares[type]; else shares[type] = Math.round(percent * 100) / 100;
     await store.save();
     res.json(await billsState());
   }));

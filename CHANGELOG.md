@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.46.0
+- **Quota delle bollette**: per ogni tipo (Gas, Elettricità, Acqua…) scrivi la percentuale che paghi (Bollette → «Quota che paghi»). In «Da pagare» e nei totali conta solo la tua parte, la riga mostra «quota 50% di 84,20 €»; l'importo che correggi toccandolo è quello della bolletta intera. `PUT /api/bills/share`, `shares` in `GET /api/bills`.
+
 ## 0.45.0
 - **Gmail per cartella** (Link → Bollette e Buste paga): indirizzo Gmail e «password per app» di Google (sul server, mai mostrata), mittente facoltativo e **Nome dei file** con `{fornitore}`, `{AAAA}`, `{MM}`. Il server (a ogni aggiornamento automatico e con «Leggi ora») legge via IMAP le mail con un PDF, lo rinomina (fornitore, mese e scadenza dal PDF) e lo carica su Seafile; le mail lette non si rileggono. `src/mail.js`, `/api/mail…`.
 - **Importi delle bollette vecchie**: anche quelle prima del mese di partenza mostrano l'importo (il server le legge a poco a poco, qualche file per volta).

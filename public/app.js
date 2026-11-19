@@ -981,7 +981,7 @@ async function loadDocuments() {
 const AMT = (p) => `<button class="amt${p.kind === 'extra' || p.amount == null ? ' edit' : ''}" data-amt="${esc(p.key)}" title="Cambia l'importo">${p.amount == null ? '–' : money(p.amount)}</button>`;
 function payRow(p, late) {
   return `<div class="bill${p.paid ? ' paid' : ''}${late ? ' late' : ''}"><button class="chk${p.paid ? ' on' : ''}" data-pay="${esc(p.key)}" aria-label="${p.paid ? 'Segna da pagare' : 'Segna pagata'}" aria-pressed="${p.paid}"></button>
-    <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
+    <div class="n">${p.url ? `<button class="link" data-open="${esc(p.url)}"><b>${esc(p.title)}</b></button>` : `<b>${esc(p.title)}</b>`}<span class="s">${esc(p.sub)}${p.share < 100 && p.full != null ? ` · quota ${p.share}% di ${money(p.full)}` : ''}${p.period ? ` · ${esc(p.period.replace(/-/g, '.'))}` : ''}${late ? ' · non pagata' : ''}</span></div>${AMT(p)}</div>`;
 }
 const docGroup = (key, title, info, body, extra = '') => `<details class="group main doc" data-doc="${key}" ${state.docOpen[key] ? 'open' : ''}><summary><h2 class="section">${title}</h2><span class="info${extra}" data-info="${key}">${info}</span></summary><div class="docbody">${body}</div></details>`;
 
@@ -1003,9 +1003,12 @@ function renderDocs() {
   const others = (bills?.items ?? []).filter((b) => !shown.some((p) => p.ref === b.path));
   const group = (list, late) => list.map((p) => payRow(p, late && !p.paid)).join('');
   const byMonth = (list) => [...new Set(list.map((p) => p.month))].sort().reverse();
+  const types = [...new Set((bills?.items ?? []).map((b) => b.type))].sort();
+  const shareRow = types.length ? `<div class="shares"><span class="label">Quota che paghi</span>${types.map((t) => `<button class="btn" data-share="${esc(t)}">${esc(t)} ${bills.shares?.[t] ?? 100}%</button>`).join('')}</div>` : '';
   const billsBody = !bills?.configured
     ? `<p class="muted">${bills?.error ? esc(bills.error) : 'Inserisci il link della cartella nella sezione Link.'}</p>`
     : `${byMonth(shown).map((m) => `<h3 class="sub${m < now ? ' late' : ''}"><span>${monthName(m)}${m < now ? ' · arretrato' : ''}</span></h3>${group(shown.filter((p) => p.month === m), m < now)}`).join('') || '<p class="muted">Nessuna bolletta da pagare questo mese.</p>'}
+       ${shareRow}
        ${others.length ? `<button class="btn wide" data-more="bills">${state.dp.billsAll ? 'Nascondi gli altri mesi' : 'Mostra gli altri mesi'} <small>${others.length} file</small></button>` : ''}
        ${state.dp.billsAll ? `<div class="scroller">${[...new Set(others.map((b) => b.due))].sort().reverse().map((m) => `<h3 class="sub"><span>${monthName(m)}</span></h3>${others.filter((b) => b.due === m).map((b) => {
          const tracked = b.due >= bills.from;
@@ -1159,6 +1162,7 @@ $('#docGroups').addEventListener('click', async (e) => {
       return await loadDocuments();
     }
     if (b.dataset.amt) return openAmount(b.dataset.amt);
+    if (b.dataset.share) return openShare(b.dataset.share);
     if (b.dataset.more) { state.dp.billsAll = !state.dp.billsAll; return renderDocs(); }
     if (b.dataset.open) return openExternal(b.dataset.open);
     if (b.dataset.extraAdd) return openExtra(null);
@@ -1220,12 +1224,23 @@ $('#docGroups').addEventListener('drop', (e) => {
 // una voce da pagare (bolletta o spesa di un mese), come la vede «Da pagare»
 const findPayable = (key) => payables(state.dp.bills, state.dp.extras, nowMonth()).find((p) => p.key === key);
 let amountFor = null;
+function openShare(type) {
+  amountFor = { kind: 'share', type };
+  $('#amountTitle').textContent = `Quota ${type}`;
+  $('#amountLabel').textContent = 'Percentuale che paghi (%)';
+  $('#amountInput').value = String(state.dp.bills?.shares?.[type] ?? 100).replace('.', ',');
+  $('#amountError').textContent = '';
+  $('#amountDialog').showModal();
+  $('#amountInput').focus();
+}
 function openAmount(key) {
   const p = findPayable(key);
   if (!p) return;
   amountFor = p;
   $('#amountTitle').textContent = `${p.title} · ${monthName(p.month)}`;
-  $('#amountInput').value = p.amount == null ? '' : String(p.amount).replace('.', ',');
+  $('#amountLabel').textContent = p.share < 100 ? 'Importo della bolletta intera (€)' : 'Importo (€)';
+  const v = p.kind === 'bill' ? p.full : p.amount;
+  $('#amountInput').value = v == null ? '' : String(v).replace('.', ',');
   $('#amountError').textContent = '';
   $('#amountDialog').showModal();
   $('#amountInput').focus();
@@ -1235,7 +1250,8 @@ $('#amountForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const p = amountFor;
   try {
-    if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, amount: $('#amountInput').value });
+    if (p.kind === 'share') await api('PUT', '/api/bills/share', { type: p.type, percent: $('#amountInput').value });
+    else if (p.kind === 'bill') await api('PUT', '/api/bills/paid', { path: p.ref, amount: $('#amountInput').value });
     else await api('PUT', `/api/extras/${encodeURIComponent(p.ref)}/paid`, { month: p.month, amount: $('#amountInput').value });
     $('#amountDialog').close();
     await loadDocuments();
