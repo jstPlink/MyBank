@@ -867,3 +867,20 @@ body.glass select option { background-color: var(--g2); color: var(--ink); }
 body.glass select option:checked { background-color: rgba(var(--acc-rgb), .3); color: var(--acc); }
 body.glass .hour select, body.glass .tagbox select, body.glass .schip select { background-image: none; padding-right: 6px; }
 body.glass .tagfilter details[open] summary { border-color: rgba(var(--acc-rgb), .6); }
+
+/* vetro · card di evidenza senza testata: il Bilancio dello Storico (Y1: tinta d'accento forte, testi pieni) e il riquadro in cima a Budget e Ricorrenti (Y2: pastello chiaro, testi scuri); il segno negativo lo dice la targhetta, non il colore della cifra */
+body.glass .card.hl { background: linear-gradient(150deg, rgba(var(--acc-rgb), .44), rgba(var(--acc-rgb), .30)); border-color: rgba(var(--acc-rgb), .55); color: #fff; }
+body.glass .card.hl .k, body.glass .card.hl .v { color: #fff; } body.glass .card.hl .k { opacity: .82; }
+.hltop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.negpill { font: 700 var(--fs-label) var(--f-sans); letter-spacing: .05em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; background: #ff8f8f; color: #3a0c0c; }
+body.glass.light .card.hl { background: linear-gradient(150deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .18)); border-color: rgba(var(--acc-rgb), .45); color: var(--ink); }
+body.glass.light .card.hl .k, body.glass.light .card.hl .v { color: var(--ink); }
+body.glass.light .negpill { background: #fde2e2; color: #a32424; }
+body.glass .bhero { background: color-mix(in srgb, var(--acc) 38%, #fff); border-color: transparent; color: #14171b; }
+body.glass.light .bhero { background: color-mix(in srgb, var(--acc) 22%, #fff); }
+body.glass .bhero .label, body.glass .bhero .big, body.glass .bhero .n { color: #14171b; }
+body.glass .bhero .label { opacity: .78; }
+body.glass .bhero .big.neg, body.glass .bhero .bfix .tot .n { color: #a32424; }
+body.glass .bhero .bstats .pos .n { color: #1f6b3a; }
+body.glass .bhero .bstats .dim .n, body.glass .bhero .bfix .grey .n { color: rgba(20, 23, 27, .62); }
+body.glass .bhero .bstats, body.glass .bhero .bfix { border-top-color: rgba(0, 0, 0, .14); }

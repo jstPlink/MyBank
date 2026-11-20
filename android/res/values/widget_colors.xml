@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Colori dei widget, tema grafite: chiaro (di giorno). La versione scura sta in values-night/widget_colors.xml; le stesse tinte sono in WidgetPal.java per le immagini disegnate a codice. -->
+<resources>
+    <color name="w_bg">#F4F5F7</color>
+    <color name="w_chip">#F4F5F7</color>
+    <color name="w_cell">#E3E6EA</color>
+    <color name="w_empty">#D3D7DD</color>
+    <color name="w_ink">#1B1F24</color>
+    <color name="w_mute">#6B7380</color>
+    <color name="w_late">#C93A3A</color>
+    <color name="w_acc">#2B3038</color>
+    <color name="w_fill">#B5B8BD</color>
+    <color name="w_fill_late">#DCBBBE</color>
+    <color name="w_tick">#406B7380</color>
+    <color name="w_tickp">#CDD1D8</color>
+    <color name="w_done">#2B3038</color>
+    <color name="w_left_we">#E6D2D4</color>
+</resources>

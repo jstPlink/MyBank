@@ -25,7 +25,6 @@ import java.util.Calendar;
  * mese → Budget, categoria → Movimenti del mese filtrati, resto → app. Mese, testi di base e dati sono quelli di MyBankWidget e WidgetData.
  */
 public class MyBankWidgetBarre extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72, EMPTY = 0xFF262A24, ACC = 0xFFC9F36B;
     private static final String[] KEYS = WidgetData.KEYS;
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell, R.id.widget_altro_cell };
     private static final int[] BARS = { R.id.widget_spesa_bar, R.id.widget_svago_bar, R.id.widget_carburante_bar, R.id.widget_altro_bar };
@@ -62,7 +61,7 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
     /** «stima» o «reale» in grigio e, dopo, il valore in grassetto (di un altro colore se serve). */
     private static CharSequence pair(String word, String value, int valueColor) {
         SpannableString s = new SpannableString(word + " " + value);
-        s.setSpan(new ForegroundColorSpan(MUTE), 0, word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        s.setSpan(new ForegroundColorSpan(WidgetPal.MUTE), 0, word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new ForegroundColorSpan(valueColor), word.length() + 1, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), word.length() + 1, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return s;
@@ -83,9 +82,9 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
         Canvas g = new Canvas(b);
         double r = Math.max(0, Math.min(1, ratio));
         Paint empty = new Paint(Paint.ANTI_ALIAS_FLAG);
-        empty.setColor(EMPTY);
+        empty.setColor(WidgetPal.EMPTY);
         Paint full = new Paint(Paint.ANTI_ALIAS_FLAG);
-        full.setColor(low ? LATE : ACC);
+        full.setColor(low ? WidgetPal.LATE : WidgetPal.ACC);
         if (r <= 0) { g.drawRoundRect(new RectF(0, 0, w, h), BAR_RADIUS, BAR_RADIUS, empty); return b; }
         if (r >= 1) { g.drawRoundRect(new RectF(0, 0, w, h), BAR_RADIUS, BAR_RADIUS, full); return b; }
         float avail = h - BAR_GAP, level = (float) (avail * r);
@@ -100,6 +99,7 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
     }
 
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
+        WidgetPal.load(c);
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank_barre);
         Calendar now = Calendar.getInstance();
         int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
@@ -118,14 +118,14 @@ public class MyBankWidgetBarre extends AppWidgetProvider {
             v.setImageViewBitmap(BARS[i], levelBar(has ? ratio : 0, low));
             if (!d.ok) {
                 v.setTextViewText(id[0], "—");
-                v.setTextViewText(id[1], pair("stima", "—", PAPER));
-                v.setTextViewText(id[2], pair("reale", "—", PAPER));
-                v.setTextColor(id[0], PAPER);
+                v.setTextViewText(id[1], pair("stima", "—", WidgetPal.PAPER));
+                v.setTextViewText(id[2], pair("reale", "—", WidgetPal.PAPER));
+                v.setTextColor(id[0], WidgetPal.PAPER);
             } else {
                 v.setTextViewText(id[0], has ? MyBankWidget.money(d.left[i]) : "—");
-                v.setTextColor(id[0], low ? LATE : PAPER); // il residuo è rosso con la stessa regola del livello: solo sotto il 25%
-                v.setTextViewText(id[1], has ? pair("stima", perDay(d.est[i]), PAPER) : pair("nessun", "budget", MUTE));
-                v.setTextViewText(id[2], pair("reale", perDay(d.real[i]), !has || !worse ? PAPER : LATE)); // migliore della stima: bianco; peggiore: rosso
+                v.setTextColor(id[0], low ? WidgetPal.LATE : WidgetPal.PAPER); // il residuo è rosso con la stessa regola del livello: solo sotto il 25%
+                v.setTextViewText(id[1], has ? pair("stima", perDay(d.est[i]), WidgetPal.PAPER) : pair("nessun", "budget", WidgetPal.MUTE));
+                v.setTextViewText(id[2], pair("reale", perDay(d.real[i]), !has || !worse ? WidgetPal.PAPER : WidgetPal.LATE)); // migliore della stima: bianco; peggiore: rosso
             }
             // un tocco apre i Movimenti del mese filtrati per questa categoria
             v.setOnClickPendingIntent(CELLS[i], tap(c, 30 + i, "movimenti:" + KEYS[i]));

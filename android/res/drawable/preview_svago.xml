@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Livello di esempio (12% del residuo, rosso) con tacche al 25, 50 e 75% -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item><shape android:shape="rectangle"><solid android:color="#181B16" /></shape></item>
-    <item android:top="66dp"><shape android:shape="rectangle"><solid android:color="#8A2A17" /></shape></item>
-    <item android:top="65dp" android:bottom="9dp"><shape android:shape="rectangle"><solid android:color="#FF9A72" /></shape></item>
-    <item android:top="56dp" android:bottom="18dp"><shape android:shape="rectangle"><solid android:color="#2F2C29" /></shape></item>
-    <item android:top="38dp" android:bottom="36dp"><shape android:shape="rectangle"><solid android:color="#2F2C29" /></shape></item>
-    <item android:top="19dp" android:bottom="55dp"><shape android:shape="rectangle"><solid android:color="#2F2C29" /></shape></item>
+    <item><shape android:shape="rectangle"><solid android:color="@color/w_cell" /></shape></item>
+    <item android:top="66dp"><shape android:shape="rectangle"><solid android:color="@color/w_fill_late" /></shape></item>
+    <item android:top="65dp" android:bottom="9dp"><shape android:shape="rectangle"><solid android:color="@color/w_late" /></shape></item>
+    <item android:top="56dp" android:bottom="18dp"><shape android:shape="rectangle"><solid android:color="@color/w_tickp" /></shape></item>
+    <item android:top="38dp" android:bottom="36dp"><shape android:shape="rectangle"><solid android:color="@color/w_tickp" /></shape></item>
+    <item android:top="19dp" android:bottom="55dp"><shape android:shape="rectangle"><solid android:color="@color/w_tickp" /></shape></item>
 </layer-list>

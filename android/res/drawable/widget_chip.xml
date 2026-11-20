@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Targhetta piena dietro nome, residuo, stima e reale: il testo non si mescola con il livello della cella -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
-    <solid android:color="#0F110E" />
+    <solid android:color="@color/w_chip" />
     <corners android:radius="6dp" />
 </shape>

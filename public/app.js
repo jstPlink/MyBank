@@ -272,7 +272,7 @@ async function loadYear() {
   $('#yearCards').innerHTML = `
     <div class="card"><div class="k">Entrate</div><div class="v pos">${money(t.entrate)}</div></div>
     <div class="card"><div class="k">Uscite</div><div class="v neg">${money(t.uscite)}</div></div>
-    <div class="card"><div class="k">Bilancio</div><div class="v ${tone(t.bilancio)}">${money(t.bilancio)}</div></div>`;
+    <div class="card hl"><div class="hltop"><div class="k">Bilancio</div>${t.bilancio < 0 ? '<span class="negpill">in rosso</span>' : ''}</div><div class="v">${money(t.bilancio)}</div></div>`;
   const cell = (n, cls = '') => `<td class="num ${n ? cls : 'zero'}">${n ? money(n) : '–'}</td>`;
   const rows = d.months.map((m) => {
     const open = state.open.has(m.month);

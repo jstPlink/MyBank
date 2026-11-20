@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Barra di esempio (61% di residuo): parte vuota in alto, spazio, livello in basso -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:bottom="39dp"><shape android:shape="rectangle"><solid android:color="#262A24" /><corners android:radius="1.5dp" /></shape></item>
-    <item android:top="26dp"><shape android:shape="rectangle"><solid android:color="#F2F4F7" /><corners android:radius="1.5dp" /></shape></item>
+    <item android:bottom="39dp"><shape android:shape="rectangle"><solid android:color="@color/w_empty" /><corners android:radius="1.5dp" /></shape></item>
+    <item android:top="26dp"><shape android:shape="rectangle"><solid android:color="@color/w_ink" /><corners android:radius="1.5dp" /></shape></item>
 </layer-list>

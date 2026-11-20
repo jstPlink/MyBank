@@ -29,9 +29,6 @@ import java.util.Locale;
  * Movimenti del mese già filtrati per quella categoria; sul resto apre l'app. Un solo carattere (sans-serif), carta e inchiostro con il rosso come accento.
  */
 public class MyBankWidget extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72, ACC = 0xFFC9F36B;
-    private static final int CELL = 0xFF181B16, FILL = 0xFF566734, FILL_LATE = 0xFF744E3B, TICK = 0x408C9488;
-    private static final int DAY_DONE = 0xFFC9F36B, DAY_DONE_WE = 0xFFFF9A72, DAY_LEFT = 0xFF262A24, DAY_LEFT_WE = 0xFF3A2A24;
     private static final String[] KEYS = WidgetData.KEYS;
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell, R.id.widget_altro_cell };
     private static final int[] BGS = { R.id.widget_spesa_bg, R.id.widget_svago_bg, R.id.widget_carburante_bg, R.id.widget_altro_bg };
@@ -79,7 +76,7 @@ public class MyBankWidget extends AppWidgetProvider {
     /** «stima» o «reale» in grigio e, dopo, il valore in grassetto (di un altro colore se serve). */
     static CharSequence chip(String word, String value, int valueColor) {
         SpannableString s = new SpannableString(word + " " + value);
-        s.setSpan(new ForegroundColorSpan(MUTE), 0, word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        s.setSpan(new ForegroundColorSpan(WidgetPal.MUTE), 0, word.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new ForegroundColorSpan(valueColor), word.length() + 1, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         s.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), word.length() + 1, s.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         return s;
@@ -121,7 +118,7 @@ public class MyBankWidget extends AppWidgetProvider {
 
     static Bitmap plainCell(int w, int h) {
         Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
-        new Canvas(b).drawColor(CELL);
+        new Canvas(b).drawColor(WidgetPal.CELL);
         return rounded(b);
     }
 
@@ -134,17 +131,17 @@ public class MyBankWidget extends AppWidgetProvider {
     static Bitmap levelCell(double ratio, boolean low, int w, int h) {
         Bitmap b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
         Canvas g = new Canvas(b);
-        g.drawColor(CELL);
+        g.drawColor(WidgetPal.CELL);
         float level = (float) (h * Math.max(0, Math.min(1, ratio)));
-        g.drawRect(0, h - level, w, h, fill(low ? FILL_LATE : FILL));
-        Paint tick = fill(TICK);
+        g.drawRect(0, h - level, w, h, fill(low ? WidgetPal.FILL_LATE : WidgetPal.FILL));
+        Paint tick = fill(WidgetPal.TICK);
         for (int quarter = 1; quarter <= 3; quarter++) {
             float y = h * quarter / 4f;
             g.drawRect(0, y - 1f, w, y + 1f, tick); // soglie leggere: sottili e quasi trasparenti
         }
         float top = Math.max(0, h - level - 6); // la linea del livello sta sopra il riempimento; a livello zero resta in fondo, rossa
-        if (level <= 0) g.drawRect(0, h - 6, w, h, fill(LATE));
-        else g.drawRect(0, top, w, top + 6, fill(low ? LATE : ACC));
+        if (level <= 0) g.drawRect(0, h - 6, w, h, fill(WidgetPal.LATE));
+        else g.drawRect(0, top, w, top + 6, fill(low ? WidgetPal.LATE : WidgetPal.ACC));
         return rounded(b);
     }
 
@@ -167,7 +164,7 @@ public class MyBankWidget extends AppWidgetProvider {
         for (int d = 1; d <= days; d++) {
             int i = offset + d - 1, r = i / 7, col = i % 7;
             boolean we = col >= 5, done = d <= day;
-            int color = done ? (we ? DAY_DONE_WE : DAY_DONE) : (we ? DAY_LEFT_WE : DAY_LEFT);
+            int color = done ? (we ? WidgetPal.DAY_DONE_WE : WidgetPal.DAY_DONE) : (we ? WidgetPal.DAY_LEFT_WE : WidgetPal.DAY_LEFT);
             float x = col * (cw + gapX), y = r * (ch + gapY);
             g.drawRect(x, y, x + cw, y + ch, fill(color));
         }
@@ -182,6 +179,7 @@ public class MyBankWidget extends AppWidgetProvider {
     }
 
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
+        WidgetPal.load(c);
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank);
         Calendar now = Calendar.getInstance();
         int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
@@ -199,14 +197,14 @@ public class MyBankWidget extends AppWidgetProvider {
             v.setImageViewBitmap(BGS[i], has ? levelCell(ratio, low) : plainCell());
             if (!d.ok) {
                 v.setTextViewText(id[0], "—");
-                v.setTextViewText(id[1], chip("stima", "—", PAPER));
-                v.setTextViewText(id[2], chip("reale", "—", PAPER));
-                v.setTextColor(id[0], PAPER);
+                v.setTextViewText(id[1], chip("stima", "—", WidgetPal.PAPER));
+                v.setTextViewText(id[2], chip("reale", "—", WidgetPal.PAPER));
+                v.setTextColor(id[0], WidgetPal.PAPER);
             } else {
                 v.setTextViewText(id[0], has ? money(d.left[i]) : "—");
-                v.setTextColor(id[0], low ? LATE : PAPER); // il residuo è rosso con la stessa regola del livello: solo sotto il 25%
-                v.setTextViewText(id[1], has ? chip("stima", perDay(d.est[i]), PAPER) : chip("nessun", "budget", MUTE));
-                v.setTextViewText(id[2], chip("reale", perDay(d.real[i]), !has || !worse ? PAPER : LATE)); // migliore della stima: bianco; peggiore: rosso
+                v.setTextColor(id[0], low ? WidgetPal.LATE : WidgetPal.PAPER); // il residuo è rosso con la stessa regola del livello: solo sotto il 25%
+                v.setTextViewText(id[1], has ? chip("stima", perDay(d.est[i]), WidgetPal.PAPER) : chip("nessun", "budget", WidgetPal.MUTE));
+                v.setTextViewText(id[2], chip("reale", perDay(d.real[i]), !has || !worse ? WidgetPal.PAPER : WidgetPal.LATE)); // migliore della stima: bianco; peggiore: rosso
             }
             // un tocco apre i Movimenti del mese filtrati per questa categoria
             v.setOnClickPendingIntent(CELLS[i], tap(c, 10 + i, "movimenti:" + KEYS[i]));

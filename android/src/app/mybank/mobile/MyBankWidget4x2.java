@@ -18,8 +18,6 @@ import java.util.Calendar;
  * resto → app. Testi, immagini e dati sono quelli di MyBankWidget e WidgetData.
  */
 public class MyBankWidget4x2 extends AppWidgetProvider {
-    private static final int PAPER = 0xFFF2F4F7, MUTE = 0xFF8C9488, LATE = 0xFFFF9A72;
-    private static final int DAY_DONE = 0xFFC9F36B, DAY_DONE_WE = 0xFFFF9A72, DAY_LEFT = 0xFF262A24, DAY_LEFT_WE = 0xFF3A2A24;
     private static final String[] KEYS = WidgetData.KEYS; // le prime tre: spesa, svago, carburante (Altro non c'è)
     private static final int[] CELLS = { R.id.widget_spesa_cell, R.id.widget_svago_cell, R.id.widget_carburante_cell };
     private static final int[] BGS = { R.id.widget_spesa_bg, R.id.widget_svago_bg, R.id.widget_carburante_bg };
@@ -71,7 +69,7 @@ public class MyBankWidget4x2 extends AppWidgetProvider {
         Paint tick = MyBankWidget.fill(0xB3A8A298);
         for (int d = 1; d <= days; d++) {
             boolean we = (offset + d - 1) % 7 >= 5, done = d <= day;
-            int color = done ? (we ? DAY_DONE_WE : DAY_DONE) : (we ? DAY_LEFT_WE : DAY_LEFT);
+            int color = done ? (we ? WidgetPal.DAY_DONE_WE : WidgetPal.DAY_DONE) : (we ? WidgetPal.DAY_LEFT_WE : WidgetPal.DAY_LEFT);
             float x = (d - 1) * (cw + gap);
             g.drawRect(x, 0, x + cw, blockH, MyBankWidget.fill(color));
             if ((d - 1) % 7 == 0) g.drawRect(x, tickTop, x + 3, STRIP_H, tick);
@@ -80,6 +78,7 @@ public class MyBankWidget4x2 extends AppWidgetProvider {
     }
 
     static void paint(Context c, AppWidgetManager m, int[] ids, WidgetData d) {
+        WidgetPal.load(c);
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_mybank_4x2);
         Calendar now = Calendar.getInstance();
         int daysLeft = now.getActualMaximum(Calendar.DAY_OF_MONTH) - now.get(Calendar.DAY_OF_MONTH) + 1; // i giorni rimanenti includono oggi
@@ -98,14 +97,14 @@ public class MyBankWidget4x2 extends AppWidgetProvider {
             v.setImageViewBitmap(BGS[i], has ? MyBankWidget.levelCell(ratio, low, CELL_W, CELL_H) : MyBankWidget.plainCell(CELL_W, CELL_H));
             if (!d.ok) {
                 v.setTextViewText(id[0], "—");
-                v.setTextViewText(id[1], MyBankWidget.chip("stima", "—", PAPER));
-                v.setTextViewText(id[2], MyBankWidget.chip("reale", "—", PAPER));
-                v.setTextColor(id[0], PAPER);
+                v.setTextViewText(id[1], MyBankWidget.chip("stima", "—", WidgetPal.PAPER));
+                v.setTextViewText(id[2], MyBankWidget.chip("reale", "—", WidgetPal.PAPER));
+                v.setTextColor(id[0], WidgetPal.PAPER);
             } else {
                 v.setTextViewText(id[0], has ? MyBankWidget.money(d.left[i]) : "—");
-                v.setTextColor(id[0], low ? LATE : PAPER);
-                v.setTextViewText(id[1], has ? MyBankWidget.chip("stima", MyBankWidget.perDay(d.est[i]), PAPER) : MyBankWidget.chip("nessun", "budget", MUTE));
-                v.setTextViewText(id[2], MyBankWidget.chip("reale", MyBankWidget.perDay(d.real[i]), !has || !worse ? PAPER : LATE));
+                v.setTextColor(id[0], low ? WidgetPal.LATE : WidgetPal.PAPER);
+                v.setTextViewText(id[1], has ? MyBankWidget.chip("stima", MyBankWidget.perDay(d.est[i]), WidgetPal.PAPER) : MyBankWidget.chip("nessun", "budget", WidgetPal.MUTE));
+                v.setTextViewText(id[2], MyBankWidget.chip("reale", MyBankWidget.perDay(d.real[i]), !has || !worse ? WidgetPal.PAPER : WidgetPal.LATE));
             }
             v.setOnClickPendingIntent(CELLS[i], MyBankWidget.tap(c, 30 + i, "movimenti:" + KEYS[i]));
         }
