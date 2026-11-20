@@ -10,7 +10,7 @@ const MONTHS = ['Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno', 'L
 const fmtDate = (iso) => (iso ? new Date(`${iso}T12:00:00`).toLocaleDateString('it-IT', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
 const fmtDateTime = (iso) => (iso ? new Date(iso).toLocaleString('it-IT', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'mai');
 const THIS_YEAR = new Date().getFullYear();
-let TAGS = { spesa: 'Spesa', svago: 'Svago', carburante: 'Auto', auto_carburante: 'Carburante', autostrada: 'Autostrada', altro: 'Altro', utenze: 'Utenze', ricorrente: 'Ricorrente', non_definito: 'Non definito', entrata: 'Entrata', giroconto: 'Non contabile' };
+let TAGS = { spesa: 'Spesa', svago: 'Svago', carburante: 'Auto', auto_carburante: 'Carburante', autostrada: 'Autostrada', altro: 'Altro', ricorrente: 'Ricorrente', non_definito: 'Non definito', entrata: 'Entrata', giroconto: 'Non contabile' };
 
 // Le sotto categorie dipendono da una categoria (come sul server): nei menu si distinguono con un trattino.
 const SUB_PARENT = { auto_carburante: 'carburante', autostrada: 'carburante' };
@@ -23,7 +23,6 @@ const ICON_PATHS = {
   svago: '<path d="M12 3l2.8 5.9 6.2.8-4.6 4.3 1.2 6.3L12 17.3 6.4 20.3l1.2-6.3L3 9.7l6.2-.8z"/>',
   carburante: '<path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h5"/>',
   altro: '<circle cx="6" cy="12" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="18" cy="12" r="1.4"/>',
-  utenze: '<path d="M13 3L5 13.5h6L10 21l8-10.5h-6z"/>',
   auto_carburante: '<path d="M5 20V5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v15M4 20h11M14 9h2.5a1.5 1.5 0 0 1 1.5 1.5V16a1.5 1.5 0 0 0 3 0V8l-3-3M7 8h5"/>',
   autostrada: '<path d="M8 3L5 21M16 3l3 18M12 4v3M12 10.5v3M12 17v3"/>',
   ricorrente: '<path d="M4 10a8 8 0 0 1 14-4l2 2M20 14a8 8 0 0 1-14 4l-2-2M20 4v4h-4M4 20v-4h4"/>',
@@ -278,7 +277,7 @@ async function loadYear() {
     const open = state.open.has(m.month);
     const empty = !m.entrate && !m.uscite && !m.undef;
     // le uscite del mese, una categoria per riga dalla più grande: nome, barra bianca larga quanto pesa sulle uscite (importi veri) e importo; un tocco apre i movimenti
-    const cats = Object.entries(m.uscite ? { utenze: 0, ...m.tags } : m.tags).sort((a, b) => b[1] - a[1]); // «Utenze» c'è sempre, anche a zero
+    const cats = Object.entries(m.tags).sort((a, b) => b[1] - a[1]);
     // tutte le barre del mese hanno la stessa scala in euro (la più grande tra entrate e uscite = tutta la barra) e una tacca sottile ogni 250 euro
     const scale = Math.max(m.entrate, m.uscite, m.undef, 1);
     const tick = (250 / scale) * 100; // passo delle tacche, in % della barra (se è troppo fitto non si disegnano)

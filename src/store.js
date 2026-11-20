@@ -23,6 +23,7 @@ export function openStore(dir) {
   db.recurringState ??= {};         // chiave del ricorrente → { active } scelto a mano
   db.recurringLinks ??= {};         // id del movimento → chiave del ricorrente a cui l'hai assegnato
   for (const [id, tag] of Object.entries(db.overrides)) if (tag === 'cibo') db.overrides[id] = 'spesa'; // la sotto categoria «Cibo» non esiste più: quei movimenti tornano in Spesa
+  for (const [id, tag] of Object.entries(db.overrides)) if (tag === 'utenze') db.overrides[id] = 'ricorrente'; // il tag «Utenze» non esiste più: quei movimenti diventano «Ricorrente» (da assegnare)
   db.billInfo ??= {};               // percorso del file di una bolletta → { sig, amount, due } letti dal PDF (importo e scadenza)
   db.billPaid ??= {};               // percorso della bolletta → { paid, at, amount? }: pagata (e importo scritto a mano, se diverso da quello del PDF)
   db.extras ??= [];                 // altre spese scritte da te: { id, name, amount, every ('month'|'year'), month?, from }

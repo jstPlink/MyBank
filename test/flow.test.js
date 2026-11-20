@@ -116,14 +116,11 @@ test('collegamento di UniCredit e Revolut, tag dei pocket, storico, budget e wid
   assert.equal((await api('PUT', `/api/transactions/${nd.id}/tag`, { tag: 'svago' })).status, 200);
   assert.equal((await api('GET', '/api/transactions')).json.transactions.find((x) => x.id === nd.id).tag, 'svago');
   assert.equal((await api('PUT', `/api/transactions/${nd.id}/tag`, { tag: 'inesistente' })).status, 400);
-  // «Utenze»: nessun movimento ci finisce da solo, ma si può scegliere a mano; non ha un budget
+  // «Utenze» non esiste più come tag
   const moves = (await api('GET', '/api/transactions')).json;
-  assert.equal(moves.tags.utenze, 'Utenze');
-  assert.ok(!moves.transactions.some((x) => x.tag === 'utenze'));
-  assert.equal((await api('PUT', `/api/transactions/${nd.id}/tag`, { tag: 'utenze' })).status, 200);
-  assert.equal((await api('GET', `/api/transactions?tag=utenze`)).json.transactions.length, 1);
-  assert.ok(!('utenze' in (await api('GET', '/api/budgets')).json.month.cats));
-  // «Ricorrente»: come «Utenze», solo a mano e senza budget
+  assert.ok(!('utenze' in moves.tags));
+  assert.equal((await api('PUT', `/api/transactions/${nd.id}/tag`, { tag: 'utenze' })).status, 400);
+  // «Ricorrente»: solo a mano e senza budget
   assert.equal(moves.tags.ricorrente, 'Ricorrente');
   assert.ok(!moves.transactions.some((x) => x.tag === 'ricorrente'));
   assert.equal((await api('PUT', `/api/transactions/${nd.id}/tag`, { tag: 'ricorrente' })).status, 200);
@@ -752,7 +749,7 @@ test("movimenti: ordinati per data o importo (nei due versi) e con i totali di e
   add("b", "2026-05-12", 1500, "Stipendio");
   add("c", "2026-05-11", -5.5, "Zucchero");
   add("d", "2026-05-12", -200, "Affitto");
-  db.overrides.a = "svago"; db.overrides.c = "spesa"; db.overrides.d = "utenze";
+  db.overrides.a = "svago"; db.overrides.c = "spesa"; db.overrides.d = "altro";
   const order = async (q) => (await api("GET", `/api/transactions${q}`)).json.transactions.map((x) => x.id).join("");
   assert.equal(await order(""), "bdca"); // di base: per data, dal più recente (a parità, per id)
   assert.equal(await order("?sort=date&dir=asc"), "acbd");

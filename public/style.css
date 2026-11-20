@@ -8,7 +8,7 @@
 :root {
   --paper: #f3f0ea; --ink: #131211; --mute: #6b665e; --hair: #d8d3c8;
   --red: #e8431a; --green: #1d6b3c; --yellow: #e0b000;
-  --t-spesa: #1f4fd8; --t-svago: #c2188b; --t-carburante: #b8860b; --t-altro: #5b4b8a; --t-utenze: #0e7490; --t-ricorrente: #7a4a1e; --t-non_definito: #131211; --t-entrata: #1d6b3c; --t-giroconto: #9a958b; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+  --t-spesa: #1f4fd8; --t-svago: #c2188b; --t-carburante: #b8860b; --t-altro: #5b4b8a; --t-ricorrente: #7a4a1e; --t-non_definito: #131211; --t-entrata: #1d6b3c; --t-giroconto: #9a958b; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
   --f-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --f-sans: system-ui, "Segoe UI", Roboto, sans-serif;
   --f-mono: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, monospace;
@@ -19,7 +19,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --paper: #121211; --ink: #edeae3; --mute: #9a958b; --hair: #2e2c29; --red: #ff5a2e; --green: #5ccb8a; --yellow: #f0c419;
-    --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #edeae3; --t-entrata: #5ccb8a; --t-giroconto: #6d6a63; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
+    --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-ricorrente: #d49a62; --t-non_definito: #edeae3; --t-entrata: #5ccb8a; --t-giroconto: #6d6a63; --t-auto_carburante: var(--t-carburante); --t-autostrada: var(--t-carburante);
     color-scheme: dark;
   }
 }
@@ -629,7 +629,7 @@ dialog .fields { margin-bottom: 4px; }
 body.glass {
   --g0: #0b0c0b; --g1: #131512; --g2: #181b16; --acc: #c9f36b; --acc2: #e6ffa8; --acc-rgb: 201, 243, 107; --acc2-rgb: 230, 255, 168; --onacc: #14200a;
   --w: 255, 255, 255; --k: 0, 0, 0; --paper: #0b0c0b; --ink: #f2f4f7; --mute: #8c9488; --hair: rgba(var(--w), .08); --red: #ff9a72; --red-rgb: 255, 154, 114; --green: #c9f36b; --yellow: #f0c419;
-  --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-utenze: #5cc8dc; --t-ricorrente: #d49a62; --t-non_definito: #f2f4f7; --t-entrata: #c9f36b; --t-giroconto: #6d7a68;
+  --t-spesa: #7a9cff; --t-svago: #ff7ac8; --t-carburante: #e6b84a; --t-altro: #b3a3e6; --t-ricorrente: #d49a62; --t-non_definito: #f2f4f7; --t-entrata: #c9f36b; --t-giroconto: #6d7a68;
   --f-serif: "Figtree", system-ui, "Segoe UI", sans-serif; --f-sans: "Figtree", system-ui, "Segoe UI", sans-serif; --f-mono: "Figtree", system-ui, "Segoe UI", sans-serif;
   --glass: linear-gradient(160deg, rgba(var(--w), .075), rgba(var(--w), .05)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .10), rgba(var(--w), .07));
   --edge: 1px solid rgba(var(--w), .15); --glass-sh: inset 0 1px 0 rgba(var(--w), .105), 0 10px 28px rgba(var(--k), .29); --chipbg: rgba(var(--w), .065);
@@ -833,7 +833,7 @@ body.glass[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --
 /* vetro · Opzioni → Aspetto: una targhetta per palette (pallino col colore d'accento su fondo della palette) */
 /* ---- vetro · modalità chiara (Opzioni → Aspetto → Chiaro): stesse forme, variabili diverse; --w è il colore dei veli sul vetro (bianco nello scuro, inchiostro nel chiaro) ---- */
 body.glass.light { --w: 27, 31, 36; --k: 40, 50, 70; --ink: #1b1f24; --hair: rgba(0, 0, 0, .10); --yellow: #a97c00; color-scheme: light;
-  --t-spesa: #3b5fd9; --t-svago: #c4328f; --t-carburante: #a87a0e; --t-altro: #7660c4; --t-utenze: #1c8aa0; --t-ricorrente: #a8662a; --t-non_definito: #1b1f24; --t-giroconto: #7a8576;
+  --t-spesa: #3b5fd9; --t-svago: #c4328f; --t-carburante: #a87a0e; --t-altro: #7660c4; --t-ricorrente: #a8662a; --t-non_definito: #1b1f24; --t-giroconto: #7a8576;
   --glass: #fff; --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .12), #fff);
   --edge: 1px solid rgba(0, 0, 0, .12); --glass-sh: none; --chipbg: rgba(0, 0, 0, .045); }
 body.glass.light { background: var(--g1); }
@@ -868,7 +868,7 @@ body.glass select option:checked { background-color: rgba(var(--acc-rgb), .3); c
 body.glass .hour select, body.glass .tagbox select, body.glass .schip select { background-image: none; padding-right: 6px; }
 body.glass .tagfilter details[open] summary { border-color: rgba(var(--acc-rgb), .6); }
 
-/* vetro · card di evidenza senza testata: il Bilancio dello Storico (Y1: tinta d'accento forte, testi pieni) e il riquadro in cima a Budget e Ricorrenti (Y2: pastello chiaro, testi scuri); il segno negativo lo dice la targhetta, non il colore della cifra */
+/* vetro · card di evidenza senza testata: il Bilancio dello Storico (Y1: tinta d'accento forte, testi pieni) e il riquadro in cima a Budget e Ricorrenti (stesso vetro); il segno negativo lo dice la targhetta, non il colore della cifra */
 body.glass .card.hl { background: linear-gradient(150deg, rgba(var(--acc-rgb), .44), rgba(var(--acc-rgb), .30)); border-color: rgba(var(--acc-rgb), .55); color: #fff; }
 body.glass .card.hl .k, body.glass .card.hl .v { color: #fff; } body.glass .card.hl .k { opacity: .82; }
 .hltop { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -876,11 +876,9 @@ body.glass .card.hl .k, body.glass .card.hl .v { color: #fff; } body.glass .card
 body.glass.light .card.hl { background: linear-gradient(150deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .18)); border-color: rgba(var(--acc-rgb), .45); color: var(--ink); }
 body.glass.light .card.hl .k, body.glass.light .card.hl .v { color: var(--ink); }
 body.glass.light .negpill { background: #fde2e2; color: #a32424; }
-body.glass .bhero { background: color-mix(in srgb, var(--acc) 38%, #fff); border-color: transparent; color: #14171b; }
-body.glass.light .bhero { background: color-mix(in srgb, var(--acc) 22%, #fff); }
-body.glass .bhero .label, body.glass .bhero .big, body.glass .bhero .n { color: #14171b; }
-body.glass .bhero .label { opacity: .78; }
-body.glass .bhero .big.neg, body.glass .bhero .bfix .tot .n { color: #a32424; }
-body.glass .bhero .bstats .pos .n { color: #1f6b3a; }
-body.glass .bhero .bstats .dim .n, body.glass .bhero .bfix .grey .n { color: rgba(20, 23, 27, .62); }
-body.glass .bhero .bstats, body.glass .bhero .bfix { border-top-color: rgba(0, 0, 0, .14); }
+body.glass .bhero { background: linear-gradient(150deg, rgba(var(--acc-rgb), .44), rgba(var(--acc-rgb), .30)); border-color: rgba(var(--acc-rgb), .55); color: #fff; }
+body.glass .bhero .label, body.glass .bhero .big, body.glass .bhero .n { color: #fff; } body.glass .bhero .label { opacity: .82; }
+body.glass.light .bhero { background: linear-gradient(150deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .18)); border-color: rgba(var(--acc-rgb), .45); color: var(--ink); }
+body.glass.light .bhero .label, body.glass.light .bhero .big, body.glass.light .bhero .n { color: var(--ink); }
+body.glass .bhero .big.neg, body.glass .bhero .bfix .tot .n { color: var(--red); } body.glass .bhero .bstats .pos .n { color: var(--green); }
+body.glass .bhero .bstats, body.glass .bhero .bfix { border-top-color: rgba(var(--w), .22); }

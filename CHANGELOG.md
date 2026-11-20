@@ -2,6 +2,10 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.55.0
+- **Niente più pannelli a colore pieno**: il riquadro in cima a **Budget** e **Ricorrenti** usa lo stesso vetro con tinta d'accento del Bilancio (scuro e chiaro); tolta la variante pastello (`vt-hl2`) anche dalla scheda di stile.
+- **Tag «Utenze» rimosso** (si usa solo il ricorrente «Utenze»): non è più tra i tag dei movimenti né riga fissa dello Storico; i movimenti che lo avevano diventano «Ricorrente» (da assegnare).
+
 ## 0.54.1
 - Archiviati in `design/` i mockup di prova di testate (`testate-*`) e card di evidenza (`card-evidenza-*`), per riferimento; nessuna modifica all'app.
 

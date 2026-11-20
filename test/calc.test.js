@@ -14,7 +14,7 @@ test('calc: lo Storico somma i movimenti con tag; entrate «Non definito» e gir
 
 test('calc: spesa totale del Budget = uscite reali del mese corrente', () => {
   const now = new Date('2026-06-15T10:00:00Z');
-  const txs = [tx('2026-06-02', -30, 'spesa'), tx('2026-06-03', -20, 'utenze'), tx('2026-06-04', -5, 'non_definito'), tx('2026-06-05', -70, 'giroconto'), tx('2026-05-10', -100, 'svago'), tx('2026-05-11', 400, 'entrata'), tx('2026-05-12', 90, 'non_definito')];
+  const txs = [tx('2026-06-02', -30, 'spesa'), tx('2026-06-03', -20, 'ricorrente'), tx('2026-06-04', -5, 'non_definito'), tx('2026-06-05', -70, 'giroconto'), tx('2026-05-10', -100, 'svago'), tx('2026-05-11', 400, 'entrata'), tx('2026-05-12', 90, 'non_definito')];
   const m = monthBudget(txs, { spesa: 300, svago: 100, carburante: 0, altro: 0 }, 25, { spesa: 'Spesa' }, now);
   assert.equal(m.totals.totalSpend, 55);
   assert.equal(m.totals.daysLeft, 16); // il 15 di un mese di 30 giorni, oggi compreso
