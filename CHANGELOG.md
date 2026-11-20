@@ -2,6 +2,9 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.54.1
+- Archiviati in `design/` i mockup di prova di testate (`testate-*`) e card di evidenza (`card-evidenza-*`), per riferimento; nessuna modifica all'app.
+
 ## 0.54.0
 - **Card di evidenza** senza testata: il **Bilancio** dello Storico è una card con tinta d'accento forte e testi pieni (se è negativo, una targhetta «in rosso» al posto della cifra rossa); il riquadro in cima a **Budget** e **Ricorrenti** è un pastello chiaro con testi scuri. Scheda di stile in Seafile con le classi `vt-hl`, `vt-hl2` e `vt-neg`.
 - **Widget in Grafite, chiaro e scuro**: i tre widget usano la palette Grafite e seguono il tema del telefono (scuro di notte, chiaro di giorno); colori in `res/values*/widget_colors.xml` e `WidgetPal.java`; anche le anteprime nella lista dei widget.
