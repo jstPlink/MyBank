@@ -146,11 +146,13 @@ body.glass :is(#opzioni, #docGroups) > details.group, body.glass #docGroups > .p
 body.glass :is(#opzioni, #docGroups) > details.group:not([open]) { padding-bottom: 0; }
 body.glass :is(#opzioni, #docGroups) > details.group > summary, body.glass .payhead { margin: -16px -16px 0; padding: 14px 16px; border-radius: 0; border-left: 0; border-bottom: 0; }
 /* collassabile: fascia piena d'accento, titolo, dato e chevron nel colore «testo su accento»; fissa: solo una sfumatura d'accento con filetto sottile */
-body.glass :is(#opzioni, #docGroups) > details.group > summary { background: var(--acc); color: var(--onacc); }
-body.glass :is(#opzioni, #docGroups) > details.group > summary h2, body.glass :is(#opzioni, #docGroups) > details.group > summary .info, body.glass :is(#opzioni, #docGroups) > details.group > summary::after { color: var(--onacc); }
-body.glass :is(#opzioni, #docGroups) > details.group > summary .info { opacity: .72; }
-body.glass .payhead { background: linear-gradient(90deg, rgba(var(--acc-rgb), .14), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .30); }
-body.glass .payhead h2.section { color: var(--ink); }
+/* collassabile: tinta d'accento media con sfumatura leggera, titolo e dato nei colori del testo, chevron nel cerchio d'accento; non collassabile: nessuno sfondo, titolo nel colore secondario, filetto sottile */
+body.glass :is(#opzioni, #docGroups) > details.group > summary { background: linear-gradient(90deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .12)); color: var(--ink); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary h2 { color: var(--ink); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary .info { color: var(--mute); }
+body.glass :is(#opzioni, #docGroups) > details.group > summary::after { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--acc); color: var(--onacc); font-size: var(--fs-sm); line-height: 1; }
+body.glass .payhead { background: none; border-bottom: 1px solid var(--hair); }
+body.glass .payhead h2.section { color: var(--mute); }
 body.glass :is(#opzioni, #docGroups) > details.group > summary h2.section, body.glass .payhead h2.section { font-size: var(--fs-md); line-height: 24px; }
 body.glass .docbody .sub { border-bottom: 1px solid var(--hair); }
 body.glass .docbody .sub.late { border-bottom-color: rgba(var(--red-rgb),  .5); }
@@ -210,9 +212,12 @@ body.glass[data-pal="arancio"] { --g0: #0d0b0a; --g1: #161210; --g2: #1f1814; --
 /* ---- vetro · modalità chiara (Opzioni → Aspetto → Chiaro): stesse forme, variabili diverse; --w è il colore dei veli sul vetro (bianco nello scuro, inchiostro nel chiaro) ---- */
 body.glass.light { --w: 27, 31, 36; --k: 40, 50, 70; --ink: #1b1f24; --hair: rgba(0, 0, 0, .10); --yellow: #a97c00; color-scheme: light;
   --t-spesa: #3b5fd9; --t-svago: #c4328f; --t-carburante: #a87a0e; --t-altro: #7660c4; --t-utenze: #1c8aa0; --t-ricorrente: #a8662a; --t-non_definito: #1b1f24; --t-giroconto: #7a8576;
-  --glass: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .72)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .16), rgba(255, 255, 255, .80));
-  --edge: 1px solid rgba(0, 0, 0, .10); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .95), 0 8px 22px rgba(40, 50, 70, .10); --chipbg: rgba(0, 0, 0, .045); }
-body.glass.light .payhead { background: linear-gradient(90deg, rgba(var(--acc-rgb), .12), rgba(var(--acc-rgb), .03)); border-bottom-color: rgba(var(--acc-rgb), .40); }
+  --glass: #fff; --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .12), #fff);
+  --edge: 1px solid rgba(0, 0, 0, .12); --glass-sh: none; --chipbg: rgba(0, 0, 0, .045); }
+body.glass.light { background: var(--g1); }
+body.glass.light::before { content: none; }
+body.glass.light :is(#opzioni, #docGroups) > details.group > summary { background: linear-gradient(90deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .17)); }
+body.glass.light .payhead { border-bottom-color: rgba(0, 0, 0, .10); }
 body.glass.light select option { background-color: #fff; }
 body.glass.light input, body.glass.light select { background-color: rgba(255, 255, 255, .7); border: 1px solid rgba(0, 0, 0, .14); }
 body.glass.light .demo { color: #fff; }

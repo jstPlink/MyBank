@@ -45,23 +45,22 @@
 /* titolo di sezione con la barra d'accento a sinistra */
 .vt-title { border-left: 4px solid var(--acc); border-radius: 2px; padding: 2px 0 2px 12px; font-size: var(--fs-lg); font-weight: 700; margin: 0; }
 
-/* testata a fascia d'accento per le schede (F1): <div class="vt-card vt-sect"><details open><summary class="vt-head"><h2>Titolo</h2><span class="vt-cnt">3 voci</span><svg class="vt-chev">…</svg></summary>…</details></div>
-   senza <details> è la versione fissa (nessun chevron, filetto sempre visibile); chiusa = scheda tutta stondata, senza filetto */
+/* testata delle schede: <div class="vt-card vt-sect"><details open><summary class="vt-head"><h2>Titolo</h2><span class="vt-cnt">3 voci</span><svg class="vt-chev">…</svg></summary>…</details></div>
+   CLICCABILE (summary.vt-head): tinta d'accento media con una sfumatura leggera, titolo nel colore del testo, chevron nel cerchio d'accento; chiusa, la scheda è la sola testata, stondata.
+   NON CLICCABILE (div.vt-head.fix): nessuno sfondo, titolo 15px nel colore secondario, filetto sottile sotto, nessun chevron. */
 .vt-sect { overflow: hidden; }
 .vt-sect:has(details:not([open])) { padding-bottom: 0; }
 .vt-sect details > summary { list-style: none; cursor: pointer; } .vt-sect details > summary::-webkit-details-marker { display: none; }
-.vt-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 16px; border-bottom: 0; background: var(--acc); color: var(--onacc); }
-.vt-head h2 { flex: 1; font-size: var(--fs-md); line-height: 24px; color: var(--onacc); font-weight: 800; }
+.vt-head { display: flex; align-items: center; gap: 12px; margin: -16px -16px 0; padding: 14px 16px; border-bottom: 0; background: linear-gradient(90deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .12)); color: var(--ink); }
+.vt-head h2 { flex: 1; font-size: var(--fs-md); line-height: 24px; color: var(--ink); font-weight: 800; }
 .vt-cnt { font-size: var(--fs-label); font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--mute); } .vt-cnt.bad { color: var(--bad); }
-.vt-head .vt-cnt { color: var(--onacc); opacity: .72; }
-.vt-chev { width: 18px; height: 18px; flex: none; color: var(--onacc); stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s; }
+.vt-chev { width: 28px; height: 28px; padding: 5px; box-sizing: border-box; border-radius: 50%; flex: none; background: var(--acc); color: var(--onacc); stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .18s; }
 .vt-sect details[open] > summary .vt-chev { transform: rotate(180deg); }
 .vt-sect .vt-head + :not(.vt-body) { margin-top: 14px; }
 .vt-sect .vt-body { margin-top: 14px; }
-/* testata fissa (non collassabile): solo una sfumatura d'accento con filetto sottile; la collassabile è una fascia piena d'accento con testo e chevron sul colore */
-.vt-head.fix { background: linear-gradient(90deg, rgba(var(--acc-rgb), .14), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .30); color: var(--ink); }
-.vt-head.fix h2 { color: var(--ink); }
-.vt-head.fix .vt-cnt { color: var(--mute); opacity: 1; } .vt-head.fix .vt-cnt.bad { color: var(--bad); }
+/* testata non cliccabile */
+.vt-head.fix { background: none; border-bottom: 1px solid var(--hair); color: var(--mute); }
+.vt-head.fix h2 { color: var(--mute); }
 /* misure delle testate: .lg 22px, normale 15px, .sm etichetta 11px maiuscola */
 .vt-head.lg h2 { font-size: var(--fs-lg); line-height: 28px; } .vt-head.sm h2 { font-size: var(--fs-label); letter-spacing: .09em; text-transform: uppercase; line-height: 20px; }
 
@@ -122,7 +121,10 @@ dialog.vt-sheet::backdrop { background: rgba(0, 0, 0, .6); }
 .vt.light { --ink: #1b1f24; --hair: rgba(0, 0, 0, .10); --chipbg: rgba(0, 0, 0, .045);
   --glass: linear-gradient(160deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .72)); --glass-big: linear-gradient(150deg, rgba(var(--acc-rgb), .16), rgba(255, 255, 255, .80));
   --edge: 1px solid rgba(0, 0, 0, .10); --glass-sh: inset 0 1px 0 rgba(255, 255, 255, .95), 0 8px 22px rgba(40, 50, 70, .10); color-scheme: light; }
-.vt.light::before { opacity: .7; }
+.vt.light { background: var(--g1); } .vt.light::before { content: none; }
+.vt.light .vt-card { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; border: 1px solid rgba(0, 0, 0, .12); }
+.vt.light .vt-card-big { background: linear-gradient(150deg, rgba(var(--acc-rgb), .12), #fff); }
+.vt.light .vt-head { background: linear-gradient(90deg, rgba(var(--acc-rgb), .30), rgba(var(--acc-rgb), .17)); }
 .vt.light .vt-btn:hover { background: rgba(0, 0, 0, .08); }
 .vt.light .vt-bar { background: rgba(0, 0, 0, .09); }
 .vt.light .vt-input { border: 1px solid rgba(0, 0, 0, .14); background: rgba(255, 255, 255, .7); }
@@ -132,7 +134,7 @@ dialog.vt-sheet::backdrop { background: rgba(0, 0, 0, .6); }
 .vt.light .vt-tabs > button[aria-selected="true"] { background: rgba(0, 0, 0, .07); }
 .vt.light .vt-dd-menu { background: #fff; box-shadow: 0 12px 28px rgba(40, 50, 70, .18); }
 .vt.light .vt-dd-menu button:hover { background: rgba(0, 0, 0, .05); }
-.vt.light .vt-head.fix { background: linear-gradient(90deg, rgba(var(--acc-rgb), .12), rgba(var(--acc-rgb), .03)); border-bottom: 1px solid rgba(var(--acc-rgb), .40); }
+.vt.light .vt-head.fix { background: none; border-bottom: 1px solid rgba(0, 0, 0, .10); }
 .vt.light .vt-card-big .vt-hero { color: var(--ink); }
 .vt.light[data-pal="grafite"] { --g0: #f4f5f7; --g1: #eceef1; --g2: #e3e6ea; --acc: #2b3038; --acc2: #4a525e; --acc-rgb: 43, 48, 56; --acc2-rgb: 74, 82, 94; --onacc: #ffffff; --good: #1f8a56; --bad: #c93a3a; --bad-rgb: 201, 58, 58; --mute: #6b7380; }
 .vt.light[data-pal="ghiaccio"] { --g0: #f3f7fb; --g1: #e9f0f8; --g2: #dfe9f5; --acc: #2f6fb0; --acc2: #5a93cf; --acc-rgb: 47, 111, 176; --acc2-rgb: 90, 147, 207; --onacc: #ffffff; --good: #1f8a6a; --bad: #c4455a; --bad-rgb: 196, 69, 90; --mute: #66758a; }

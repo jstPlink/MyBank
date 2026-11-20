@@ -2,6 +2,11 @@
 
 Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il tag Git `mybank-vX.Y.Z` (i tag `vX.Y.Z` appartengono alla vecchia app Bilancio).
 
+## 0.53.0
+- **Testate riviste**: le sezioni collassabili hanno una tinta d'accento media con sfumatura leggera, il titolo nel colore del testo e il chevron in un cerchio d'accento; «Da pagare» (non collassabile) non ha sfondo, titolo grigio da 15px e un filetto sottile.
+- **Chiaro piatto**: sfondo a tinta unita, schede bianche con solo un filetto (senza ombra né vetro).
+- Scheda di stile `design/Scheda stile Vetro.html` aggiornata (e rinominata).
+
 ## 0.52.0
 - **Modalità chiara**: Opzioni → Aspetto ha ora la scelta **Scuro / Chiaro** (si ricorda su ogni dispositivo) accanto alle otto palette, che esistono in entrambe le versioni (sfondi chiari, accenti più scuri per la lettura, vetro bianco). I pulsanti delle palette seguono l'ordine cromatico: Grafite, Ghiaccio, Salvia, Turchese, Smeraldo, Lime, Ambra, Arancio.
 - **Testate**: la collassabile è una **fascia piena d'accento** con titolo, dato e chevron nel colore «testo su accento»; la fissa («Da pagare») solo una sfumatura d'accento tenue con filetto sottile (nel chiaro, accento scuro con testo bianco).
@@ -11,7 +16,7 @@ Ogni push aggiorna la versione (`package.json`) e aggiunge una voce qui, con il 
 - **Intestazioni a fascia**: le sezioni di Documenti e Opzioni hanno la testata a fascia d'accento al posto della barra verticale; aperte, filetto lime da 2px; chiuse, scheda tutta stondata. Quelle **non collassabili** («Da pagare») hanno una fascia più scura e piatta, con filetto sottile e senza chevron, per distinguerle bene dalle collassabili.
 - **Menu a tendina** nello stile vetro: freccia d'accento, bordo acceso da aperto, elenco scuro con la voce scelta in accento.
 - **Schede in basso** sul telefono con testo da 13px.
-- **Kit `design/stile-vetro`**: testate fisse e collassabili, interruttori, menu in vetro, spaziature, palette con ruoli dei colori; mockup riassuntivo `design/stile-riassunto-mockup.html`.
+- **Kit `design/stile-vetro`**: testate fisse e collassabili, interruttori, menu in vetro, spaziature, palette con ruoli dei colori; scheda riassuntiva `design/Scheda stile Vetro.html`.
 
 ## 0.50.2
 - **Altre spese dall'inizio del conto**: affitto, Tari e le altre voci contano dal mese di partenza del conto (il mese prima del primo uso), non dal mese in cui le scrivi; così le voci di ottobre scritte a novembre sono da pagare.
